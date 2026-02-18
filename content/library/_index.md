@@ -28,12 +28,6 @@ description: "비트코인, 오스트리아 경제학, 자유주의를 깊이 �
 - **비트코인, 디지털 화폐의 미래를 열다** — 안토노풀로스, 하딩 / 송주한 외 역 (고려대학교출판문화원, 2025) <span class="level level-심화">심화</span>
   원제: *Mastering Bitcoin* 3판. 탭루트, 라이트닝 네트워크 등 최신 기술까지 포함한 최신판.
 
-#### 한국인 저자
-- **더 그레이트 비트코인** — 오태민 <span class="level level-입문">입문</span>
-  비트코인의 거시적 흐름을 인문학, 경제학, 과학을 아우르며 정리.
-- **비트코인, 지혜의 족보** — 오태민 (케이디북스, 2020) <span class="level level-중급">중급</span>
-  비트코인의 사상적·기술적 뿌리를 추적하는 독자적 저작.
-
 ### 오스트리아 경제학
 
 - **경제학 1교시** — 헨리 해즐릿 / 전동균, 임석빈 역 (행간, 2006) <span class="level level-입문">입문</span>
@@ -79,8 +73,6 @@ description: "비트코인, 오스트리아 경제학, 자유주의를 깊이 �
 ---
 
 ## 원서 자료 (영어)
-
-아직 한국어로 번역되지 않은 중요한 자료들입니다.
 
 - **[Bitcoin Whitepaper](https://bitcoin.org/bitcoin.pdf)** (Satoshi Nakamoto) <span class="level level-입문">입문</span> — 9페이지짜리 비트코인 원본 논문
 - **[The Bullish Case for Bitcoin](https://vijayboyapati.medium.com/the-bullish-case-for-bitcoin-6ecc8bdecc1)** (Vijay Boyapati) <span class="level level-입문">입문</span> — 비트코인 투자 논거
