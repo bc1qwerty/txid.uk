@@ -5,5 +5,18 @@
   --color-bitcoin: #f7931a;
   --color-bitcoin-light: #ffab40;
   --color-bitcoin-dark: #c47515;
-  --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --font-sans: "Pretendard Variable", "Pretendard", sans-serif;
+}
+
+/* Ensure consistent font across all elements */
+*, *::before, *::after {
+  font-family: "Pretendard Variable", "Pretendard", sans-serif;
+}
+
+/* Override typography plugin font */
+.prose {
+  font-family: "Pretendard Variable", "Pretendard", sans-serif;
+}
+.prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
