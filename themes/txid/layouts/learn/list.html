@@ -7,7 +7,7 @@
     <p class="text-lg text-gray-400">{{ . }}</p>
     {{ end }}
     {{ with .Content }}
-    <div class="mt-4 prose prose-invert prose-gray max-w-none prose-p:text-gray-400">
+    <div class="mt-4 prose prose-invert prose-gray max-w-none prose-p:text-gray-300 prose-p:leading-relaxed">
       {{ . }}
     </div>
     {{ end }}
@@ -18,11 +18,11 @@
     {{ range .RegularPages }}
     <a href="{{ .Permalink }}" class="group block p-6 rounded-xl border border-gray-800/50 hover:border-bitcoin/30 bg-gray-900/30 hover:bg-gray-900/60 transition-all">
       {{ with .Params.icon }}
-      <div class="w-12 h-12 rounded-lg bg-bitcoin/10 flex items-center justify-center mb-4">
-        <span class="text-bitcoin text-2xl">{{ . }}</span>
+      <div class="w-10 h-10 rounded-lg bg-bitcoin/10 flex items-center justify-center mb-4">
+        <span class="text-bitcoin text-lg">{{ . }}</span>
       </div>
       {{ end }}
-      <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-bitcoin transition-colors">{{ .Title }}</h3>
+      <h3 class="text-lg font-semibold text-white mb-2 group-hover:text-bitcoin transition-colors">{{ .Title }}</h3>
       {{ with .Description }}
       <p class="text-sm text-gray-500 leading-relaxed mb-4">{{ . }}</p>
       {{ end }}

@@ -23,6 +23,9 @@
 
   {{ with .Content }}
   <div class="prose prose-invert prose-gray max-w-none mb-12
+    prose-headings:text-white prose-headings:font-semibold
+    prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
+    prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
     prose-p:text-gray-300 prose-p:leading-relaxed
     prose-a:text-bitcoin prose-a:no-underline hover:prose-a:underline
     prose-strong:text-white">
@@ -57,7 +60,7 @@
   {{ with .Params.next_path }}
   <div class="mt-16 pt-8 border-t border-gray-800/50">
     <p class="text-sm text-gray-600 mb-3">다음 추천 경로</p>
-    <a href="{{ .url }}" class="inline-flex items-center gap-2 text-bitcoin hover:underline font-semibold">
+    <a href="{{ .url }}" class="inline-flex items-center gap-2 text-bitcoin hover:underline font-medium">
       {{ .title }}
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
