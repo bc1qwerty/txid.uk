@@ -21,6 +21,37 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+/* Logo brand */
+.logo-brand {
+  gap: 0.1rem;
+}
+
+.logo-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f7931a;
+  transition: color 0.2s;
+}
+
+.logo-suffix {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.logo-brand:hover .logo-name {
+  color: #ffab40;
+}
+
+.logo-brand:hover .logo-suffix {
+  color: #9ca3af;
+}
+
 /* Level badges */
 .level {
   display: inline-block;
