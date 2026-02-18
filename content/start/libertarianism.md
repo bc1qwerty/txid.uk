@@ -27,9 +27,9 @@ tags: ["자유주의"]
 ## 핵심 인물
 
 - **존 로크 (John Locke)** — 자연권 사상의 기초를 놓은 철학자
-- **프레데릭 바스티아 (Frédéric Bastiat)** — "법"의 저자. 정부의 합법적 약탈을 비판
-- **머레이 로스바드 (Murray Rothbard)** — 자유주의 윤리학과 경제학의 통합
-- **한스-헤르만 호페 (Hans-Hermann Hoppe)** — 논증 윤리학(argumentation ethics)을 통한 자유주의 정당화
+- **[프레데릭 바스티아 (Frédéric Bastiat)](/people/frederic-bastiat/)** — "법"의 저자. 정부의 합법적 약탈을 비판
+- **[머레이 로스바드 (Murray Rothbard)](/people/murray-rothbard/)** — 자유주의 윤리학과 경제학의 통합
+- **[한스-헤르만 호페 (Hans-Hermann Hoppe)](/people/hans-hermann-hoppe/)** — 논증 윤리학(argumentation ethics)을 통한 자유주의 정당화
 
 ## 자유주의와 비트코인
 

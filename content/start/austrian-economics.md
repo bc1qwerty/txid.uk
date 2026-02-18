@@ -22,10 +22,10 @@ tags: ["오스트리아 경제학"]
 
 ## 핵심 인물
 
-- **칼 멩거 (Carl Menger)** — 오스트리아 학파의 창시자. 한계효용이론의 선구자
-- **루트비히 폰 미제스 (Ludwig von Mises)** — 인간행동학(praxeology)의 체계화. 사회주의 경제계산 불가능성 증명
-- **프리드리히 하이에크 (Friedrich Hayek)** — 노벨 경제학상 수상. 자생적 질서, 지식의 분산 이론
-- **머레이 로스바드 (Murray Rothbard)** — 미제스의 제자. 자유주의 경제학과 윤리학의 통합
+- **[칼 멩거 (Carl Menger)](/people/carl-menger/)** — 오스트리아 학파의 창시자. 한계효용이론의 선구자
+- **[루트비히 폰 미제스 (Ludwig von Mises)](/people/ludwig-von-mises/)** — 인간행동학(praxeology)의 체계화. 사회주의 경제계산 불가능성 증명
+- **[프리드리히 하이에크 (Friedrich Hayek)](/people/friedrich-hayek/)** — 노벨 경제학상 수상. 자생적 질서, 지식의 분산 이론
+- **[머레이 로스바드 (Murray Rothbard)](/people/murray-rothbard/)** — 미제스의 제자. 자유주의 경제학과 윤리학의 통합
 
 ## 핵심 개념
 
