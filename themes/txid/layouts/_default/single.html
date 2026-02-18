@@ -1,6 +1,54 @@
 {{ define "main" }}
+
+{{/* Detect if this page is part of any learning path */}}
+{{ $currentURL := .RelPermalink }}
+{{ $pathFound := false }}
+{{ $pathTitle := "" }}
+{{ $pathURL := "" }}
+{{ $stepNum := 0 }}
+{{ $totalSteps := 0 }}
+{{ $prevStep := dict }}
+{{ $nextStep := dict }}
+{{ range where site.RegularPages "Section" "learn" }}
+  {{ $path := . }}
+  {{ range $i, $step := .Params.steps }}
+    {{ if eq $step.url $currentURL }}
+      {{ $pathFound = true }}
+      {{ $pathTitle = $path.Title }}
+      {{ $pathURL = $path.RelPermalink }}
+      {{ $stepNum = add $i 1 }}
+      {{ $totalSteps = len $path.Params.steps }}
+      {{ if gt $i 0 }}
+        {{ $prevStep = index $path.Params.steps (sub $i 1) }}
+      {{ end }}
+      {{ if lt (add $i 1) $totalSteps }}
+        {{ $nextStep = index $path.Params.steps (add $i 1) }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
 <article class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+
+  {{/* Learning path indicator */}}
+  {{ if $pathFound }}
+  <div class="mb-6 p-3 rounded-lg bg-bitcoin/5 border border-bitcoin/20">
+    <div class="flex items-center justify-between flex-wrap gap-2">
+      <a href="{{ $pathURL }}" class="text-sm text-bitcoin hover:underline font-medium">
+        ← {{ $pathTitle }}
+      </a>
+      <div class="flex items-center gap-1.5">
+        {{ range $i, $_ := seq $totalSteps }}
+        <div class="w-2 h-2 rounded-full {{ if eq (add $i 1) $stepNum }}bg-bitcoin{{ else if lt (add $i 1) $stepNum }}bg-bitcoin/40{{ else }}bg-gray-700{{ end }}"></div>
+        {{ end }}
+        <span class="text-xs text-gray-500 ml-1.5">{{ $stepNum }}/{{ $totalSteps }}</span>
+      </div>
+    </div>
+  </div>
+  {{ end }}
+
   <!-- Breadcrumb -->
+  {{ if not $pathFound }}
   <nav class="mb-6 text-sm text-gray-600">
     <a href="/" class="hover:text-gray-400 transition-colors">홈</a>
     <span class="mx-1.5">/</span>
@@ -10,6 +58,7 @@
     {{ end }}
     <span class="text-gray-500">{{ .Title }}</span>
   </nav>
+  {{ end }}
 
   <!-- Article Header -->
   <header class="mb-10">
@@ -49,7 +98,30 @@
     {{ .Content }}
   </div>
 
-  <!-- Navigation (Hugo's Prev/Next are reverse of weight order, so swap them) -->
+  <!-- Navigation -->
+  {{ if $pathFound }}
+  {{/* Path-aware navigation */}}
+  <nav class="mt-16 pt-8 border-t border-bitcoin/20 flex justify-between gap-4">
+    {{ if $prevStep.url }}
+    <a href="{{ $prevStep.url }}" class="group flex-1 p-4 rounded-lg border border-gray-800/50 hover:border-bitcoin/30 transition-all">
+      <span class="text-xs text-bitcoin/60 block mb-1">← {{ sub $stepNum 1 }}단계</span>
+      <span class="text-sm text-gray-400 group-hover:text-white transition-colors">{{ $prevStep.title }}</span>
+    </a>
+    {{ else }}<div class="flex-1"></div>{{ end }}
+    {{ if $nextStep.url }}
+    <a href="{{ $nextStep.url }}" class="group flex-1 p-4 rounded-lg border border-gray-800/50 hover:border-bitcoin/30 transition-all text-right">
+      <span class="text-xs text-bitcoin/60 block mb-1">{{ add $stepNum 1 }}단계 →</span>
+      <span class="text-sm text-gray-400 group-hover:text-white transition-colors">{{ $nextStep.title }}</span>
+    </a>
+    {{ else }}
+    <a href="{{ $pathURL }}" class="group flex-1 p-4 rounded-lg border border-bitcoin/30 bg-bitcoin/5 hover:bg-bitcoin/10 transition-all text-right">
+      <span class="text-xs text-bitcoin/60 block mb-1">코스 완료</span>
+      <span class="text-sm text-bitcoin group-hover:text-bitcoin-light transition-colors">{{ $pathTitle }}로 돌아가기</span>
+    </a>
+    {{ end }}
+  </nav>
+  {{ else }}
+  {{/* Default section navigation */}}
   <nav class="mt-16 pt-8 border-t border-gray-800/50 flex justify-between gap-4">
     {{ with .NextInSection }}
     <a href="{{ .Permalink }}" class="group flex-1 p-4 rounded-lg border border-gray-800/50 hover:border-gray-700/50 transition-all">
@@ -64,5 +136,6 @@
     </a>
     {{ else }}<div class="flex-1"></div>{{ end }}
   </nav>
+  {{ end }}
 </article>
 {{ end }}
