@@ -101,7 +101,7 @@
   <!-- Navigation -->
   {{ if $pathFound }}
   {{/* Path-aware navigation */}}
-  <nav class="mt-16 pt-8 border-t border-bitcoin/20 flex flex-col sm:flex-row justify-between gap-4">
+  <nav class="mt-16 pt-8 border-t border-bitcoin/20 flex justify-between gap-4">
     {{ if $prevStep.url }}
     <a href="{{ $prevStep.url }}" class="group flex-1 p-5 sm:p-6 rounded-xl border border-gray-700/50 bg-gray-900/60 hover:border-gray-600 hover:bg-gray-900/80 transition-all">
       <span class="flex items-center gap-1.5 text-sm text-gray-400 mb-2">
@@ -130,7 +130,7 @@
   </nav>
   {{ else }}
   {{/* Default section navigation */}}
-  <nav class="mt-16 pt-8 border-t border-gray-800/50 flex flex-col sm:flex-row justify-between gap-4">
+  <nav class="mt-16 pt-8 border-t border-gray-800/50 flex justify-between gap-4">
     {{ with .NextInSection }}
     <a href="{{ .Permalink }}" class="group flex-1 p-5 sm:p-6 rounded-xl border border-gray-700/50 bg-gray-900/60 hover:border-gray-600 hover:bg-gray-900/80 transition-all">
       <span class="flex items-center gap-1.5 text-sm text-gray-400 mb-2">
