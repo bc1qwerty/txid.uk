@@ -87,17 +87,17 @@
   </div>
 </section>
 
-<!-- Latest Posts -->
-{{ $posts := where .Site.RegularPages "Section" "blog" }}
-{{ if gt (len $posts) 0 }}
+<!-- Key Concepts -->
+{{ $ideas := where .Site.RegularPages "Section" "ideas" }}
+{{ if gt (len $ideas) 0 }}
 <section class="max-w-5xl mx-auto px-4 sm:px-6 py-16">
   <div class="flex items-center justify-between mb-8">
-    <h2 class="text-2xl font-bold text-white">최근 글</h2>
-    <a href="/blog/" class="text-sm text-gray-500 hover:text-bitcoin transition-colors">전체 보기 →</a>
+    <h2 class="text-2xl font-bold text-white">핵심 개념</h2>
+    <a href="/ideas/" class="text-sm text-gray-500 hover:text-bitcoin transition-colors">전체 보기 →</a>
   </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    {{ range first 2 $posts }}
-    <article class="p-5 rounded-xl border border-gray-800/50 hover:border-gray-700/50 bg-gray-900/30 transition-all">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+    {{ range first 6 $ideas }}
+    <a href="{{ .Permalink }}" class="group block p-6 rounded-xl border border-gray-800/50 hover:border-bitcoin/30 bg-gray-900/30 hover:bg-gray-900/60 transition-all">
       <div class="flex items-center gap-2 mb-3">
         {{ range .Params.tags }}
         <span class="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-400">{{ . }}</span>
@@ -106,14 +106,38 @@
         <span class="text-xs px-2 py-0.5 rounded-full bg-bitcoin/10 text-bitcoin">{{ . }}</span>
         {{ end }}
       </div>
-      <h3 class="text-lg font-semibold text-white mb-2">
-        <a href="{{ .Permalink }}" class="hover:text-bitcoin transition-colors">{{ .Title }}</a>
-      </h3>
-      <p class="text-sm text-gray-500 leading-relaxed">{{ .Summary | truncate 120 }}</p>
-      <time class="block mt-3 text-xs text-gray-600">{{ .Date.Format "2006.01.02" }}</time>
-    </article>
+      <h3 class="text-lg font-semibold text-white mb-2 group-hover:text-bitcoin transition-colors">{{ .Title }}</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">{{ .Description | truncate 80 }}</p>
+    </a>
     {{ end }}
   </div>
 </section>
 {{ end }}
+
+<!-- Bottom CTA -->
+<section class="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+  <div class="rounded-2xl border border-bitcoin/20 bg-gradient-to-b from-bitcoin/5 to-transparent p-8 sm:p-12 text-center">
+    <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">학습을 시작하세요</h2>
+    <p class="text-gray-400 leading-relaxed max-w-2xl mx-auto mb-8">
+      체계적으로 구성된 학습 경로를 따라가며, 비트코인과 경제학, 자유주의의 핵심을 이해할 수 있습니다.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4 mb-10">
+      <a href="/learn/" class="inline-flex items-center px-6 py-3 bg-bitcoin hover:bg-bitcoin-light text-white font-semibold rounded-lg transition-colors">
+        학습 경로 시작하기
+        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+      <a href="/ideas/" class="inline-flex items-center px-6 py-3 border border-gray-700 hover:border-gray-500 text-gray-300 rounded-lg transition-colors">
+        개념 둘러보기
+      </a>
+    </div>
+    <div class="flex flex-wrap justify-center gap-6 sm:gap-10 text-sm text-gray-500">
+      <span><strong class="text-white font-semibold">3</strong> 입문코스</span>
+      <span><strong class="text-white font-semibold">18</strong> 학습단계</span>
+      <span><strong class="text-white font-semibold">15</strong> 핵심개념</span>
+      <span><strong class="text-white font-semibold">7</strong> 주요인물</span>
+    </div>
+  </div>
+</section>
 {{ end }}
