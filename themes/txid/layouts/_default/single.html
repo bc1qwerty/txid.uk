@@ -1,5 +1,16 @@
 {{ define "main" }}
 <article class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+  <!-- Breadcrumb -->
+  <nav class="mb-6 text-sm text-gray-600">
+    <a href="/" class="hover:text-gray-400 transition-colors">홈</a>
+    <span class="mx-1.5">/</span>
+    {{ with .Parent }}
+    <a href="{{ .Permalink }}" class="hover:text-gray-400 transition-colors">{{ .Title }}</a>
+    <span class="mx-1.5">/</span>
+    {{ end }}
+    <span class="text-gray-500">{{ .Title }}</span>
+  </nav>
+
   <!-- Article Header -->
   <header class="mb-10">
     <div class="flex items-center gap-2 mb-4">
@@ -14,9 +25,13 @@
     {{ with .Description }}
     <p class="mt-3 text-lg text-gray-400">{{ . }}</p>
     {{ end }}
-    {{ if .Date.IsZero | not }}
-    <time class="block mt-4 text-sm text-gray-600">{{ .Date.Format "2006.01.02" }}</time>
-    {{ end }}
+    <div class="flex items-center gap-3 mt-4 text-sm text-gray-600">
+      {{ if .Date.IsZero | not }}
+      <time>{{ .Date.Format "2006.01.02" }}</time>
+      <span>·</span>
+      {{ end }}
+      <span>{{ math.Round (div (countwords .Content) 200.0) }}분 소요</span>
+    </div>
   </header>
 
   <!-- Content -->

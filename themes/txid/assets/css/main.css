@@ -80,3 +80,28 @@
   color: #6b7280;
   margin-bottom: 1rem;
 }
+
+/* Korean text wrapping */
+body {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* FAQ accordion */
+details summary {
+  cursor: pointer;
+  list-style: none;
+}
+details summary::-webkit-details-marker {
+  display: none;
+}
+details summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 0.5rem;
+  transition: transform 0.2s;
+  color: #6b7280;
+}
+details[open] summary::before {
+  transform: rotate(90deg);
+}

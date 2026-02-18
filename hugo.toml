@@ -12,6 +12,8 @@ theme = 'txid'
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
+    [markup.goldmark.parser]
+      autoHeadingID = true
   [markup.highlight]
     style = 'monokai'
     lineNos = false
@@ -43,7 +45,8 @@ theme = 'txid'
     weight = 6
 
 [outputs]
-  home = ['HTML']
+  home = ['HTML', 'RSS']
+  section = ['HTML', 'RSS']
 
 [taxonomies]
   tag = 'tags'

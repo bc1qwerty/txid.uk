@@ -88,6 +88,8 @@ description: "비트코인, 오스트리아 경제학, 자유주의를 깊이 �
 - **[Bitcoin for Beginners](https://www.youtube.com/playlist?list=PLPQwGV1aLnTuN6kdNWlElfr2tzigB9Nnj)** (Andreas Antonopoulos) — 비트코인 기초 강연 시리즈
 - **[Economics for Beginners](https://www.youtube.com/playlist?list=PLALopHfWkFlFBRN9NxTbqCp-T_qBPNVnR)** (Mises Institute) — 경제학 애니메이션 시리즈
 
+---
+
 ## 팟캐스트
 
 - **[What Bitcoin Did](https://www.whatbitcoindid.com/)** — Peter McCormack의 비트코인 인터뷰

@@ -32,7 +32,7 @@
   <!-- Pages List -->
   {{ $pages := .RegularPages }}
   {{ if gt (len $pages) 0 }}
-  <div class="space-y-4">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
     {{ range $pages }}
     <article class="p-5 rounded-xl border border-gray-800/50 hover:border-gray-700/50 bg-gray-900/30 transition-all">
       <div class="flex items-center gap-2 mb-2">
