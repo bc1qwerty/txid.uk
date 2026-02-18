@@ -1,0 +1,43 @@
+baseURL = 'https://txid.uk/'
+languageCode = 'ko'
+title = 'TXID.uk'
+theme = 'txid'
+
+[params]
+  description = '비트코인, 오스트리아 경제학, 자유주의를 배우는 곳'
+  author = 'TXID'
+  ogImage = '/images/og-default.png'
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    style = 'monokai'
+    lineNos = false
+
+[menu]
+  [[menu.main]]
+    name = '시작하기'
+    url = '/start/'
+    weight = 1
+  [[menu.main]]
+    name = '자료실'
+    url = '/library/'
+    weight = 2
+  [[menu.main]]
+    name = '개념'
+    url = '/ideas/'
+    weight = 3
+  [[menu.main]]
+    name = '블로그'
+    url = '/blog/'
+    weight = 4
+
+[outputs]
+  home = ['HTML']
+
+[taxonomies]
+  tag = 'tags'
+  category = 'categories'
+  level = 'levels'

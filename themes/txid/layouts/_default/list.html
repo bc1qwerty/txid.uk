@@ -1,0 +1,60 @@
+{{ define "main" }}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+  <!-- Page Header -->
+  <header class="mb-12">
+    <h1 class="text-3xl sm:text-4xl font-bold text-white">{{ .Title }}</h1>
+    {{ with .Description }}
+    <p class="mt-3 text-lg text-gray-400">{{ . }}</p>
+    {{ end }}
+    {{ with .Content }}
+    <div class="mt-4 prose prose-invert prose-gray max-w-none">
+      {{ . }}
+    </div>
+    {{ end }}
+  </header>
+
+  <!-- Sub-sections (if any) -->
+  {{ $sections := .Sections }}
+  {{ if gt (len $sections) 0 }}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+    {{ range $sections }}
+    <a href="{{ .Permalink }}" class="group block p-6 rounded-xl border border-gray-800/50 hover:border-bitcoin/30 bg-gray-900/30 hover:bg-gray-900/60 transition-all">
+      <h3 class="text-lg font-semibold text-white mb-2 group-hover:text-bitcoin transition-colors">{{ .Title }}</h3>
+      {{ with .Description }}
+      <p class="text-sm text-gray-500">{{ . }}</p>
+      {{ end }}
+      <span class="inline-block mt-3 text-xs text-gray-600">{{ len .Pages }}개 항목</span>
+    </a>
+    {{ end }}
+  </div>
+  {{ end }}
+
+  <!-- Pages List -->
+  {{ $pages := .RegularPages }}
+  {{ if gt (len $pages) 0 }}
+  <div class="space-y-4">
+    {{ range $pages }}
+    <article class="p-5 rounded-xl border border-gray-800/50 hover:border-gray-700/50 bg-gray-900/30 transition-all">
+      <div class="flex items-center gap-2 mb-2">
+        {{ range .Params.tags }}
+        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-400">{{ . }}</span>
+        {{ end }}
+        {{ with .Params.levels }}
+        <span class="text-xs px-2 py-0.5 rounded-full bg-bitcoin/10 text-bitcoin">{{ . }}</span>
+        {{ end }}
+      </div>
+      <h3 class="text-lg font-semibold text-white mb-1">
+        <a href="{{ .Permalink }}" class="hover:text-bitcoin transition-colors">{{ .Title }}</a>
+      </h3>
+      {{ with .Description }}
+      <p class="text-sm text-gray-500">{{ . }}</p>
+      {{ end }}
+      {{ if .Date.IsZero | not }}
+      <time class="block mt-2 text-xs text-gray-600">{{ .Date.Format "2006.01.02" }}</time>
+      {{ end }}
+    </article>
+    {{ end }}
+  </div>
+  {{ end }}
+</div>
+{{ end }}
