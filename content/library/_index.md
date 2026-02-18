@@ -38,13 +38,13 @@ description: "비트코인, 오스트리아 경제학, 자유주의를 깊이 �
   원제: *Principles of Economics*. 오스트리아학파 창시자 멩거의 주관적 가치론.
 - **노예의 길** — 프리드리히 하이에크 / 김이석 역 (나남출판, 2006) <span class="level level-중급">중급</span>
   원제: *The Road to Serfdom*. 집단주의적 경제 계획이 정치적 자유의 상실로 이어지는 과정.
-- **치명적 자만** — 프리드리히 하이에크 / 신중섭 역 (자유기업원) <span class="level level-중급">중급</span>
+- **치명적 자만** — 프리드리히 하이에크 / 신중섭 역 (자유기업원, 1996) <span class="level level-중급">중급</span>
   원제: *The Fatal Conceit*. 하이에크의 마지막 저서. 사회주의가 인간 이성의 한계를 무시한 거짓 이론임을 논증.
 - **인간행동** (전 2권) — 루트비히 폰 미제스 / 민경국, 박종운 역 (지식을만드는지식, 2011) <span class="level level-심화">심화</span>
   원제: *Human Action*. 오스트리아 경제학의 최고봉. 1,361쪽에 걸친 기념비적 대작.
 - **인간 경제 국가** — 머레이 로스바드 / 전용덕, 김이석 역 (자유기업원, 2019) <span class="level level-심화">심화</span>
   원제: *Man, Economy, and State*. 자유시장 원리를 가장 철두철미하게 설명하는 960쪽의 체계적 입문서.
-- **자유헌정론** — 프리드리히 하이에크 (자유기업원, 2016) <span class="level level-심화">심화</span>
+- **자유헌정론** — 프리드리히 하이에크 / 김균 역 (자유기업원, 2016) <span class="level level-심화">심화</span>
   원제: *The Constitution of Liberty*. 개인의 자유를 보장하는 헌정 질서를 철학·법·경제학적으로 탐구.
 
 #### 한국인 저자
@@ -57,13 +57,13 @@ description: "비트코인, 오스트리아 경제학, 자유주의를 깊이 �
   원제: *The Law*. 법의 본질은 생명·자유·재산의 보호이며, 약탈의 도구로 전락할 때 국가가 부패한다는 고전적 팜플렛.
 - **국가의 해부** — 머레이 로스바드 / 김경훈, 한창헌 역 (바른북스, 2022) <span class="level level-입문">입문</span>
   원제: *Anatomy of the State*. 국가 권력의 본질과 정당성 유지 메커니즘을 근원적으로 진단.
-- **국가는 거대한 허구다** — 프레데릭 바스티아 (이책) <span class="level level-입문">입문</span>
+- **국가는 거대한 허구다** — 프레데릭 바스티아 / 김정호 역 (이책, 2018) <span class="level level-입문">입문</span>
   "모든 사람이 다른 모든 사람의 희생 위에 살려고 하는 거대한 허구"라는 유명한 정의.
 - **선택할 자유** — 밀턴 프리드먼, 로즈 프리드먼 / 민병균 외 역 (자유기업원, 2022) <span class="level level-입문">입문</span>
   원제: *Free to Choose*. 시장의 자유가 개인의 번영과 사회 발전을 이끄는 과정을 구체적 사례로 설명.
 - **자본주의와 자유** — 밀턴 프리드먼 / 심준보 외 역 (청어람미디어, 2007) <span class="level level-중급">중급</span>
   원제: *Capitalism and Freedom*. 경제적 자유가 정치적 자유의 필수 조건임을 논증.
-- **새로운 자유를 찾아서** — 머레이 로스바드 / 정연교 외 역 (한국문화사) <span class="level level-중급">중급</span>
+- **새로운 자유를 찾아서** — 머레이 로스바드 / 정연교 외 역 (한국문화사, 2019) <span class="level level-중급">중급</span>
   원제: *For a New Liberty*. 리버테리어니즘의 역사, 특성, 정당화를 체계적으로 선언하는 로스바드의 대표작.
 - **민주주의는 실패한 신인가** — 한스-헤르만 호페 / 박효종 역 (나남출판, 2004) <span class="level level-심화">심화</span>
   원제: *Democracy: The God That Failed*. 민주주의가 사유재산과 자유를 침해하는 구조적 문제를 분석.
