@@ -13,8 +13,9 @@
     {{ range $pages.ByWeight }}
     <a href="{{ .Permalink }}" class="books-list-card">
       <div class="books-list-cover">
+        {{ $bookTitle := .Title }}
         {{ with .Params.cover }}
-        <img src="{{ . }}" alt="{{ $.Title }}" width="160" height="240" loading="lazy">
+        <img src="{{ . }}" alt="{{ $bookTitle }}" width="160" height="240" loading="lazy">
         {{ end }}
       </div>
       <div class="books-list-meta">

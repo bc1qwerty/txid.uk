@@ -54,9 +54,11 @@
   <!-- Schema.org -->
   <script type="application/ld+json">
   {{ if .IsHome -}}
-  {"@context":"https://schema.org","@type":"WebSite","name":{{ site.Title | jsonify }},"url":{{ site.BaseURL | jsonify }},"description":{{ site.Params.description | jsonify }},"publisher":{"@type":"Organization","name":{{ site.Params.author | jsonify }},"logo":"{{ site.BaseURL }}favicon.svg"}}
+  {"@context":"https://schema.org","@type":"WebSite","name":{{ site.Title | jsonify | safeJS }},"url":{{ site.BaseURL | jsonify | safeJS }},"description":{{ site.Params.description | jsonify | safeJS }},"publisher":{"@type":"Organization","name":{{ site.Params.author | jsonify | safeJS }},"logo":{{ (print site.BaseURL "favicon.svg") | jsonify | safeJS }}}}
   {{- else if .IsPage -}}
-  {"@context":"https://schema.org","@type":"Article","headline":{{ .Title | jsonify }},"description":{{ $description | jsonify }},"datePublished":{{ .Date.Format "2006-01-02" | jsonify }},"image":"{{ $ogImage }}","author":{"@type":"Person","name":{{ site.Params.author | jsonify }},"url":{{ site.BaseURL | jsonify }}},"url":{{ .Permalink | jsonify }}}
+  {"@context":"https://schema.org","@type":"Article","headline":{{ .Title | jsonify | safeJS }},"description":{{ $description | jsonify | safeJS }},"datePublished":{{ .Date.Format "2006-01-02" | jsonify | safeJS }},"image":{{ $ogImage | jsonify | safeJS }},"author":{"@type":"Person","name":{{ site.Params.author | jsonify | safeJS }},"url":{{ site.BaseURL | jsonify | safeJS }}},"url":{{ .Permalink | jsonify | safeJS }}}
+  {{- else -}}
+  {"@context":"https://schema.org","@type":"CollectionPage","name":{{ .Title | jsonify | safeJS }},"description":{{ $description | jsonify | safeJS }},"url":{{ .Permalink | jsonify | safeJS }}}
   {{- end }}
   </script>
 
@@ -86,15 +88,15 @@
   <!-- Site Data for Command Palette -->
   <script id="site-data" type="application/json">
   {
-    "projects": [{{ range $i, $p := site.Params.projects }}{{ if $i }},{{ end }}{"name":{{ $p.name | jsonify }},"url":{{ $p.url | jsonify }},"type":"project"}{{ end }}],
-    "links": [{{ range $i, $l := site.Params.links }}{{ if $i }},{{ end }}{"name":{{ $l.name | jsonify }},"url":{{ $l.url | jsonify }},"type":"link"}{{ end }}],
-    "social": [{{ range $i, $s := site.Params.social }}{{ if $i }},{{ end }}{"name":{{ $s.name | jsonify }},"url":{{ $s.url | jsonify }},"type":"social"}{{ end }}],
-    "posts": [{{ range $i, $p := (where site.RegularPages "Section" "blog").ByDate.Reverse }}{{ if $i }},{{ end }}{"name":{{ $p.Title | jsonify }},"url":{{ $p.RelPermalink | jsonify }},"type":"post"}{{ end }}],
-    "books": [{{ range $i, $b := site.Params.books }}{{ if $i }},{{ end }}{"name":{{ $b.name | jsonify }},"author":{{ $b.author | jsonify }},"url":{{ with $b.slug }}{{ (printf "/books/%s/" .) | jsonify }}{{ else }}"#"{{ end }},"type":"book"}{{ end }}],
-    "stack": [{{ range $i, $s := site.Params.stack }}{{ if $i }},{{ end }}{"name":{{ $s.name | jsonify }},"type":"stack"}{{ end }}],
-    "bookmarks": [{{ range $i, $b := site.Params.bookmarks }}{{ if $i }},{{ end }}{"name":{{ $b.name | jsonify }},"url":{{ $b.url | jsonify }},"type":"bookmark"}{{ end }}],
-    "ideas": [{{ range $i, $t := (where site.RegularPages "Section" "ideas").ByDate.Reverse }}{{ if $i }},{{ end }}{"name":{{ $t.Title | jsonify }},"url":{{ $t.RelPermalink | jsonify }},"type":"idea"}{{ end }}],
-    "learn": [{{ range $i, $l := (where site.RegularPages "Section" "learn") }}{{ if $i }},{{ end }}{"name":{{ $l.Title | jsonify }},"url":{{ $l.RelPermalink | jsonify }},"type":"learn"}{{ end }}],
+    "projects": [{{ range $i, $p := site.Params.projects }}{{ if $i }},{{ end }}{"name":{{ $p.name | jsonify | safeJS }},"url":{{ $p.url | jsonify | safeJS }},"type":"project"}{{ end }}],
+    "links": [{{ range $i, $l := site.Params.links }}{{ if $i }},{{ end }}{"name":{{ $l.name | jsonify | safeJS }},"url":{{ $l.url | jsonify | safeJS }},"type":"link"}{{ end }}],
+    "social": [{{ range $i, $s := site.Params.social }}{{ if $i }},{{ end }}{"name":{{ $s.name | jsonify | safeJS }},"url":{{ $s.url | jsonify | safeJS }},"type":"social"}{{ end }}],
+    "posts": [{{ range $i, $p := (where site.RegularPages "Section" "blog").ByDate.Reverse }}{{ if $i }},{{ end }}{"name":{{ $p.Title | jsonify | safeJS }},"url":{{ $p.RelPermalink | jsonify | safeJS }},"type":"post"}{{ end }}],
+    "books": [{{ range $i, $b := site.Params.books }}{{ if $i }},{{ end }}{"name":{{ $b.name | jsonify | safeJS }},"author":{{ $b.author | jsonify | safeJS }},"url":{{ with $b.slug }}{{ (printf "/books/%s/" .) | jsonify | safeJS }}{{ else }}"#"{{ end }},"type":"book"}{{ end }}],
+    "stack": [{{ range $i, $s := site.Params.stack }}{{ if $i }},{{ end }}{"name":{{ $s.name | jsonify | safeJS }},"type":"stack"}{{ end }}],
+    "bookmarks": [{{ range $i, $b := site.Params.bookmarks }}{{ if $i }},{{ end }}{"name":{{ $b.name | jsonify | safeJS }},"url":{{ $b.url | jsonify | safeJS }},"type":"bookmark"}{{ end }}],
+    "ideas": [{{ range $i, $t := (where site.RegularPages "Section" "ideas").ByDate.Reverse }}{{ if $i }},{{ end }}{"name":{{ $t.Title | jsonify | safeJS }},"url":{{ $t.RelPermalink | jsonify | safeJS }},"type":"idea"}{{ end }}],
+    "learn": [{{ range $i, $l := (where site.RegularPages "Section" "learn") }}{{ if $i }},{{ end }}{"name":{{ $l.Title | jsonify | safeJS }},"url":{{ $l.RelPermalink | jsonify | safeJS }},"type":"learn"}{{ end }}],
     "pages": [{"name":"소개","url":"/about/","type":"page"},{"name":"FAQ","url":"/faq/","type":"page"},{"name":"자료실","url":"/library/","type":"page"}]
   }
   </script>
