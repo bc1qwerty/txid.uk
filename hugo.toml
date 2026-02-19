@@ -1,6 +1,6 @@
 baseURL = 'https://txid.uk/'
 languageCode = 'ko'
-title = 'TXID.uk'
+title = 'TXID'
 
 publishDir = 'public'
 enableGitInfo = true
