@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/gc/:path*", "destination": "https://txid.goatcounter.com/counter/:path*" }
+  ]
+}
