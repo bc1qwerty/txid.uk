@@ -1,8 +1,8 @@
 <!-- Sidebar Profile -->
 <div class="sidebar-section sidebar-profile">
-    <div class="sidebar-avatar"><svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="12" r="6" fill="currentColor"/><path d="M6 32c0-6.627 5.373-12 12-12s12 5.373 12 12" fill="currentColor"/><rect x="12" y="8" width="12" height="3" rx="1.5" fill="var(--color-bitcoin)" opacity="0.9"/></svg></div>
+    <div class="sidebar-avatar"><svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#1a1a1f" stroke="var(--color-bitcoin)" stroke-width="0.8"/><circle cx="18" cy="11" r="3.8" fill="currentColor"/><ellipse cx="18" cy="24" rx="9" ry="5.5" fill="currentColor"/><path d="M9.5 22.5Q12 19 18 19Q24 19 26.5 22.5" fill="currentColor"/><circle cx="13" cy="21.5" r="2.2" fill="currentColor"/><circle cx="23" cy="21.5" r="2.2" fill="currentColor"/></svg></div>
     <span class="sidebar-name">{{ site.Params.hero.name }}</span>
-    <span class="sidebar-tagline">{{ site.Params.hero.tagline }}</span>
+    <span class="sidebar-tagline">{{ site.Params.hero.sidebarTagline | default site.Params.hero.tagline }}</span>
     {{ with site.Params.hero.location }}
     <div class="sidebar-clock">
         <span class="sidebar-location">{{ . }}</span>
