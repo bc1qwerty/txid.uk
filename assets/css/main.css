@@ -420,18 +420,16 @@ details[open] > *:not(summary) {
 /* Left sidebar sections — transition setup */
 .sidebar-column.sidebar-left .sidebar > *:not(.sidebar-profile) {
   opacity: 1;
-  max-height: 50vh;
-  overflow: hidden;
-  transition: opacity 0.2s ease 0.12s, max-height 0.25s ease 0.05s;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease 0.12s;
 }
 
 .sidebar-column.sidebar-left .sidebar-profile .sidebar-name,
 .sidebar-column.sidebar-left .sidebar-profile .sidebar-tagline,
 .sidebar-column.sidebar-left .sidebar-profile .sidebar-clock {
   opacity: 1;
-  max-height: 2rem;
-  overflow: hidden;
-  transition: opacity 0.15s ease 0.12s, max-height 0.2s ease 0.05s;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease 0.12s;
 }
 
 /* Collapsed states */
