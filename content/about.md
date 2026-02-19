@@ -15,4 +15,4 @@ description: "운영자 및 사이트 소개"
 
 ## 연락
 
-[X (구 Twitter)](https://x.com/bc1qwerty)로 연락할 수 있다.
+[X (구 Twitter)](https://x.com/bc1qwerty)에서 활동하고 있다.
