@@ -14,7 +14,7 @@
     <a href="{{ .Permalink }}" class="books-list-card">
       <div class="books-list-cover">
         {{ with .Params.cover }}
-        <img src="{{ . }}" alt="{{ $.Title }}" loading="lazy">
+        <img src="{{ . }}" alt="{{ $.Title }}" width="160" height="240" loading="lazy">
         {{ end }}
       </div>
       <div class="books-list-meta">
