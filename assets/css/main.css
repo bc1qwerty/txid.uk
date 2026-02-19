@@ -388,8 +388,6 @@ details[open] > *:not(summary) {
   justify-content: center;
   width: 1.5rem;
   height: 3rem;
-  min-height: 44px;
-  min-width: 44px;
   border-radius: 0 0.375rem 0.375rem 0;
   background-color: var(--color-surface-raised);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -399,6 +397,13 @@ details[open] > *:not(summary) {
   transition: color 0.2s, background-color 0.2s;
 }
 
+/* Expand touch target to 44px without stretching the visible button */
+.sidebar-toggle::before {
+  content: "";
+  position: absolute;
+  inset: -0.5rem;
+}
+
 /* --- Toggle button (right sidebar: tab on left edge) --- */
 .sidebar-toggle-right {
   right: auto;
@@ -406,8 +411,6 @@ details[open] > *:not(summary) {
   border-radius: 0.375rem 0 0 0.375rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-right: none;
-  min-height: 44px;
-  min-width: 44px;
 }
 
 .sidebar-toggle:hover {
