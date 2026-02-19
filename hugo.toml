@@ -341,10 +341,6 @@ enableGitInfo = true
     url = '/books/'
     weight = 4
   [[menu.main]]
-    name = '자료실'
-    url = '/library/'
-    weight = 5
-  [[menu.main]]
     name = '블로그'
     url = '/blog/'
     weight = 6

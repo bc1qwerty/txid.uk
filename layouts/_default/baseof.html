@@ -97,7 +97,7 @@
     "bookmarks": [{{ range $i, $b := site.Params.bookmarks }}{{ if $i }},{{ end }}{"name":{{ $b.name | jsonify | safeJS }},"url":{{ $b.url | jsonify | safeJS }},"type":"bookmark"}{{ end }}],
     "ideas": [{{ range $i, $t := (where site.RegularPages "Section" "ideas").ByDate.Reverse }}{{ if $i }},{{ end }}{"name":{{ $t.Title | jsonify | safeJS }},"url":{{ $t.RelPermalink | jsonify | safeJS }},"type":"idea"}{{ end }}],
     "learn": [{{ range $i, $l := (where site.RegularPages "Section" "learn") }}{{ if $i }},{{ end }}{"name":{{ $l.Title | jsonify | safeJS }},"url":{{ $l.RelPermalink | jsonify | safeJS }},"type":"learn"}{{ end }}],
-    "pages": [{"name":"소개","url":"/about/","type":"page"},{"name":"FAQ","url":"/faq/","type":"page"},{"name":"자료실","url":"/library/","type":"page"}]
+    "pages": [{"name":"소개","url":"/about/","type":"page"},{"name":"FAQ","url":"/faq/","type":"page"}]
   }
   </script>
 
