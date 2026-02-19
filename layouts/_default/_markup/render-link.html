@@ -1,6 +1,6 @@
 {{- $isExternal := hasPrefix .Destination "http" -}}
 {{- $target := "" -}}
-{{- if hasPrefix .Destination "/ideas/" }}{{ $target = site.GetPage .Destination }}{{ end -}}
+{{- if and (not $isExternal) (hasPrefix .Destination "/") }}{{ with site.GetPage .Destination }}{{ if .Description }}{{ $target = . }}{{ end }}{{ end }}{{ end -}}
 <a href="{{ .Destination | safeURL }}"
   {{- if $isExternal }} target="_blank" rel="noopener noreferrer"{{ end -}}
   {{- with .Title }} title="{{ . }}"{{ end -}}
