@@ -4,5 +4,5 @@
 <a href="{{ .Destination | safeURL }}"
   {{- if $isExternal }} target="_blank" rel="noopener noreferrer"{{ end -}}
   {{- with .Title }} title="{{ . }}"{{ end -}}
-  {{- with $target }} data-concept-title="{{ .Title }}" data-concept-desc="{{ .Description }}"{{ end -}}
+  {{- with $target }} data-concept-title="{{ .Title | htmlEscape }}" data-concept-desc="{{ .Description | htmlEscape }}"{{ end -}}
 >{{ .Text | safeHTML }}</a>

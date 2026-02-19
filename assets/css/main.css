@@ -329,6 +329,13 @@ details[open] > *:not(summary) {
   color: var(--color-bitcoin);
 }
 
+.cmd-empty {
+  padding: 1.5rem 0.75rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-gray-500);
+}
+
 .cmd-group-header {
   font-size: 0.7rem;
   color: var(--color-gray-500);
@@ -1436,8 +1443,8 @@ details[open] > *:not(summary) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: 9999px;
   background-color: var(--color-surface);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1512,12 +1519,12 @@ body.sidebar-right-collapsed .scroll-top {
 
 [data-theme='light'] .tile-item-date,
 [data-theme='light'] .tile-item-desc {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 [data-theme='light'] .tile-more,
 [data-theme='light'] .tile-more-btn {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 [data-theme='light'] .tile-more:hover,
@@ -1544,7 +1551,7 @@ body.sidebar-right-collapsed .scroll-top {
 }
 
 [data-theme='light'] .learn-card-meta {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 [data-theme='light'] .chip {
@@ -1676,7 +1683,7 @@ body.sidebar-right-collapsed .scroll-top {
 }
 
 [data-theme='light'] .quote-author {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 [data-theme='light'] .book-title {
@@ -1692,15 +1699,15 @@ body.sidebar-right-collapsed .scroll-top {
 }
 
 [data-theme='light'] .arrow {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 [data-theme='light'] .logo-suffix {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 [data-theme='light'] details summary::before {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 [data-theme='light'] .concept-popover {

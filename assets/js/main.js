@@ -266,17 +266,21 @@ fadeSections.forEach(function(section) { observer.observe(section); });
 
     function render() {
         var html = '';
-        var lastType = '';
-        filtered.forEach(function(item, i) {
-            if (item.type !== lastType) {
-                lastType = item.type;
-                html += '<div class="cmd-group-header">' + escapeHtml(typeLabels[item.type] || item.type) + '</div>';
-            }
-            html += '<a href="' + escapeHtml(item.url || '#') + '" class="cmd-result' + (i === activeIndex ? ' active' : '') + '" data-index="' + i + '" role="option"' + (i === activeIndex ? ' aria-selected="true"' : '') + '>' +
-                '<span class="cmd-result-name">' + escapeHtml(item.name) + '</span>' +
-                '<span class="cmd-result-type">' + escapeHtml(typeLabels[item.type] || item.type) + '</span>' +
-                '</a>';
-        });
+        if (filtered.length === 0) {
+            html = '<div class="cmd-empty" role="status">검색 결과가 없습니다</div>';
+        } else {
+            var lastType = '';
+            filtered.forEach(function(item, i) {
+                if (item.type !== lastType) {
+                    lastType = item.type;
+                    html += '<div class="cmd-group-header">' + escapeHtml(typeLabels[item.type] || item.type) + '</div>';
+                }
+                html += '<a href="' + escapeHtml(item.url || '#') + '" class="cmd-result' + (i === activeIndex ? ' active' : '') + '" data-index="' + i + '" role="option"' + (i === activeIndex ? ' aria-selected="true"' : '') + '>' +
+                    '<span class="cmd-result-name">' + escapeHtml(item.name) + '</span>' +
+                    '<span class="cmd-result-type">' + escapeHtml(typeLabels[item.type] || item.type) + '</span>' +
+                    '</a>';
+            });
+        }
         results.innerHTML = html;
     }
 
