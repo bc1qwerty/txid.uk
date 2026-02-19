@@ -521,25 +521,27 @@ details[open] > *:not(summary) {
 .btc-widget {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .btc-stat {
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.3rem;
 }
 
 .btc-value {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-bitcoin);
   font-variant-numeric: tabular-nums;
 }
 
 .btc-label {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: #6b7280;
 }
 
