@@ -489,8 +489,8 @@ initClock('sidebarClock');
         var quotes = JSON.parse(dataEl.textContent);
         if (quotes.length === 0) return;
         var idx = Math.floor(Math.random() * quotes.length);
-        textEl.textContent = '\u201C' + quotes[idx].text + '\u201D';
-        authorEl.textContent = '\u2014 ' + quotes[idx].author;
+        textEl.textContent = quotes[idx].text;
+        authorEl.textContent = quotes[idx].author;
     } catch(e) { /* silent */ }
 })();
 
