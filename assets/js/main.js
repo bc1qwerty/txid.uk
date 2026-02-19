@@ -81,11 +81,35 @@ function throttle(fn, delay) {
     var savedLeft = localStorage.getItem('sidebar-state');
     var savedRight = localStorage.getItem('sidebar-right-state');
     if (isDesktop()) {
-        setLeft(savedLeft === 'collapsed');
-        setRight(savedRight === 'collapsed');
+        setLeft(savedLeft !== 'open');
+        setRight(savedRight !== 'open');
     } else {
         setLeft(true);
         setRight(true);
+    }
+
+    // --- Avatar click ---
+    var avatar = document.getElementById('sidebarAvatar');
+    var avatarOverlay = document.getElementById('avatarOverlay');
+    if (avatar && leftColumn) {
+        avatar.addEventListener('click', function() {
+            if (leftColumn.classList.contains('collapsed')) {
+                setLeft(false);
+                if (isDesktop()) {
+                    localStorage.setItem('sidebar-state', 'open');
+                } else {
+                    if (overlay) overlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            } else if (avatarOverlay) {
+                avatarOverlay.classList.add('active');
+            }
+        });
+    }
+    if (avatarOverlay) {
+        avatarOverlay.addEventListener('click', function() {
+            avatarOverlay.classList.remove('active');
+        });
     }
 
     // --- Left toggle click ---

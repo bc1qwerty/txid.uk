@@ -328,7 +328,36 @@ details[open] > *:not(summary) {
 
 /* Collapsed states */
 .sidebar-column.sidebar-left.collapsed {
-  transform: translateX(-15rem);
+  width: 3.5rem;
+  transform: none;
+}
+
+.sidebar-column.sidebar-left.collapsed .sidebar {
+  overflow: hidden;
+  padding: 0.75rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebar-column.sidebar-left.collapsed .sidebar > *:not(.sidebar-profile) {
+  display: none;
+}
+
+.sidebar-column.sidebar-left.collapsed .sidebar-profile {
+  cursor: pointer;
+  align-items: center;
+  gap: 0;
+}
+
+.sidebar-column.sidebar-left.collapsed .sidebar-profile .sidebar-name,
+.sidebar-column.sidebar-left.collapsed .sidebar-profile .sidebar-tagline,
+.sidebar-column.sidebar-left.collapsed .sidebar-profile .sidebar-clock {
+  display: none;
+}
+
+.sidebar-column.sidebar-left.collapsed .sidebar-toggle {
+  right: -1.25rem;
 }
 
 .sidebar-column.sidebar-right.collapsed {
@@ -372,6 +401,15 @@ details[open] > *:not(summary) {
 /* Flip arrows when collapsed */
 .sidebar-column.collapsed .sidebar-toggle svg {
   transform: rotate(180deg);
+}
+
+/* Left sidebar: clicking avatar opens sidebar */
+.sidebar-column.sidebar-left.collapsed .sidebar-avatar {
+  transition: transform 0.2s ease;
+}
+
+.sidebar-column.sidebar-left.collapsed .sidebar-avatar:hover {
+  transform: scale(1.1);
 }
 
 /* --- Right sidebar nav --- */
@@ -462,6 +500,33 @@ details[open] > *:not(summary) {
   border-radius: 9999px;
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-avatar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar-avatar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sidebar-avatar-overlay svg {
+  width: 12rem;
+  height: 12rem;
 }
 
 .sidebar-name {
@@ -1498,7 +1563,7 @@ body.theme-transition *::after {
 }
 
 body.sidebar-collapsed .page-layout {
-  margin-left: 2rem;
+  margin-left: 5rem;
 }
 
 body.sidebar-right-collapsed .page-layout {
