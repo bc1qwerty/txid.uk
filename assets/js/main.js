@@ -107,12 +107,14 @@ function throttle(fn, delay) {
                 }
             } else if (avatarOverlay) {
                 avatarOverlay.classList.add('active');
+                avatar.setAttribute('aria-expanded', 'true');
             }
         });
     }
     if (avatarOverlay) {
         avatarOverlay.addEventListener('click', function() {
             avatarOverlay.classList.remove('active');
+            if (avatar) avatar.setAttribute('aria-expanded', 'false');
         });
     }
 
@@ -216,7 +218,7 @@ fadeSections.forEach(function(section) { observer.observe(section); });
     try {
         var raw = JSON.parse(document.getElementById('site-data').textContent);
         items = [].concat(raw.projects || [], raw.links || [], raw.social || [], raw.posts || [], raw.books || [], raw.stack || [], raw.bookmarks || [], raw.ideas || [], raw.pages || []);
-    } catch(e) { console.error('Failed to parse site-data:', e); return; }
+    } catch(e) { return; }
 
     var activeIndex = 0;
     var filtered = [];
@@ -490,7 +492,7 @@ initClock('sidebarClock');
         var idx = Math.floor(Math.random() * quotes.length);
         textEl.textContent = '\u201C' + quotes[idx].text + '\u201D';
         authorEl.textContent = '\u2014 ' + quotes[idx].author;
-    } catch(e) { console.error('Failed to parse quote-data:', e); }
+    } catch(e) { /* silent */ }
 })();
 
 // ── Bitcoin Widget ──
@@ -505,8 +507,8 @@ initClock('sidebarClock');
         fetch('https://mempool.space/api/v1/prices', { signal: ctrl1.signal })
             .then(function(r) { clearTimeout(t1); if (!r.ok) throw new Error(r.status); return r.json(); })
             .then(function(data) {
-                if (data && data.USD) {
-                    priceEl.textContent = '$' + Number(data.USD).toLocaleString();
+                if (data && typeof data.USD === 'number') {
+                    priceEl.textContent = '$' + data.USD.toLocaleString();
                 }
             })
             .catch(function() { clearTimeout(t1); });

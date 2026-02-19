@@ -4,7 +4,7 @@
     <a class="book-card" href="{{ with .slug }}/books/{{ . }}/{{ else }}#{{ end }}">
         <div class="book-cover">
             {{ with .cover }}
-            <img src="{{ . }}" alt="{{ $book.name }} — {{ $book.author }}" loading="lazy" width="100" height="150" style="width:100%;height:auto;aspect-ratio:2/3;">
+            <img src="{{ . }}" alt="{{ $book.name }} — {{ $book.author }}" loading="lazy" width="100" height="150">
             {{ else }}
             <span class="book-cover-placeholder">{{ $book.name }}</span>
             {{ end }}

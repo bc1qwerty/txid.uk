@@ -1,6 +1,6 @@
 ---
 title: "오스트리아 경제학이란"
-date: 2026-02-17
+date: 2026-02-17T10:00:00+09:00
 description: "카를 멩거에서 미제스, 하이에크까지 — 오스트리아 학파 경제학의 핵심 개념을 소개합니다."
 tags: ["austrian-economics"]
 draft: false

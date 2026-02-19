@@ -17,7 +17,7 @@
     <div class="mt-4 flex gap-6 items-start">
       {{ with .Params.cover }}
       <picture>
-        <source srcset="{{ . | replace ".jpg" ".webp" | replace ".jpeg" ".webp" }}" type="image/webp">
+        <source srcset="{{ . | replaceRE `(?i)\\.jpe?g$` ".webp" | replaceRE `(?i)\\.png$` ".webp" }}" type="image/webp">
         <img class="w-32 rounded-lg shadow-lg flex-shrink-0" src="{{ . }}" alt="{{ $.Title }} — {{ $.Params.author }}" width="128" height="192" loading="lazy">
       </picture>
       {{ end }}

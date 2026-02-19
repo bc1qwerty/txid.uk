@@ -1,6 +1,6 @@
 ---
 title: "화폐의 역사: 물물교환에서 비트코인까지"
-date: 2026-02-16
+date: 2026-02-16T10:00:00+09:00
 description: "화폐가 어떻게 진화해왔는지, 그리고 비트코인이 이 역사에서 어떤 위치에 있는지 알아봅니다."
 tags: ["bitcoin", "austrian-economics"]
 draft: false

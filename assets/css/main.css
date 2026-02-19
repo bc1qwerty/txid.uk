@@ -954,6 +954,19 @@ details[open] > *:not(summary) {
   white-space: nowrap;
 }
 
+.tile-empty {
+  font-size: 0.8rem;
+  color: #6b7280;
+  padding: 0.75rem 0;
+}
+
+.reading-cover {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 0.375rem;
+}
+
 .tile-more {
   display: inline-flex;
   align-items: center;
@@ -1092,7 +1105,7 @@ details[open] > *:not(summary) {
 }
 
 .book-card:hover {
-  transform: none;
+  transform: translateY(-2px);
 }
 
 .book-cover {

@@ -10,6 +10,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -20,6 +21,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
   <meta name="msapplication-TileColor" content="#f7931a">
   <meta name="msapplication-TileImage" content="/mstile-144x144.png">
 
@@ -54,7 +56,7 @@
   {{ if .IsHome -}}
   {"@context":"https://schema.org","@type":"WebSite","name":{{ site.Title | jsonify }},"url":{{ site.BaseURL | jsonify }},"description":{{ site.Params.description | jsonify }},"publisher":{"@type":"Organization","name":{{ site.Params.author | jsonify }},"logo":"{{ site.BaseURL }}favicon.svg"}}
   {{- else if .IsPage -}}
-  {"@context":"https://schema.org","@type":"Article","headline":{{ .Title | jsonify }},"description":{{ $description | jsonify }},"datePublished":{{ .Date.Format "2006-01-02" | jsonify }},"image":"{{ $ogImage }}","author":{"@type":"Person","name":{{ site.Params.author | jsonify }}},"url":{{ .Permalink | jsonify }}}
+  {"@context":"https://schema.org","@type":"Article","headline":{{ .Title | jsonify }},"description":{{ $description | jsonify }},"datePublished":{{ .Date.Format "2006-01-02" | jsonify }},"image":"{{ $ogImage }}","author":{"@type":"Person","name":{{ site.Params.author | jsonify }},"url":{{ site.BaseURL | jsonify }}},"url":{{ .Permalink | jsonify }}}
   {{- end }}
   </script>
 

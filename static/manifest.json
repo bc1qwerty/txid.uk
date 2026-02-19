@@ -1,0 +1,14 @@
+{
+  "name": "TXID.uk",
+  "short_name": "TXID",
+  "description": "비트코인, 오스트리아 경제학, 자유주의를 배우는 곳",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#f7931a",
+  "icons": [
+    { "src": "/favicon-32x32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/mstile-144x144.png", "sizes": "144x144", "type": "image/png" }
+  ]
+}
