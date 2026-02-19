@@ -1,7 +1,7 @@
 ---
 title: "비트코인 화폐의 미래"
 slug: "the-fiat-standard"
-date: 2026-01-02
+date: 2026-01-02T10:00:00+09:00
 author: "사이페딘 아모스"
 cover: "/images/books/비트코인 화폐의 미래.jpg"
 originalTitle: "The Fiat Standard"

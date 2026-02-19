@@ -1,7 +1,7 @@
 ---
 title: "무엇이 자본주의를 망가뜨렸나"
 slug: "what-went-wrong-with-capitalism"
-date: 2026-02-18
+date: 2026-02-18T10:00:00+09:00
 author: "루치르 샤르마"
 cover: "/images/books/무엇이 자본주의를 망가뜨렸나.jpg"
 originalTitle: "What Went Wrong with Capitalism"

@@ -1,7 +1,7 @@
 ---
 title: "사토시의 서"
 slug: "the-book-of-satoshi"
-date: 2026-01-03
+date: 2026-01-03T10:00:00+09:00
 author: "필 샴페인"
 cover: "/images/books/사토시의 서.jpg"
 originalTitle: "The Book of Satoshi"

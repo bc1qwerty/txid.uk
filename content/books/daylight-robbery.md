@@ -1,7 +1,7 @@
 ---
 title: "세금의 세계사"
 slug: "daylight-robbery"
-date: 2026-01-07
+date: 2026-01-07T10:00:00+09:00
 author: "도미닉 프리스비"
 cover: "/images/books/세금의 세계사.jpg"
 originalTitle: "Daylight Robbery"

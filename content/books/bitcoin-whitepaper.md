@@ -1,7 +1,7 @@
 ---
 title: "비트코인 백서"
 slug: "bitcoin-whitepaper"
-date: 2026-01-06
+date: 2026-01-06T10:00:00+09:00
 author: "사토시 나카모토 (필레몬 해설)"
 cover: "/images/books/비트코인 백서.jpg"
 originalTitle: "Bitcoin: A Peer-to-Peer Electronic Cash System"

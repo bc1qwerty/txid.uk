@@ -1,7 +1,7 @@
 ---
 title: "왜 달러는 비트코인을 싫어하는가"
 slug: "the-bitcoin-standard"
-date: 2026-01-01
+date: 2026-01-01T10:00:00+09:00
 author: "사이페딘 아모스"
 cover: "/images/books/왜 달러는 비트코인을 싫어하는가.jpg"
 originalTitle: "The Bitcoin Standard"

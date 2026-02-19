@@ -1,7 +1,7 @@
 ---
 title: "비트코인 사용 가이드"
 slug: "bitcoin-guide"
-date: 2026-01-09
+date: 2026-01-09T10:00:00+09:00
 author: "필레몬"
 cover: "/images/books/비트코인 사용 가이드.jpg"
 originalTitle: ""

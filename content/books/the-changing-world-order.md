@@ -1,7 +1,7 @@
 ---
 title: "빅 사이클"
 slug: "the-changing-world-order"
-date: 2026-01-11
+date: 2026-01-11T10:00:00+09:00
 author: "레이 달리오"
 cover: "/images/books/빅 사이클.jpg"
 originalTitle: "How Countries Go Broke: The Big Cycle"

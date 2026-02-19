@@ -1,7 +1,7 @@
 ---
 title: "사피엔스"
 slug: "sapiens"
-date: 2026-01-05
+date: 2026-01-05T10:00:00+09:00
 author: "유발 노아 하라리"
 cover: "/images/books/사피엔스.jpg"
 originalTitle: "Sapiens"

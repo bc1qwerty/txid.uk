@@ -1,7 +1,7 @@
 ---
 title: "원칙"
 slug: "principles"
-date: 2026-01-08
+date: 2026-01-08T10:00:00+09:00
 author: "레이 달리오"
 cover: "/images/books/원칙.jpg"
 originalTitle: "Principles"

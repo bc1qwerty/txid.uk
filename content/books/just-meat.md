@@ -1,7 +1,7 @@
 ---
 title: "단지, 소고기"
 slug: "just-meat"
-date: 2026-02-18
+date: 2026-02-18T10:00:00+09:00
 author: "홍지수"
 cover: "/images/books/단지 소고기.jpg"
 originalTitle: ""

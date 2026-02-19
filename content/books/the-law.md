@@ -1,7 +1,7 @@
 ---
 title: "법"
 slug: "the-law"
-date: 2026-02-18
+date: 2026-02-18T10:00:00+09:00
 author: "프레데릭 바스티아"
 cover: "/images/books/법.jpg"
 originalTitle: "The Law"

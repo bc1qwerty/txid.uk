@@ -1,4 +1,5 @@
 // ── Theme Toggle ──
+var THEME_COLORS = { dark: '#09090b', light: '#fafafa' };
 var themeToggle = document.getElementById('themeToggle');
 var html = document.documentElement;
 
@@ -10,7 +11,7 @@ if (savedTheme !== 'dark' && savedTheme !== 'light') {
 html.setAttribute('data-theme', savedTheme);
 (function() {
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = savedTheme === 'dark' ? '#09090b' : '#fafafa';
+    if (meta) meta.content = THEME_COLORS[savedTheme];
 })();
 
 if (themeToggle) themeToggle.addEventListener('click', function() {
@@ -20,7 +21,7 @@ if (themeToggle) themeToggle.addEventListener('click', function() {
     html.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = next === 'dark' ? '#09090b' : '#fafafa';
+    if (meta) meta.content = THEME_COLORS[next];
     setTimeout(function() {
         document.body.classList.remove('theme-transition');
     }, 400);
@@ -332,7 +333,7 @@ fadeSections.forEach(function(section) { observer.observe(section); });
             .catch(function() {
                 clearTimeout(timer);
                 dot.classList.remove('status-dot-live');
-                dot.style.background = '#ef4444';
+                dot.style.background = 'var(--color-red-500, #ef4444)';
                 dot.style.animation = 'none';
             });
     });
@@ -413,7 +414,7 @@ initClock('sidebarClock');
         document.documentElement.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.content = next === 'dark' ? '#09090b' : '#fafafa';
+        if (meta) meta.content = THEME_COLORS[next];
         setTimeout(function() {
             document.body.classList.remove('theme-transition');
         }, 400);

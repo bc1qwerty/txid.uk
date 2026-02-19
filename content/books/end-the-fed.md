@@ -1,7 +1,7 @@
 ---
 title: "우리는 왜 매번 경제위기를 겪어야 하는가?"
 slug: "end-the-fed"
-date: 2026-01-04
+date: 2026-01-04T10:00:00+09:00
 author: "론 폴"
 cover: "/images/books/우리는 왜 매번 경제위기를 겪어야 하는가.jpg"
 originalTitle: "End the Fed"

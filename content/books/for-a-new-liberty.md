@@ -1,7 +1,7 @@
 ---
 title: "새로운 자유를 찾아서"
 slug: "for-a-new-liberty"
-date: 2026-01-12
+date: 2026-01-12T10:00:00+09:00
 author: "머리 로스바드"
 cover: "/images/books/새로운 자유를 찾아서.jpg"
 originalTitle: "For a New Liberty"

@@ -1,7 +1,7 @@
 ---
 title: "호모데우스"
 slug: "homo-deus"
-date: 2026-01-10
+date: 2026-01-10T10:00:00+09:00
 author: "유발 노아 하라리"
 cover: "/images/books/호모데우스.jpg"
 originalTitle: "Homo Deus"
