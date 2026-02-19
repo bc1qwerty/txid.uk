@@ -1,7 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@700');
-  </style>
-  <rect width="64" height="64" rx="10" fill="#030712"/>
-  <text x="32" y="45" font-family="'Space Mono', monospace" font-weight="700" font-size="30" fill="#f7931a" text-anchor="middle">TX</text>
+  <rect width="64" height="64" rx="14" fill="#09090b"/>
+  <!-- Seated body silhouette -->
+  <path d="M22 38L20 50Q32 52 44 50L42 38Q32 35 22 38z" fill="#d1d5db"/>
+  <!-- Left sleeve -->
+  <path d="M20 40Q17 44 20 49L26 47Q23 44 22 40z" fill="#d1d5db"/>
+  <!-- Right sleeve -->
+  <path d="M44 40Q47 44 44 49L38 47Q41 44 42 40z" fill="#d1d5db"/>
+  <!-- Legs -->
+  <path d="M18 50Q24 47 32 48Q40 47 46 50Q40 54 32 55Q24 54 18 50z" fill="#d1d5db"/>
+  <ellipse cx="23" cy="51" rx="6" ry="3.5" fill="#d1d5db"/>
+  <ellipse cx="41" cy="51" rx="6" ry="3.5" fill="#d1d5db"/>
+  <!-- Head -->
+  <circle cx="32" cy="30" r="5" fill="#d1d5db"/>
+  <!-- Hat (삿갓) -->
+  <path d="M32 16Q26 22 14 26h36Q38 22 32 16z" fill="#f7931a"/>
+  <ellipse cx="32" cy="26" rx="18" ry="2" fill="#f7931a" opacity="0.7"/>
 </svg>

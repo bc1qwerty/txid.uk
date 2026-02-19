@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#09090b"/>
+
+  <!-- Subtle grid pattern -->
+  <line x1="0" y1="0" x2="1200" y2="630" stroke="#1a1a1f" stroke-width="0.5"/>
+  <line x1="1200" y1="0" x2="0" y2="630" stroke="#1a1a1f" stroke-width="0.5"/>
+  <rect x="40" y="40" width="1120" height="550" rx="24" fill="none" stroke="#1a1a1f" stroke-width="1"/>
+
+  <!-- Zen master avatar (large, right side) -->
+  <g transform="translate(820, 100)" opacity="0.12">
+    <path d="M150 210L130 340Q200 360 270 340L250 210Q200 190 150 210z" fill="#f7931a"/>
+    <path d="M130 225Q110 265 130 330L165 315Q145 270 150 225z" fill="#f7931a"/>
+    <path d="M270 225Q290 265 270 330L235 315Q255 270 250 225z" fill="#f7931a"/>
+    <path d="M110 340Q150 315 200 320Q250 315 290 340Q250 370 200 375Q150 370 110 340z" fill="#f7931a"/>
+    <ellipse cx="155" cy="345" rx="40" ry="24" fill="#f7931a"/>
+    <ellipse cx="245" cy="345" rx="40" ry="24" fill="#f7931a"/>
+    <circle cx="200" cy="170" r="35" fill="#f7931a"/>
+    <path d="M200 100Q165 140 90 165h220Q235 140 200 100z" fill="#f7931a"/>
+    <ellipse cx="200" cy="165" rx="110" ry="14" fill="#f7931a" opacity="0.7"/>
+  </g>
+
+  <!-- Bitcoin orange accent bar -->
+  <rect x="80" y="200" width="6" height="120" rx="3" fill="#f7931a"/>
+
+  <!-- Title: TXID.uk -->
+  <text x="120" y="260" font-family="'Space Mono', 'SF Mono', monospace" font-weight="700" font-size="72" fill="#f7931a" letter-spacing="-2">TXID<tspan fill="#6b7280">.uk</tspan></text>
+
+  <!-- Tagline -->
+  <text x="120" y="310" font-family="'Pretendard Variable', 'Apple SD Gothic Neo', sans-serif" font-weight="400" font-size="28" fill="#9ca3af">비트코인, 오스트리아 경제학, 그리고 코드.</text>
+
+  <!-- Subtitle -->
+  <text x="120" y="370" font-family="'Pretendard Variable', 'Apple SD Gothic Neo', sans-serif" font-weight="400" font-size="20" fill="#4b5563">비트코인과 자유주의를 배우는 곳</text>
+
+  <!-- Bottom bar -->
+  <rect x="80" y="540" width="1040" height="1" fill="#1a1a1f"/>
+  <text x="80" y="575" font-family="'Space Mono', monospace" font-weight="400" font-size="16" fill="#4b5563">txid.uk</text>
+  <circle cx="1100" cy="570" r="8" fill="none" stroke="#f7931a" stroke-width="1.5" opacity="0.5"/>
+</svg>
