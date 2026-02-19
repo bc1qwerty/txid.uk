@@ -211,6 +211,12 @@ publishDir = 'public'
   cover = '/images/books/1984.jpg'
   slug = '1984'
 
+[[params.books]]
+  name = '비트코인 블록사이즈 전쟁'
+  author = '조너선 비어'
+  cover = '/images/books/비트코인 블록사이즈 전쟁.jpg'
+  slug = 'the-blocksize-war'
+
 [[params.stack]]
   name = 'Hugo'
 
