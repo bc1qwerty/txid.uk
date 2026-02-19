@@ -596,3 +596,90 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// ── Concept Popover ──
+(function() {
+    var active = null; // { el, popover }
+
+    function esc(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function close() {
+        if (!active) return;
+        active.popover.remove();
+        active = null;
+    }
+
+    function open(link) {
+        close();
+        var title = link.dataset.conceptTitle;
+        var desc = link.dataset.conceptDesc;
+        if (!title || !desc) return;
+
+        var pop = document.createElement('div');
+        pop.className = 'concept-popover';
+        pop.innerHTML =
+            '<button class="concept-popover-close" aria-label="닫기">&times;</button>' +
+            '<div class="concept-popover-title">' + esc(title) + '</div>' +
+            '<div class="concept-popover-desc">' + esc(desc) + '</div>' +
+            '<a class="concept-popover-link" href="' + link.href + '">자세히 보기 &rarr;</a>';
+
+        pop.querySelector('.concept-popover-close').addEventListener('click', function(e) {
+            e.stopPropagation();
+            close();
+        });
+
+        document.body.appendChild(pop);
+
+        // 위치 계산
+        var rect = link.getBoundingClientRect();
+        var scrollY = window.scrollY;
+        var scrollX = window.scrollX;
+        var top = rect.bottom + scrollY + 6;
+        var left = rect.left + scrollX;
+
+        // 오른쪽 넘침 방지
+        var popW = pop.offsetWidth;
+        if (left + popW > window.innerWidth - 16) {
+            left = window.innerWidth - popW - 16 + scrollX;
+        }
+        if (left < 16) left = 16;
+
+        // 아래쪽 넘침 시 위로 표시
+        var popH = pop.offsetHeight;
+        if (rect.bottom + popH + 6 > window.innerHeight) {
+            top = rect.top + scrollY - popH - 6;
+        }
+
+        pop.style.top = top + 'px';
+        pop.style.left = left + 'px';
+
+        active = { el: link, popover: pop };
+    }
+
+    // 이벤트 위임: data-concept-title 가진 링크 클릭
+    document.addEventListener('click', function(e) {
+        var link = e.target.closest('a[data-concept-title]');
+        if (link) {
+            e.preventDefault();
+            if (active && active.el === link) {
+                close();
+            } else {
+                open(link);
+            }
+            return;
+        }
+        // 팝오버 외부 클릭 시 닫기
+        if (active && !e.target.closest('.concept-popover')) {
+            close();
+        }
+    });
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') close();
+    });
+})();
