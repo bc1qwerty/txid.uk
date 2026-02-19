@@ -35,26 +35,27 @@
     </button>
   </nav>
 
-  <!-- Mobile Menu -->
-  <div id="mobile-menu" class="hidden md:hidden border-t border-gray-800/50 bg-gray-950/95 backdrop-blur-md">
-    <ul class="px-4 py-4 space-y-1">
+  <!-- Mobile Menu (overlay dropdown) -->
+  <div id="mobile-menu" class="mobile-menu hidden md:hidden">
+    <ul class="mobile-menu-list">
       {{ range .Site.Menus.main }}
       <li>
-        <a href="{{ .URL }}" class="block py-2 px-3 rounded-lg text-gray-400 hover:text-white hover:bg-gray-900 transition-colors">
+        <a href="{{ .URL }}" class="mobile-menu-link">
           {{ .Name }}
         </a>
       </li>
       {{ end }}
     </ul>
-    <div class="px-4 pb-4 pt-2 border-t border-gray-800/50 flex items-center gap-3">
-      <button class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-900 transition-colors text-sm" id="mobileSearchBtn" aria-label="검색">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <div class="mobile-menu-footer">
+      <button class="mobile-menu-link" id="mobileSearchBtn" aria-label="검색">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         검색
       </button>
-      <button class="theme-toggle flex items-center gap-2 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-900 transition-colors text-sm" id="mobileThemeToggle" aria-label="테마 전환">
+      <button class="mobile-menu-link" id="mobileThemeToggle" aria-label="테마 전환">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
         테마
       </button>
     </div>
   </div>
+  <div id="mobile-menu-backdrop" class="mobile-menu-backdrop hidden md:hidden"></div>
 </header>

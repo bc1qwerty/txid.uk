@@ -562,43 +562,46 @@ initClock('sidebarClock');
     });
 })();
 
-// ── Mobile Menu Toggle (from txid.uk) ──
+// ── Mobile Menu Toggle ──
 document.addEventListener('DOMContentLoaded', function() {
     var toggle = document.getElementById('menu-toggle');
     var menu = document.getElementById('mobile-menu');
+    var backdrop = document.getElementById('mobile-menu-backdrop');
     var iconOpen = document.getElementById('menu-icon-open');
     var iconClose = document.getElementById('menu-icon-close');
-    if (toggle && menu) {
-        var previousFocus = null;
-        toggle.addEventListener('click', function() {
-            var isOpen = !menu.classList.contains('hidden');
-            if (isOpen) {
-                // 메뉴 닫기
-                menu.classList.add('hidden');
-                if (iconOpen) iconOpen.classList.remove('hidden');
-                if (iconClose) iconClose.classList.add('hidden');
-                toggle.setAttribute('aria-expanded', 'false');
-                if (previousFocus) previousFocus.focus();
-            } else {
-                // 메뉴 열기
-                previousFocus = document.activeElement;
-                menu.classList.remove('hidden');
-                if (iconOpen) iconOpen.classList.add('hidden');
-                if (iconClose) iconClose.classList.remove('hidden');
-                toggle.setAttribute('aria-expanded', 'true');
-                var firstMenuItem = menu.querySelector('a, button');
-                if (firstMenuItem) firstMenuItem.focus();
-            }
-        });
-        // ESC로 메뉴 닫기
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && !menu.classList.contains('hidden')) {
-                menu.classList.add('hidden');
-                if (iconOpen) iconOpen.classList.remove('hidden');
-                if (iconClose) iconClose.classList.add('hidden');
-                toggle.setAttribute('aria-expanded', 'false');
-                toggle.focus();
-            }
-        });
+    if (!toggle || !menu) return;
+
+    function closeMenu() {
+        menu.classList.add('hidden');
+        if (backdrop) backdrop.classList.add('hidden');
+        if (iconOpen) iconOpen.classList.remove('hidden');
+        if (iconClose) iconClose.classList.add('hidden');
+        toggle.setAttribute('aria-expanded', 'false');
     }
+
+    function openMenu() {
+        menu.classList.remove('hidden');
+        if (backdrop) backdrop.classList.remove('hidden');
+        if (iconOpen) iconOpen.classList.add('hidden');
+        if (iconClose) iconClose.classList.remove('hidden');
+        toggle.setAttribute('aria-expanded', 'true');
+    }
+
+    toggle.addEventListener('click', function() {
+        menu.classList.contains('hidden') ? openMenu() : closeMenu();
+    });
+
+    if (backdrop) backdrop.addEventListener('click', closeMenu);
+
+    // 메뉴 링크 클릭 시 자동 닫기
+    menu.addEventListener('click', function(e) {
+        if (e.target.closest('a[href]')) closeMenu();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !menu.classList.contains('hidden')) {
+            closeMenu();
+            toggle.focus();
+        }
+    });
 });
