@@ -51,6 +51,19 @@
 </div>
 {{ end }}
 
+<!-- Projects -->
+<div class="sidebar-section sidebar-projects">
+    <span class="sidebar-label">프로젝트</span>
+    <div class="sidebar-project-list">
+        {{ range site.Params.projects }}
+        <a href="{{ .url }}" class="sidebar-project-item"{{ if .external }} target="_blank" rel="noopener noreferrer"{{ end }}>
+            <span class="sidebar-project-name">{{ .name }}</span>
+            {{ with .description }}<span class="sidebar-project-desc">{{ . }}</span>{{ end }}
+        </a>
+        {{ end }}
+    </div>
+</div>
+
 <!-- Links -->
 <div class="sidebar-section sidebar-links">
     <span class="sidebar-label">링크</span>

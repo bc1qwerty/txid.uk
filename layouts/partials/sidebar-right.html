@@ -1,3 +1,18 @@
+<!-- 요즘 -->
+{{ with site.Params.now }}
+<div class="sidebar-section sidebar-now">
+    <span class="sidebar-label">{{ .title | default "요즘" }}</span>
+    <ul class="sidebar-now-list">
+        {{ range .items }}
+        <li>{{ . }}</li>
+        {{ end }}
+    </ul>
+    {{ with .updated }}
+    <span class="sidebar-now-updated">업데이트 {{ . }}</span>
+    {{ end }}
+</div>
+{{ end }}
+
 <!-- Quick Navigation -->
 <div class="sidebar-section">
     <span class="sidebar-label">바로가기</span>
