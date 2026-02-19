@@ -163,6 +163,54 @@ publishDir = 'public'
   cover = '/images/books/무엇이 자본주의를 망가뜨렸나.jpg'
   slug = 'what-went-wrong-with-capitalism'
 
+[[params.books]]
+  name = '정부는 우리 화폐에 무슨 일을 해왔는가'
+  author = '머리 로스바드'
+  cover = '/images/books/정부는 우리 화폐에 무슨 일을 해왔는가.jpg'
+  slug = 'what-has-government-done-to-our-money'
+
+[[params.books]]
+  name = '돈의 심리학'
+  author = '모건 하우절'
+  cover = '/images/books/돈의 심리학.jpg'
+  slug = 'psychology-of-money'
+
+[[params.books]]
+  name = '레이어드 머니'
+  author = '닉 바티아'
+  cover = '/images/books/레이어드 머니 돈이 진화한다.jpg'
+  slug = 'layered-money'
+
+[[params.books]]
+  name = '역사는 돈이다'
+  author = '홍춘욱'
+  cover = '/images/books/역사는 돈이다.jpg'
+  slug = 'history-is-money'
+
+[[params.books]]
+  name = '오스트리아학파의 경기변동 이론'
+  author = '루트비히 폰 미제스 외'
+  cover = '/images/books/오스트리아학파의 경기변동 이론.jpg'
+  slug = 'austrian-business-cycle-theory'
+
+[[params.books]]
+  name = '루트비히 폰 미제스'
+  author = '외르크 귀도 휠스만'
+  cover = '/images/books/루트비히 폰 미제스.jpg'
+  slug = 'ludwig-von-mises'
+
+[[params.books]]
+  name = '비트코인 핸드북'
+  author = '얀 프리드만'
+  cover = '/images/books/비트코인 핸드북.jpg'
+  slug = 'bitcoin-handbook'
+
+[[params.books]]
+  name = '1984'
+  author = '조지 오웰'
+  cover = '/images/books/1984.jpg'
+  slug = '1984'
+
 [[params.stack]]
   name = 'Hugo'
 
