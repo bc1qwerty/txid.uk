@@ -1,0 +1,9 @@
+<h2 class="tile-title">{{ site.Params.now.title | default "Now" }}</h2>
+<ul class="now-list">
+    {{ range site.Params.now.items }}
+    <li>{{ . }}</li>
+    {{ end }}
+</ul>
+{{ with site.Params.now.updated }}
+<span class="now-updated">업데이트 {{ . }}</span>
+{{ end }}

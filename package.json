@@ -1,0 +1,12 @@
+{
+  "name": "txid-uk",
+  "private": true,
+  "scripts": {
+    "build": "npx @tailwindcss/cli -i ./assets/css/main.css -o ./assets/css/compiled.css --minify",
+    "dev": "npx @tailwindcss/cli -i ./assets/css/main.css -o ./assets/css/compiled.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0",
+    "@tailwindcss/typography": "^0.5.16"
+  }
+}

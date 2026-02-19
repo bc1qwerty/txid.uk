@@ -1,0 +1,17 @@
+<h2 class="tile-title">{{ site.Params.blog.title | default "최근 게시물" }}</h2>
+<div class="tile-list">
+    {{ $maxPosts := site.Params.blog.maxPosts | default 3 }}
+    {{ range first $maxPosts (where site.RegularPages "Section" "blog").ByDate.Reverse }}
+    <a href="{{ .RelPermalink }}" class="tile-item">
+        {{ $months := slice "" "1월" "2월" "3월" "4월" "5월" "6월" "7월" "8월" "9월" "10월" "11월" "12월" }}
+        <time class="tile-item-date">{{ index $months (int .Date.Month) }} {{ .Date.Day }}일</time>
+        <span class="tile-item-name">{{ .Title }}</span>
+        <span class="arrow">&rarr;</span>
+    </a>
+    {{ else }}
+    <p class="tile-empty">아직 게시물이 없습니다.</p>
+    {{ end }}
+</div>
+<a href="{{ site.Params.blog.moreURL | default "/blog/" }}" class="tile-more">
+    {{ site.Params.blog.moreText | default "전체 보기" }} &rarr;
+</a>

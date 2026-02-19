@@ -2,9 +2,11 @@
 public/
 resources/
 
+# Tailwind compiled output
+assets/css/compiled.css
+
 # Node modules
 node_modules/
-themes/txid/node_modules/
 
 # Hugo lock
 .hugo_build.lock

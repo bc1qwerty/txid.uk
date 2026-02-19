@@ -1,0 +1,10 @@
+<h2 class="tile-title">북마크</h2>
+<div class="tile-chips">
+    {{ range site.Params.bookmarks }}
+    <a href="{{ .url }}" class="chip" target="_blank" rel="noopener noreferrer">
+        {{ .name }}
+        {{ with .type }}<span class="chip-type">{{ . }}</span>{{ end }}
+        <span class="text-gray-600">&nearr;</span>
+    </a>
+    {{ end }}
+</div>

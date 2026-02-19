@@ -1,0 +1,1605 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* ============================================================
+   THEME TOKENS
+   ============================================================ */
+@theme {
+  --color-bitcoin: #f7931a;
+  --color-bitcoin-light: #ffab40;
+  --color-bitcoin-dark: #c47515;
+  --color-surface: #111113;
+  --color-surface-raised: #18181b;
+  --font-sans: 'Pretendard Variable', 'Pretendard', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
+  --font-display: 'Outfit', sans-serif;
+}
+
+/* ============================================================
+   1. GLOBAL RESET
+   ============================================================ */
+*, *::before, *::after {
+  font-family: inherit;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  background-color: var(--color-surface);
+  color: #e5e7eb;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography plugin font override */
+.prose {
+  font-family: var(--font-sans);
+}
+.prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  font-family: var(--font-mono);
+}
+
+/* ============================================================
+   2. LOGO BRAND
+   ============================================================ */
+.logo-brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.1rem;
+  text-decoration: none;
+}
+
+.logo-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--color-bitcoin);
+  transition: color 0.2s ease;
+}
+
+.logo-suffix {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: #6b7280;
+  transition: color 0.2s ease;
+}
+
+.logo-brand:hover .logo-name {
+  color: var(--color-bitcoin-light);
+}
+
+.logo-brand:hover .logo-suffix {
+  color: #9ca3af;
+}
+
+/* ============================================================
+   3. LEVEL BADGES
+   ============================================================ */
+.level {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.2em 0.55em;
+  border-radius: 9999px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.level-입문 {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.level-중급 {
+  background-color: rgba(250, 204, 21, 0.15);
+  color: #facc15;
+}
+
+.level-심화 {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.level-guide {
+  display: block;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+/* ============================================================
+   4. FAQ ACCORDION
+   ============================================================ */
+details summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 0.5rem;
+  transition: transform 0.2s ease;
+  color: #6b7280;
+  font-size: 0.85em;
+}
+
+details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+details[open] > *:not(summary) {
+  animation: faq-open 0.25s ease-out;
+}
+
+@keyframes faq-open {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   5. SCROLL PROGRESS BAR
+   ============================================================ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 0.125rem;
+  background-color: var(--color-bitcoin);
+  z-index: 50;
+  width: 0%;
+  transition: width 0.1s linear;
+  pointer-events: none;
+}
+
+/* ============================================================
+   6. COMMAND PALETTE
+   ============================================================ */
+.cmd-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 20vh;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.cmd-palette {
+  width: 100%;
+  max-width: 36rem;
+  background-color: var(--color-surface);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.cmd-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background-color: transparent;
+  color: #fff;
+  font-size: 0.95rem;
+  border: none;
+  outline: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cmd-input::placeholder {
+  color: #6b7280;
+}
+
+.cmd-results {
+  max-height: 20rem;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.cmd-results::-webkit-scrollbar {
+  width: 4px;
+}
+
+.cmd-results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cmd-results::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.cmd-result {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: #d1d5db;
+  font-size: 0.875rem;
+  transition: background-color 0.15s ease;
+}
+
+.cmd-result:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.cmd-result.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-bitcoin);
+}
+
+.cmd-group-header {
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 0.75rem 0.25rem;
+  font-weight: 600;
+}
+
+.cmd-footer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.7rem;
+  color: #6b7280;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cmd-footer kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.25rem;
+  color: #9ca3af;
+}
+
+/* ============================================================
+   7. SIDEBAR
+   ============================================================ */
+
+/* --- Column layout (fixed to browser edges) --- */
+.sidebar-column {
+  position: fixed;
+  top: 4rem;
+  bottom: 0;
+  width: 15rem;
+  z-index: 30;
+  background-color: var(--color-surface);
+  overflow: visible;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-column.sidebar-left {
+  left: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-column.sidebar-right {
+  right: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-column .sidebar {
+  height: 100%;
+  overflow-y: auto;
+  padding: 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+
+.sidebar-column .sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-column .sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-column .sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+}
+
+/* Collapsed states */
+.sidebar-column.sidebar-left.collapsed {
+  transform: translateX(-15rem);
+}
+
+.sidebar-column.sidebar-right.collapsed {
+  transform: translateX(15rem);
+}
+
+/* --- Toggle button (left sidebar: tab on right edge) --- */
+.sidebar-toggle {
+  position: absolute;
+  top: 1rem;
+  right: -1.25rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 2.5rem;
+  border-radius: 0 0.375rem 0.375rem 0;
+  background-color: var(--color-surface-raised);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+/* --- Toggle button (right sidebar: tab on left edge) --- */
+.sidebar-toggle-right {
+  right: auto;
+  left: -1.25rem;
+  border-radius: 0.375rem 0 0 0.375rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: none;
+}
+
+.sidebar-toggle:hover {
+  color: var(--color-bitcoin);
+  background-color: rgba(247, 147, 26, 0.08);
+}
+
+/* Flip arrows when collapsed */
+.sidebar-column.collapsed .sidebar-toggle svg {
+  transform: rotate(180deg);
+}
+
+/* --- Right sidebar nav --- */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-nav-item {
+  display: block;
+  padding: 0.3rem 0;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.sidebar-nav-item:hover {
+  color: var(--color-bitcoin);
+}
+
+/* --- Right sidebar recent items --- */
+.sidebar-recent {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  font-size: 0.8rem;
+  color: #d1d5db;
+  text-decoration: none;
+  transition: color 0.15s;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.sidebar-recent-item:last-child {
+  border-bottom: none;
+}
+
+.sidebar-recent-item:hover {
+  color: var(--color-bitcoin);
+}
+
+.sidebar-recent-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.sidebar-recent-level {
+  font-size: 0.65rem;
+  color: #6b7280;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* --- Section & labels --- */
+.sidebar-section {
+  margin-bottom: 1.25rem;
+}
+
+.sidebar-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+/* --- Profile --- */
+.sidebar-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sidebar-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.sidebar-tagline {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+/* --- Clock --- */
+.sidebar-clock {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.sidebar-time {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #d1d5db;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Visitors --- */
+.sidebar-visitors {
+  display: flex;
+  gap: 1rem;
+}
+
+.visitor-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.visitor-count {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #f3f4f6;
+  font-variant-numeric: tabular-nums;
+}
+
+.visitor-label {
+  font-size: 0.65rem;
+  color: #6b7280;
+}
+
+/* --- BTC widget --- */
+.btc-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.btc-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.btc-value {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-bitcoin);
+  font-variant-numeric: tabular-nums;
+}
+
+.btc-label {
+  font-size: 0.65rem;
+  color: #6b7280;
+}
+
+/* --- Reading card --- */
+.reading-card {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  text-decoration: none;
+  color: #d1d5db;
+  transition: color 0.15s;
+}
+
+.reading-card:hover {
+  color: var(--color-bitcoin);
+}
+
+.reading-card img {
+  width: 2.5rem;
+  height: 3.5rem;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+}
+
+.reading-title {
+  font-size: 0.8rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Chips --- */
+.sidebar-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.sidebar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  border-radius: 0.375rem;
+  background-color: var(--color-surface-raised);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #d1d5db;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.sidebar-chip:hover {
+  border-color: rgba(247, 147, 26, 0.4);
+  color: var(--color-bitcoin);
+}
+
+/* --- Social icons --- */
+.sidebar-social-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar-social-icons a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: color 0.2s ease;
+}
+
+.sidebar-social-icons a:hover {
+  color: var(--color-bitcoin);
+}
+
+.sidebar-social-icons svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* --- Meta --- */
+.sidebar-meta {
+  font-size: 0.7rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* --- Mobile sidebar (handled by responsive section) --- */
+
+.sidebar-overlay {
+  display: none;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 30;
+}
+
+/* ============================================================
+   8. BENTO GRID
+   ============================================================ */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(18rem, calc(25% - 1rem)), 1fr));
+  gap: 1rem;
+}
+
+.bento-tile {
+  background-color: var(--color-surface-raised);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1.25rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.bento-tile:hover {
+  border-color: rgba(247, 147, 26, 0.3);
+}
+
+/* Full-width tiles */
+.bento-books     { grid-column: 1 / -1; }
+.bento-learn     { grid-column: 1 / -1; }
+
+/* --- Tile description --- */
+.tile-desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+/* --- Learn cards --- */
+.learn-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.625rem;
+}
+
+.learn-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: var(--color-surface);
+  transition: border-color 0.2s, background-color 0.2s;
+  text-decoration: none;
+}
+
+.learn-card:hover {
+  border-color: rgba(247, 147, 26, 0.3);
+  background-color: rgba(247, 147, 26, 0.05);
+}
+
+.learn-card-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.learn-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.learn-card-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.learn-card:hover .learn-card-title {
+  color: var(--color-bitcoin);
+}
+
+.learn-card-meta {
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+.learn-card-arrow {
+  margin-left: auto;
+  color: #4b5563;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.learn-card:hover .learn-card-arrow {
+  color: var(--color-bitcoin);
+}
+
+/* --- Tile content --- */
+.tile-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tile-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.tile-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.85rem;
+  color: #d1d5db;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.tile-item:last-child {
+  border-bottom: none;
+}
+
+.tile-item:hover {
+  color: #f3f4f6;
+}
+
+.tile-item-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tile-item-date {
+  font-size: 0.7rem;
+  color: #6b7280;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-item-desc {
+  font-size: 0.75rem;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tile-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.tile-more:hover {
+  color: var(--color-bitcoin);
+}
+
+/* --- Chips inside tiles --- */
+.tile-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.03);
+  color: #d1d5db;
+  white-space: nowrap;
+  transition: border-color 0.2s ease;
+}
+
+.chip:hover {
+  border-color: rgba(247, 147, 26, 0.3);
+}
+
+/* --- Now tile --- */
+.now-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #d1d5db;
+}
+
+.now-updated {
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+/* --- Arrow link indicator --- */
+.arrow {
+  margin-left: auto;
+  color: #6b7280;
+  flex-shrink: 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.group:hover .arrow,
+.tile-item:hover .arrow {
+  color: var(--color-bitcoin);
+  transform: translateX(2px);
+}
+
+/* --- Status dots & badges --- */
+.status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.status-live {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.status-live .status-dot {
+  background-color: #4ade80;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* --- Responsive bento --- */
+
+/* Small screens: full-width tiles stack to single column */
+@media (max-width: 479px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+  .bento-books,
+  .bento-learn {
+    grid-column: span 1;
+  }
+}
+
+/* ============================================================
+   9. BOOK GRID (bento tile)
+   ============================================================ */
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  column-gap: 0.75rem;
+  row-gap: 0;
+  grid-template-rows: auto;
+  grid-auto-rows: 0;
+  overflow: hidden;
+}
+
+.book-grid.expanded {
+  grid-auto-rows: auto;
+  row-gap: 0.75rem;
+}
+
+.book-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease;
+}
+
+.book-card:hover {
+  transform: none;
+}
+
+.book-cover {
+  aspect-ratio: 2 / 3;
+  width: 100%;
+  border-radius: 0.375rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.book-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.book-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.book-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-author {
+  font-size: 0.65rem;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tile-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  margin-top: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.tile-more-btn:hover {
+  color: var(--color-bitcoin);
+}
+
+/* Book grid responsive */
+@media (max-width: 479px) {
+  .book-grid {
+    grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+  }
+}
+
+/* ============================================================
+   9-B. BOOKS LIST PAGE (/books/)
+   ============================================================ */
+.books-list-page {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.books-list-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.books-list-card:hover {
+  border-color: rgba(247, 147, 26, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.books-list-cover {
+  flex-shrink: 0;
+  width: 5.5rem;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.books-list-cover img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.books-list-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  justify-content: center;
+}
+
+.books-list-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  line-height: 1.4;
+}
+
+.books-list-original {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.books-list-author {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+}
+
+.books-list-pub {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.books-list-desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.35rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .books-list-page {
+    grid-template-columns: 1fr;
+  }
+}
+
+[data-theme='light'] .books-list-card {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='light'] .books-list-card:hover {
+  border-color: rgba(247, 147, 26, 0.4);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme='light'] .books-list-cover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme='light'] .books-list-title {
+  color: #1f2937;
+}
+
+[data-theme='light'] .books-list-author {
+  color: #4b5563;
+}
+
+/* ============================================================
+   10. QUOTE
+   ============================================================ */
+.quote-text {
+  font-style: italic;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: #d1d5db;
+}
+
+.quote-author {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.quote-author::before {
+  content: '— ';
+}
+
+/* ============================================================
+   11. FADE ANIMATION
+   ============================================================ */
+.fade-section {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   12. SCROLL TO TOP
+   ============================================================ */
+.scroll-top {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 17rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: var(--color-surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #9ca3af;
+  cursor: pointer;
+  z-index: 40;
+  transition: color 0.2s ease, border-color 0.2s ease, opacity 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.scroll-top:hover {
+  color: var(--color-bitcoin);
+  border-color: rgba(247, 147, 26, 0.3);
+}
+
+.scroll-top.visible {
+  display: flex;
+}
+
+body.sidebar-right-collapsed .scroll-top {
+  right: 1.5rem;
+}
+
+/* ============================================================
+   13. LIGHT THEME
+   ============================================================ */
+
+/* --- Tailwind gray scale inversion for content pages --- */
+[data-theme='light'] {
+  --color-gray-950: #ffffff;
+  --color-gray-900: #f9fafb;
+  --color-gray-800: #e5e7eb;
+  --color-gray-700: #d1d5db;
+  --color-gray-600: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-400: #4b5563;
+  --color-gray-300: #374151;
+  --color-gray-200: #1f2937;
+  --color-gray-100: #111827;
+  --color-gray-50: #030712;
+  --color-white: #111827;
+}
+
+[data-theme='light'] body {
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+[data-theme='light'] .bento-tile {
+  background-color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='light'] .bento-tile:hover {
+  border-color: rgba(247, 147, 26, 0.35);
+}
+
+[data-theme='light'] .tile-title {
+  color: #6b7280;
+}
+
+[data-theme='light'] .tile-item {
+  color: #374151;
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme='light'] .tile-item:hover {
+  color: #111827;
+}
+
+[data-theme='light'] .tile-item-date,
+[data-theme='light'] .tile-item-desc {
+  color: #9ca3af;
+}
+
+[data-theme='light'] .tile-more,
+[data-theme='light'] .tile-more-btn {
+  color: #9ca3af;
+}
+
+[data-theme='light'] .tile-more:hover,
+[data-theme='light'] .tile-more-btn:hover {
+  color: var(--color-bitcoin);
+}
+
+[data-theme='light'] .tile-desc {
+  color: #6b7280;
+}
+
+[data-theme='light'] .learn-card {
+  background-color: #f9fafb;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='light'] .learn-card:hover {
+  border-color: rgba(247, 147, 26, 0.4);
+  background-color: rgba(247, 147, 26, 0.05);
+}
+
+[data-theme='light'] .learn-card-title {
+  color: #1f2937;
+}
+
+[data-theme='light'] .learn-card-meta {
+  color: #9ca3af;
+}
+
+[data-theme='light'] .chip {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #374151;
+}
+
+[data-theme='light'] .sidebar-column {
+  background-color: #ffffff;
+  scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
+}
+
+[data-theme='light'] .sidebar-column.sidebar-left {
+  border-right-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='light'] .sidebar-column.sidebar-right {
+  border-left-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='light'] .sidebar-nav-item {
+  color: #6b7280;
+}
+
+[data-theme='light'] .sidebar-nav-item:hover {
+  color: var(--color-bitcoin);
+}
+
+[data-theme='light'] .sidebar-recent-item {
+  color: #374151;
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme='light'] .sidebar-chip {
+  background-color: #f3f4f6;
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #374151;
+}
+
+[data-theme='light'] .sidebar-name {
+  color: #111827;
+}
+
+[data-theme='light'] .sidebar-tagline {
+  color: #6b7280;
+}
+
+[data-theme='light'] .visitor-count {
+  color: #111827;
+}
+
+[data-theme='light'] .sidebar-time {
+  color: #374151;
+}
+
+[data-theme='light'] .sidebar-toggle {
+  background-color: #f9fafb;
+  border-color: rgba(0, 0, 0, 0.08);
+  border-left: none;
+  color: #6b7280;
+}
+
+[data-theme='light'] .sidebar-toggle-right {
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  border-right: none;
+}
+
+[data-theme='light'] .cmd-palette {
+  background-color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='light'] .cmd-input {
+  color: #111827;
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='light'] .cmd-result {
+  color: #374151;
+}
+
+[data-theme='light'] .cmd-result:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme='light'] .cmd-result.active {
+  background-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-bitcoin);
+}
+
+[data-theme='light'] .cmd-footer {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='light'] .cmd-footer kbd {
+  background-color: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #6b7280;
+}
+
+[data-theme='light'] .scroll-top {
+  background-color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='light'] .quote-text {
+  color: #374151;
+}
+
+[data-theme='light'] .quote-author {
+  color: #9ca3af;
+}
+
+[data-theme='light'] .book-title {
+  color: #1f2937;
+}
+
+[data-theme='light'] .book-cover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme='light'] .now-list {
+  color: #374151;
+}
+
+[data-theme='light'] .arrow {
+  color: #9ca3af;
+}
+
+[data-theme='light'] .logo-suffix {
+  color: #9ca3af;
+}
+
+[data-theme='light'] details summary::before {
+  color: #9ca3af;
+}
+
+/* ============================================================
+   14. THEME TRANSITION
+   ============================================================ */
+body.theme-transition,
+body.theme-transition *,
+body.theme-transition *::before,
+body.theme-transition *::after {
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease !important;
+}
+
+/* ============================================================
+   15. PAGE LAYOUT
+   ============================================================ */
+.page-layout {
+  margin-left: 16.5rem;
+  margin-right: 16.5rem;
+  padding: 0 1rem;
+  transition: margin-left 0.3s ease, margin-right 0.3s ease;
+}
+
+body.sidebar-collapsed .page-layout {
+  margin-left: 2rem;
+}
+
+body.sidebar-right-collapsed .page-layout {
+  margin-right: 2rem;
+}
+
+.content-area {
+  min-width: 0;
+}
+
+/* ============================================================
+   16. HERO SECTION
+   ============================================================ */
+.portal-hero {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.tagline {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: var(--font-display);
+  line-height: 1.3;
+}
+
+.hero-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.hero-nav a {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.hero-nav a:hover {
+  color: var(--color-bitcoin);
+  border-color: rgba(247, 147, 26, 0.3);
+}
+
+[data-theme='light'] .tagline {
+  color: #111827;
+}
+
+[data-theme='light'] .hero-nav a {
+  color: #6b7280;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='light'] .hero-nav a:hover {
+  color: var(--color-bitcoin);
+  border-color: rgba(247, 147, 26, 0.3);
+}
+
+/* ============================================================
+   17. SKIP LINK (a11y)
+   ============================================================ */
+.skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.skip-link:focus {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 9999;
+  width: auto;
+  height: auto;
+  padding: 0.75rem 1.25rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background-color: var(--color-bitcoin);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================
+   18. RESPONSIVE BREAKPOINTS
+   ============================================================ */
+
+/* Desktop >= 1200px */
+@media (min-width: 1200px) {
+  .sidebar-overlay {
+    display: none !important;
+  }
+}
+
+/* Tablet & mobile: sidebars overlay content, no content push */
+@media (max-width: 1199px) {
+  .sidebar-column {
+    z-index: 40;
+  }
+
+  .page-layout {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+
+  body.sidebar-collapsed .page-layout {
+    margin-left: 1rem;
+  }
+
+  .scroll-top {
+    right: 1.5rem;
+  }
+
+  body.sidebar-right-collapsed .page-layout {
+    margin-right: 1rem;
+  }
+}
+
+/* Mobile < 768px */
+@media (max-width: 767px) {
+  .portal-hero {
+    padding: 2.5rem 0;
+  }
+
+  .tagline {
+    font-size: 1.25rem;
+  }
+
+  .page-layout {
+    padding: 0 0.75rem;
+  }
+
+  .bento-tile {
+    padding: 1rem;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 479px) {
+  .portal-hero {
+    padding: 2rem 0;
+  }
+
+  .tagline {
+    font-size: 1.1rem;
+  }
+
+  .hero-nav {
+    gap: 0.375rem;
+  }
+
+  .hero-nav a {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+}

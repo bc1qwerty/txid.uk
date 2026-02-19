@@ -1,0 +1,16 @@
+<h2 class="tile-title">{{ site.Params.concepts.title | default "개념" }}</h2>
+<div class="tile-list">
+    {{ $maxPosts := site.Params.concepts.maxPosts | default 3 }}
+    {{ range first $maxPosts (where site.RegularPages "Section" "ideas").ByDate.Reverse }}
+    <a href="{{ .RelPermalink }}" class="tile-item">
+        <span class="tile-item-name">{{ .Title }}</span>
+        <span class="tile-item-date">{{ .Date.Format "1.2" }}</span>
+        <span class="arrow">&rarr;</span>
+    </a>
+    {{ else }}
+    <p class="tile-empty">아직 개념이 없습니다.</p>
+    {{ end }}
+</div>
+{{ with site.Params.concepts.moreURL }}
+<a href="{{ . }}" class="tile-more">{{ site.Params.concepts.moreText | default "전체 보기" }} &rarr;</a>
+{{ end }}

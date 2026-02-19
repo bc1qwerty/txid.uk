@@ -1,0 +1,6 @@
+<h2 class="tile-title">도구</h2>
+<div class="tile-chips">
+    {{ range site.Params.stack }}
+    <span class="chip chip-static">{{ .name }}</span>
+    {{ end }}
+</div>

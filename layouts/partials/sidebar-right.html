@@ -1,0 +1,52 @@
+<!-- Quick Navigation -->
+<div class="sidebar-section">
+    <span class="sidebar-label">바로가기</span>
+    <nav class="sidebar-nav">
+        <a href="#learn" class="sidebar-nav-item">공부방</a>
+        <a href="#now" class="sidebar-nav-item">요즘</a>
+        <a href="#ideas" class="sidebar-nav-item">개념</a>
+        <a href="#blog" class="sidebar-nav-item">블로그</a>
+        <a href="#quote" class="sidebar-nav-item">명언</a>
+        <a href="#projects" class="sidebar-nav-item">프로젝트</a>
+        <a href="#books" class="sidebar-nav-item">추천도서</a>
+        <a href="#bookmarks" class="sidebar-nav-item">북마크</a>
+        <a href="#stack" class="sidebar-nav-item">스택</a>
+    </nav>
+</div>
+
+<!-- Recent Concepts -->
+<div class="sidebar-section">
+    <span class="sidebar-label">최근 개념</span>
+    <div class="sidebar-recent">
+        {{ range first 5 (where site.RegularPages "Section" "ideas").ByDate.Reverse }}
+        <a href="{{ .RelPermalink }}" class="sidebar-recent-item">
+            <span class="sidebar-recent-title">{{ .Title }}</span>
+            {{ with .Params.levels }}<span class="sidebar-recent-level">{{ . }}</span>{{ end }}
+        </a>
+        {{ end }}
+    </div>
+</div>
+
+<!-- People -->
+<div class="sidebar-section">
+    <span class="sidebar-label">인물</span>
+    <div class="sidebar-recent">
+        {{ range first 5 (where site.RegularPages "Section" "people") }}
+        <a href="{{ .RelPermalink }}" class="sidebar-recent-item">
+            <span class="sidebar-recent-title">{{ .Title }}</span>
+        </a>
+        {{ end }}
+    </div>
+</div>
+
+<!-- Tags -->
+{{ if site.Taxonomies.tags }}
+<div class="sidebar-section">
+    <span class="sidebar-label">태그</span>
+    <div class="sidebar-chips">
+        {{ range site.Taxonomies.tags.ByCount }}
+        <a href="{{ .Page.RelPermalink }}" class="sidebar-chip">{{ .Page.Title }} <span class="text-gray-600">{{ .Count }}</span></a>
+        {{ end }}
+    </div>
+</div>
+{{ end }}

@@ -1,0 +1,6 @@
+<h2 class="tile-title">명언</h2>
+<blockquote class="quote-text" id="quoteText" aria-live="polite"></blockquote>
+<cite class="quote-author" id="quoteAuthor"></cite>
+<script id="quote-data" type="application/json">
+[{{ range $i, $q := site.Params.quotes }}{{ if $i }},{{ end }}{"text":{{ $q.text | jsonify }},"author":{{ $q.author | jsonify }}}{{ end }}]
+</script>

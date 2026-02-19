@@ -1,0 +1,12 @@
+<h2 class="tile-title">프로젝트</h2>
+<div class="tile-list">
+    {{ range site.Params.projects }}
+    <a href="{{ .url }}" class="tile-item"{{ if .external }} target="_blank" rel="noopener noreferrer" data-ping-url="{{ .url }}"{{ end }}>
+        {{ with .status }}<span class="status-dot status-dot-{{ . | lower }}" title="{{ . }}"><span class="sr-only">{{ . }}</span></span>{{ end }}
+        <span class="tile-item-name">{{ .name }}</span>
+        {{ with .status }}<span class="status-badge status-{{ . | lower }}">{{ . }}</span>{{ end }}
+        <span class="tile-item-desc">{{ .description }}</span>
+        <span class="arrow">{{ if .external }}&nearr;{{ else }}&rarr;{{ end }}</span>
+    </a>
+    {{ end }}
+</div>

@@ -1,0 +1,62 @@
+{{ define "main" }}
+    <div class="sidebar-column sidebar-left" id="sidebarColumn">
+        <aside class="sidebar" id="sidebar">
+            {{- partial "sidebar.html" . -}}
+        </aside>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+    </div>
+
+    <div class="sidebar-column sidebar-right" id="sidebarRightColumn">
+        <button class="sidebar-toggle sidebar-toggle-right" id="sidebarRightToggle" aria-label="Toggle right sidebar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <aside class="sidebar" id="sidebarRight">
+            {{- partial "sidebar-right.html" . -}}
+        </aside>
+    </div>
+
+    <div class="page-layout">
+        {{- partial "hero.html" . -}}
+        <div class="content-area">
+            <div class="bento-grid">
+                <div class="bento-tile bento-learn fade-section" id="learn">
+                    {{- partial "bento-learn.html" . -}}
+                </div>
+
+                <div class="bento-tile bento-now fade-section" id="now">
+                    {{- partial "bento-now.html" . -}}
+                </div>
+
+                <div class="bento-tile bento-ideas fade-section" id="ideas">
+                    {{- partial "bento-ideas.html" . -}}
+                </div>
+
+                <div class="bento-tile bento-blog fade-section" id="blog">
+                    {{- partial "bento-blog.html" . -}}
+                </div>
+
+                <div class="bento-tile bento-quote fade-section" id="quote">
+                    {{- partial "bento-quote.html" . -}}
+                </div>
+
+                <div class="bento-tile bento-projects fade-section" id="projects">
+                    {{- partial "bento-projects.html" . -}}
+                </div>
+
+                <div class="bento-tile bento-books fade-section" id="books">
+                    {{- partial "bento-books.html" . -}}
+                </div>
+
+                <div class="bento-tile bento-bookmarks fade-section" id="bookmarks">
+                    {{- partial "bento-bookmarks.html" . -}}
+                </div>
+
+                <div class="bento-tile bento-stack fade-section" id="stack">
+                    {{- partial "bento-stack.html" . -}}
+                </div>
+            </div>
+        </div>
+    </div>
+{{ end }}

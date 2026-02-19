@@ -1,0 +1,79 @@
+{{ define "main" }}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Book","name":{{ .Title | jsonify }},"author":{"@type":"Person","name":{{ .Params.author | jsonify }}}{{ with .Params.cover }},"image":{{ . | absURL | jsonify }}{{ end }},"review":{"@type":"Review","author":{"@type":"Person","name":{{ site.Params.author | jsonify }}},"datePublished":{{ .Date.Format "2006-01-02" | jsonify }},"url":{{ .Permalink | jsonify }}}}
+</script>
+<article class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+  <!-- Breadcrumb -->
+  <nav class="mb-6 text-sm text-gray-600">
+    <a href="/" class="hover:text-gray-400 transition-colors">홈</a>
+    <span class="mx-1.5">/</span>
+    <a href="/books/" class="hover:text-gray-400 transition-colors">추천도서</a>
+    <span class="mx-1.5">/</span>
+    <span class="text-gray-500">{{ .Title }}</span>
+  </nav>
+
+  <header class="mb-10">
+    <span class="text-xs font-medium text-bitcoin uppercase tracking-wider">서평</span>
+    <div class="mt-4 flex gap-6 items-start">
+      {{ with .Params.cover }}
+      <img class="w-32 rounded-lg shadow-lg flex-shrink-0" src="{{ . }}" alt="{{ $.Title }} — {{ $.Params.author }}">
+      {{ end }}
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-bold text-white leading-tight">{{ .Title }}</h1>
+        {{ with .Params.originalTitle }}
+        <span class="block mt-1 text-base text-gray-500 italic">{{ . }}</span>
+        {{ end }}
+        <dl class="mt-3 text-sm text-gray-400 space-y-1">
+          <div class="flex gap-2">
+            <dt class="text-gray-500 shrink-0">저자</dt>
+            <dd>{{ .Params.author }}{{ with .Params.translator }} · 역: {{ . }}{{ end }}</dd>
+          </div>
+          {{ $pub := .Params.publisher }}
+          {{ $year := .Params.publishYear }}
+          {{ if or $pub $year }}
+          <div class="flex gap-2">
+            <dt class="text-gray-500 shrink-0">출판</dt>
+            <dd>{{ with $pub }}{{ . }}{{ end }}{{ if and $pub $year }} · {{ end }}{{ with $year }}{{ . }}{{ end }}</dd>
+          </div>
+          {{ end }}
+        </dl>
+      </div>
+    </div>
+  </header>
+
+  <div class="prose prose-invert prose-gray max-w-none
+    prose-headings:text-white prose-headings:font-semibold
+    prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
+    prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+    prose-p:text-gray-300 prose-p:leading-relaxed
+    prose-a:text-bitcoin prose-a:no-underline hover:prose-a:underline
+    prose-strong:text-white
+    prose-blockquote:border-bitcoin prose-blockquote:text-gray-400
+    prose-code:text-bitcoin prose-code:bg-gray-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+    prose-li:text-gray-300
+    prose-img:rounded-xl">
+    {{ .Content }}
+  </div>
+
+  <nav class="mt-16 pt-8 border-t border-gray-800/50 flex justify-between gap-4">
+    {{ with .NextInSection }}
+    <a href="{{ .Permalink }}" class="group flex-1 p-5 sm:p-6 rounded-xl border border-gray-700/50 bg-gray-900/60 hover:border-gray-600 hover:bg-gray-900/80 transition-all">
+      <span class="flex items-center gap-1.5 text-sm text-gray-400 mb-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        이전
+      </span>
+      <span class="text-base text-gray-300 font-medium group-hover:text-white transition-colors">{{ .Title }}</span>
+    </a>
+    {{ else }}<div class="flex-1"></div>{{ end }}
+    {{ with .PrevInSection }}
+    <a href="{{ .Permalink }}" class="group flex-1 p-5 sm:p-6 rounded-xl border border-gray-700/50 bg-gray-900/60 hover:border-gray-600 hover:bg-gray-900/80 transition-all text-right">
+      <span class="flex items-center justify-end gap-1.5 text-sm text-gray-400 mb-2">
+        다음
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </span>
+      <span class="text-base text-gray-300 font-medium group-hover:text-white transition-colors">{{ .Title }}</span>
+    </a>
+    {{ else }}<div class="flex-1"></div>{{ end }}
+  </nav>
+</article>
+{{ end }}

@@ -1,0 +1,14 @@
+<h2 class="tile-title">공부방</h2>
+<p class="tile-desc">어디서부터 시작할지 모르겠다면, 주제별 경로를 따라가세요.</p>
+<div class="learn-cards">
+    {{ range (where site.RegularPages "Section" "learn") }}
+    <a href="{{ .RelPermalink }}" class="learn-card">
+        {{ with .Params.icon }}<span class="learn-card-icon">{{ . }}</span>{{ end }}
+        <div class="learn-card-body">
+            <span class="learn-card-title">{{ .Title }}</span>
+            <span class="learn-card-meta">{{ len .Params.steps }}단계 · {{ .Params.duration }}</span>
+        </div>
+        <span class="learn-card-arrow">&rarr;</span>
+    </a>
+    {{ end }}
+</div>

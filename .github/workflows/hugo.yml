@@ -42,15 +42,16 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      - name: Install Node.js dependencies (theme)
-        run: |
-          cd themes/txid
-          npm ci
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node.js dependencies
+        run: npm ci
 
       - name: Build Tailwind CSS
-        run: |
-          cd themes/txid
-          npm run build
+        run: npm run build
 
       - name: Build with Hugo
         env:

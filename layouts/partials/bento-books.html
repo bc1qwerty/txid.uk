@@ -1,0 +1,19 @@
+<h2 class="tile-title">추천도서</h2>
+<div class="book-grid" id="bookGrid">
+    {{ range $i, $book := site.Params.books }}
+    <a class="book-card" href="{{ with .slug }}/books/{{ . }}/{{ else }}#{{ end }}">
+        <div class="book-cover">
+            {{ with .cover }}
+            <img src="{{ . }}" alt="{{ $book.name }} — {{ $book.author }}" loading="lazy">
+            {{ else }}
+            <span class="book-cover-placeholder">{{ $book.name }}</span>
+            {{ end }}
+        </div>
+        <div class="book-info">
+            <span class="book-title">{{ .name }}</span>
+            <span class="book-author">{{ .author }}</span>
+        </div>
+    </a>
+    {{ end }}
+</div>
+<button class="tile-more-btn" id="bookToggle" aria-expanded="false" aria-controls="bookGrid">전체 보기 &#9660;</button>

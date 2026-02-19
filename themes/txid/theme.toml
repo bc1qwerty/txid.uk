@@ -1,8 +1,0 @@
-name = "txid"
-license = "MIT"
-licenselink = "https://github.com/user/txid.uk/blob/main/LICENSE"
-description = "Custom theme for txid.uk"
-min_version = "0.120.0"
-
-[author]
-  name = "TXID"
