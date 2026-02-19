@@ -387,53 +387,7 @@ initClock('sidebarClock');
     });
 })();
 
-// ── Bento Grid Auto-Fill Last Row ──
-(function() {
-    var grid = document.querySelector('.bento-grid');
-    if (!grid) return;
-    var fullWidthClasses = ['bento-books', 'bento-learn'];
-    function isFullWidth(el) {
-        for (var i = 0; i < fullWidthClasses.length; i++) {
-            if (el.classList.contains(fullWidthClasses[i])) return true;
-        }
-        return false;
-    }
-    function fill() {
-        var tiles = Array.from(grid.children).filter(function(el) {
-            return el.classList.contains('bento-tile') && getComputedStyle(el).display !== 'none';
-        });
-        // reset spans on normal tiles
-        tiles.forEach(function(t) { if (!isFullWidth(t)) t.style.gridColumn = ''; });
-        var colWidths = getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean);
-        var cols = colWidths.length;
-        if (cols <= 1) return;
-        // split into groups separated by full-width tiles
-        var groups = [];
-        var current = [];
-        tiles.forEach(function(t) {
-            if (isFullWidth(t)) {
-                if (current.length) groups.push(current);
-                current = [];
-            } else {
-                current.push(t);
-            }
-        });
-        if (current.length) groups.push(current);
-        // fill last row of each group
-        groups.forEach(function(group) {
-            var remainder = group.length % cols;
-            if (remainder === 0) return;
-            var gap = cols - remainder;
-            group[group.length - 1].style.gridColumn = 'span ' + (gap + 1);
-        });
-    }
-    requestAnimationFrame(function() {
-        fill();
-        if (typeof ResizeObserver !== 'undefined') {
-            new ResizeObserver(fill).observe(grid);
-        }
-    });
-})();
+
 
 // ── Hero Nav Anchor Smooth Scroll ──
 (function() {

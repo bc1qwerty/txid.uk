@@ -34,9 +34,6 @@
       {{ with .Description }}
       <p class="text-sm text-gray-500 line-clamp-2">{{ . }}</p>
       {{ end }}
-      {{ if .Date.IsZero | not }}
-      <time class="block mt-2 text-xs text-gray-600">{{ .Date.Format "2006.01.02" }}</time>
-      {{ end }}
     </a>
     {{ end }}
   </div>

@@ -1,0 +1,12 @@
+<h2 class="tile-title">인물</h2>
+<div class="tile-list">
+    {{ range first 3 (where site.RegularPages "Section" "people") }}
+    <a href="{{ .RelPermalink }}" class="tile-item">
+        <span class="tile-item-name">{{ .Title }}</span>
+        <span class="arrow">&rarr;</span>
+    </a>
+    {{ else }}
+    <p class="tile-empty">아직 인물이 없습니다.</p>
+    {{ end }}
+</div>
+<a href="/people/" class="tile-more">전체 보기 &rarr;</a>

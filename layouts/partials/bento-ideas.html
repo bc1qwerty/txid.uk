@@ -4,7 +4,7 @@
     {{ range first $maxPosts (where site.RegularPages "Section" "ideas").ByDate.Reverse }}
     <a href="{{ .RelPermalink }}" class="tile-item">
         <span class="tile-item-name">{{ .Title }}</span>
-        <span class="tile-item-date">{{ .Date.Format "1.2" }}</span>
+        {{ with .Params.levels }}<span class="tile-item-date">{{ . }}</span>{{ end }}
         <span class="arrow">&rarr;</span>
     </a>
     {{ else }}

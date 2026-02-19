@@ -712,12 +712,13 @@ details[open] > *:not(summary) {
    8. BENTO GRID
    ============================================================ */
 .bento-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(max(18rem, calc(25% - 1rem)), 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
 .bento-tile {
+  flex: 1 1 max(18rem, calc(25% - 0.75rem));
   background-color: var(--color-surface-raised);
   border-radius: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -730,8 +731,10 @@ details[open] > *:not(summary) {
 }
 
 /* Full-width tiles */
-.bento-books     { grid-column: 1 / -1; }
-.bento-learn     { grid-column: 1 / -1; }
+.bento-books,
+.bento-learn {
+  flex: 0 0 100%;
+}
 
 /* --- Tile description --- */
 .tile-desc {
@@ -743,9 +746,13 @@ details[open] > *:not(summary) {
 
 /* --- Learn cards --- */
 .learn-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.625rem;
+}
+
+.learn-card {
+  flex: 1 1 200px;
 }
 
 .learn-card {
@@ -965,14 +972,10 @@ details[open] > *:not(summary) {
 
 /* --- Responsive bento --- */
 
-/* Small screens: full-width tiles stack to single column */
+/* Small screens: single column */
 @media (max-width: 479px) {
-  .bento-grid {
-    grid-template-columns: 1fr;
-  }
-  .bento-books,
-  .bento-learn {
-    grid-column: span 1;
+  .bento-tile {
+    flex-basis: 100%;
   }
 }
 
