@@ -341,13 +341,21 @@ enableGitInfo = true
     url = '/books/'
     weight = 4
   [[menu.main]]
+    name = '자료실'
+    url = '/library/'
+    weight = 5
+  [[menu.main]]
     name = '블로그'
     url = '/blog/'
-    weight = 5
+    weight = 6
+  [[menu.main]]
+    name = 'FAQ'
+    url = '/faq/'
+    weight = 7
   [[menu.main]]
     name = '소개'
     url = '/about/'
-    weight = 6
+    weight = 8
 
 [outputs]
   home = ['HTML', 'RSS']
