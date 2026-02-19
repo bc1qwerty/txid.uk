@@ -8,6 +8,7 @@ originalTitle: "Homo Deus"
 translator: "김명주"
 publisher: "김영사"
 publishYear: "2017"
+description: "AI와 생명공학이 인간의 미래와 본질을 어떻게 바꿀지 탐구한다."
 weight: 10
 draft: false
 ---

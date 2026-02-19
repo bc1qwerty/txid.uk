@@ -8,6 +8,7 @@ originalTitle: "How Countries Go Broke: The Big Cycle"
 translator: "조용빈"
 publisher: "한빛비즈"
 publishYear: "2025"
+description: "500년간의 제국 흥망 패턴을 분석해 현재 세계 질서 변화를 전망한다."
 weight: 11
 draft: false
 ---

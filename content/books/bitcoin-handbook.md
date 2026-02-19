@@ -5,6 +5,7 @@ date: 2026-02-19T10:00:00+09:00
 author: "얀 프리드만"
 cover: "/images/books/비트코인 핸드북.jpg"
 originalTitle: "The Little Bitcoin Book"
+description: "비트코인이 무엇이고 왜 중요한지를 비전문가도 이해할 수 있도록 쉽게 설명하는 입문서"
 weight: 23
 draft: false
 ---

@@ -8,6 +8,7 @@ originalTitle: "Bitcoin: A Peer-to-Peer Electronic Cash System"
 translator: ""
 publisher: "필레우시스"
 publishYear: "2025"
+description: "비트코인 백서의 핵심 개념을 원문과 함께 상세히 해설한 한국어판이다."
 weight: 6
 draft: false
 ---

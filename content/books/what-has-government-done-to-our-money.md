@@ -6,6 +6,8 @@ author: "머리 로스바드"
 cover: "/images/books/정부는 우리 화폐에 무슨 일을 해왔는가.jpg"
 originalTitle: "What Has Government Done to Our Money?"
 publisher: "리버티북스"
+publishYear: "2019"
+description: "화폐의 기원부터 정부의 개입이 어떻게 화폐를 타락시켜왔는지를 추적하는 책"
 weight: 16
 draft: false
 ---

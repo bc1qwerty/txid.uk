@@ -8,6 +8,7 @@ originalTitle: "Sapiens"
 translator: "조현욱"
 publisher: "김영사"
 publishYear: "2015"
+description: "인지혁명, 농업혁명, 과학혁명을 통해 인류가 지구를 지배한 과정을 서술한다."
 weight: 5
 draft: false
 ---

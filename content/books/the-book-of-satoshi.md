@@ -8,6 +8,7 @@ originalTitle: "The Book of Satoshi"
 translator: "조진수"
 publisher: "한빛미디어"
 publishYear: "2021"
+description: "사토시 나카모토의 공개된 글을 통해 비트코인의 설계 철학을 확인할 수 있다."
 weight: 3
 draft: false
 ---

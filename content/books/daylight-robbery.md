@@ -8,6 +8,7 @@ originalTitle: "Daylight Robbery"
 translator: "조용빈"
 publisher: "한빛비즈"
 publishYear: "2022"
+description: "고대부터 현대까지 세금의 역사와 문명 흥망성쇠의 관계를 분석한다."
 weight: 7
 draft: false
 ---

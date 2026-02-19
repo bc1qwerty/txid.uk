@@ -8,6 +8,7 @@ originalTitle: "What Went Wrong with Capitalism"
 translator: "김태훈"
 publisher: "한국경제신문"
 publishYear: "2025"
+description: "정부의 과도한 개입이 자유시장의 자정 메커니즘을 어떻게 파괴했는지 진단한다."
 weight: 15
 draft: false
 ---

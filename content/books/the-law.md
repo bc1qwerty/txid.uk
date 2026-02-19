@@ -8,6 +8,7 @@ originalTitle: "The Law"
 translator: "김정호"
 publisher: "자유기업원"
 publishYear: "2000"
+description: "법의 본질은 개인의 자유와 재산 보호이며, 이를 넘어서면 합법적 약탈이 된다."
 weight: 13
 draft: false
 ---

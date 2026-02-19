@@ -5,6 +5,9 @@ date: 2026-02-19T10:00:00+09:00
 author: "닉 바티아"
 cover: "/images/books/레이어드 머니 돈이 진화한다.jpg"
 originalTitle: "Layered Money"
+publisher: "심플라이프"
+publishYear: "2021"
+description: "화폐 시스템이 역사적으로 어떻게 층(Layer) 구조로 진화해왔는지를 설명하는 책"
 weight: 18
 draft: false
 ---

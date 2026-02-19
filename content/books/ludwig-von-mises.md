@@ -5,6 +5,7 @@ date: 2026-02-19T10:00:00+09:00
 author: "외르크 귀도 휠스만"
 cover: "/images/books/루트비히 폰 미제스.jpg"
 originalTitle: "Mises: The Last Knight of Liberalism"
+description: "20세기 가장 중요한 자유주의 경제학자 루트비히 폰 미제스의 생애와 사상을 다룬 전기"
 weight: 21
 draft: false
 ---

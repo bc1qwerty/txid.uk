@@ -8,6 +8,7 @@ originalTitle: "The Bitcoin Standard"
 translator: "위대선"
 publisher: "터닝포인트"
 publishYear: "2018"
+description: "화폐의 역사를 통해 건전화폐의 중요성과 비트코인의 통화 정책을 논증한다."
 weight: 1
 draft: false
 ---

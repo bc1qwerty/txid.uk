@@ -8,6 +8,7 @@ originalTitle: "Principles"
 translator: "고영태"
 publisher: "한빛비즈"
 publishYear: "2018"
+description: "레이 달리오가 삶과 일에서 터득한 원칙들을 체계적으로 정리한 책이다."
 weight: 8
 draft: false
 ---

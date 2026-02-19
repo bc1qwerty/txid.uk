@@ -5,6 +5,9 @@ date: 2026-02-19T10:00:00+09:00
 author: "루트비히 폰 미제스 외"
 cover: "/images/books/오스트리아학파의 경기변동 이론.jpg"
 originalTitle: "The Austrian Theory of the Trade Cycle"
+publisher: "지식을만드는지식"
+publishYear: "2014"
+description: "중앙은행의 신용 팽창이 경기 호황과 불황의 순환을 만들어내는 메커니즘을 오스트리아학파의 관점에서 분석하는 책"
 weight: 20
 draft: false
 ---

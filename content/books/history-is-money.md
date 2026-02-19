@@ -4,6 +4,7 @@ slug: "history-is-money"
 date: 2026-02-19T10:00:00+09:00
 author: "홍춘욱"
 cover: "/images/books/역사는 돈이다.jpg"
+description: "경제사의 관점에서 역사의 주요 전환점들을 화폐와 금융의 렌즈로 재해석하는 책"
 weight: 19
 draft: false
 ---

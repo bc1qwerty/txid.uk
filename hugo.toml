@@ -3,6 +3,7 @@ languageCode = 'ko'
 title = 'TXID.uk'
 
 publishDir = 'public'
+enableGitInfo = true
 
 [params]
   description = '비트코인, 오스트리아 경제학, 자유주의를 배우는 곳'
@@ -357,5 +358,4 @@ publishDir = 'public'
 
 [taxonomies]
   tag = 'tags'
-  category = 'categories'
   level = 'levels'

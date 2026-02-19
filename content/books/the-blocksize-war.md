@@ -8,6 +8,7 @@ originalTitle: "The Blocksize War"
 translator: "김승주"
 publisher: "에이콘출판"
 publishYear: "2023"
+description: "비트코인 블록 크기 논쟁의 전 과정을 상세하게 기록한 책이다."
 weight: 23
 draft: false
 ---

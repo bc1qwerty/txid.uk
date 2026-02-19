@@ -8,6 +8,7 @@ originalTitle: "End the Fed"
 translator: "서병한, 전계운"
 publisher: "바른북스"
 publishYear: "2019"
+description: "연방준비제도가 경기 변동과 경제 위기의 근본 원인임을 비판적으로 분석한다."
 weight: 4
 draft: false
 ---

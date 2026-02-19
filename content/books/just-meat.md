@@ -8,6 +8,7 @@ originalTitle: ""
 translator: ""
 publisher: "엠아이디"
 publishYear: "2025"
+description: "육식 악마화의 역사를 파헤치고 동물성 식품의 영양학적 가치를 재조명한다."
 weight: 14
 draft: false
 ---

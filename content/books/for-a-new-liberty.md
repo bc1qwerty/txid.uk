@@ -8,6 +8,7 @@ originalTitle: "For a New Liberty"
 translator: "정연교, 권기붕, 정혜영, 한학성"
 publisher: "한국문화사"
 publishYear: "2013"
+description: "자유지상주의의 이론적 토대와 자유시장의 실천적 비전을 제시한다."
 weight: 12
 draft: false
 ---

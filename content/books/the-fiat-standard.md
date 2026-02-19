@@ -8,6 +8,7 @@ originalTitle: "The Fiat Standard"
 translator: "임경은"
 publisher: "다산북스"
 publishYear: "2025"
+description: "법정화폐 시스템의 작동 원리와 비트코인이 대안이 될 수 있는 이유를 분석한다."
 weight: 2
 draft: false
 ---

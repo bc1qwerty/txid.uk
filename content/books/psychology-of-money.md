@@ -6,6 +6,8 @@ author: "모건 하우절"
 cover: "/images/books/돈의 심리학.jpg"
 originalTitle: "The Psychology of Money"
 publisher: "인플루엔셜"
+publishYear: "2021"
+description: "돈에 대한 의사결정이 심리에 의해 좌우된다는 점을 20가지 이야기를 통해 보여주는 책"
 weight: 17
 draft: false
 ---

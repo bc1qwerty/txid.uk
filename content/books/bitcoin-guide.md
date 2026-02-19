@@ -8,6 +8,7 @@ originalTitle: ""
 translator: ""
 publisher: "필레우시스"
 publishYear: "2025"
+description: "지갑 설정부터 노드 운영까지 비트코인 실사용을 위한 단계별 가이드북이다."
 weight: 9
 draft: false
 ---
