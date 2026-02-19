@@ -463,13 +463,20 @@ initClock('sidebarClock');
 // ── Visitor Counter (GoatCounter) ──
 (function() {
     var el = document.getElementById('visitorTotal');
-    var gc = document.querySelector('script[data-goatcounter]');
-    if (!el || !gc) return;
-    var base = gc.dataset.goatcounter.replace('/count', '');
-    fetch(base + '/counter/' + encodeURIComponent(location.pathname) + '.json')
+    if (!el) return;
+    var p = encodeURIComponent(location.pathname);
+    var proxy = 'https://gc-proxy.seowondeuk.workers.dev/api/gc/' + p + '.json';
+    var direct = 'https://txid.goatcounter.com/counter/' + p + '.json';
+    function update(d) { if (d.count_unique || d.count) el.textContent = d.count_unique || d.count; }
+    fetch(proxy)
         .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
-        .then(function(d) { if (d.count_unique || d.count) el.textContent = d.count_unique || d.count; })
-        .catch(function() {});
+        .then(update)
+        .catch(function() {
+            fetch(direct)
+                .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+                .then(update)
+                .catch(function() {});
+        });
 })();
 
 // ── Quote Rotation ──
