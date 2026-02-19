@@ -6,7 +6,7 @@
         {{ with .Params.icon }}<span class="learn-card-icon">{{ . }}</span>{{ end }}
         <div class="learn-card-body">
             <span class="learn-card-title">{{ .Title }}</span>
-            <span class="learn-card-meta">{{ len .Params.steps }}단계 · {{ .Params.duration }}</span>
+            <span class="learn-card-meta">{{ with .Params.steps }}{{ len . }}단계{{ end }}{{ with .Params.duration }} · {{ . }}{{ end }}</span>
         </div>
         <span class="learn-card-arrow">&rarr;</span>
     </a>

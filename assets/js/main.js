@@ -2,7 +2,11 @@
 var themeToggle = document.getElementById('themeToggle');
 var html = document.documentElement;
 
-var savedTheme = localStorage.getItem('theme') || 'dark';
+// 시스템 설정 감지 (prefers-color-scheme 지원)
+var savedTheme = localStorage.getItem('theme');
+if (savedTheme !== 'dark' && savedTheme !== 'light') {
+    savedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
 html.setAttribute('data-theme', savedTheme);
 (function() {
     var meta = document.querySelector('meta[name="theme-color"]');
@@ -212,7 +216,7 @@ fadeSections.forEach(function(section) { observer.observe(section); });
     try {
         var raw = JSON.parse(document.getElementById('site-data').textContent);
         items = [].concat(raw.projects || [], raw.links || [], raw.social || [], raw.posts || [], raw.books || [], raw.stack || [], raw.bookmarks || [], raw.ideas || [], raw.pages || []);
-    } catch(e) { return; }
+    } catch(e) { console.error('Failed to parse site-data:', e); return; }
 
     var activeIndex = 0;
     var filtered = [];
@@ -269,7 +273,10 @@ fadeSections.forEach(function(section) { observer.observe(section); });
         activeIndex = (activeIndex + dir + filtered.length) % filtered.length;
         render();
         var el = results.querySelector('.active');
-        if (el) el.scrollIntoView({ block: 'nearest' });
+        if (el) {
+            el.scrollIntoView({ block: 'nearest' });
+            el.focus();
+        }
     }
 
     function go() {
@@ -348,7 +355,7 @@ fadeSections.forEach(function(section) { observer.observe(section); });
     toggle.addEventListener('click', function() {
         var expanded = grid.classList.toggle('expanded');
         toggle.setAttribute('aria-expanded', String(expanded));
-        toggle.innerHTML = expanded ? '접기 &#9650;' : '전체 보기 &#9660;';
+        toggle.textContent = expanded ? '접기 \u25B2' : '전체 보기 \u25BC';
     });
 })();
 
@@ -483,7 +490,7 @@ initClock('sidebarClock');
         var idx = Math.floor(Math.random() * quotes.length);
         textEl.textContent = '\u201C' + quotes[idx].text + '\u201D';
         authorEl.textContent = '\u2014 ' + quotes[idx].author;
-    } catch(e) {}
+    } catch(e) { console.error('Failed to parse quote-data:', e); }
 })();
 
 // ── Bitcoin Widget ──
@@ -552,12 +559,36 @@ document.addEventListener('DOMContentLoaded', function() {
     var iconOpen = document.getElementById('menu-icon-open');
     var iconClose = document.getElementById('menu-icon-close');
     if (toggle && menu) {
+        var previousFocus = null;
         toggle.addEventListener('click', function() {
             var isOpen = !menu.classList.contains('hidden');
-            menu.classList.toggle('hidden');
-            if (iconOpen) iconOpen.classList.toggle('hidden');
-            if (iconClose) iconClose.classList.toggle('hidden');
-            toggle.setAttribute('aria-expanded', !isOpen);
+            if (isOpen) {
+                // 메뉴 닫기
+                menu.classList.add('hidden');
+                if (iconOpen) iconOpen.classList.remove('hidden');
+                if (iconClose) iconClose.classList.add('hidden');
+                toggle.setAttribute('aria-expanded', 'false');
+                if (previousFocus) previousFocus.focus();
+            } else {
+                // 메뉴 열기
+                previousFocus = document.activeElement;
+                menu.classList.remove('hidden');
+                if (iconOpen) iconOpen.classList.add('hidden');
+                if (iconClose) iconClose.classList.remove('hidden');
+                toggle.setAttribute('aria-expanded', 'true');
+                var firstMenuItem = menu.querySelector('a, button');
+                if (firstMenuItem) firstMenuItem.focus();
+            }
+        });
+        // ESC로 메뉴 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+                if (iconOpen) iconOpen.classList.remove('hidden');
+                if (iconClose) iconClose.classList.add('hidden');
+                toggle.setAttribute('aria-expanded', 'false');
+                toggle.focus();
+            }
         });
     }
 });
