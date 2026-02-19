@@ -22,17 +22,7 @@
   </header>
 
   {{ with .Content }}
-  <div class="prose prose-invert prose-gray max-w-none mb-12
-    prose-headings:text-white prose-headings:font-semibold
-    prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
-    prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
-    prose-p:text-gray-300 prose-p:leading-relaxed
-    prose-a:text-bitcoin prose-a:no-underline hover:prose-a:underline
-    prose-strong:text-white
-    prose-blockquote:border-bitcoin prose-blockquote:text-gray-400
-    prose-code:text-bitcoin prose-code:bg-gray-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-    prose-li:text-gray-300
-    prose-img:rounded-xl">
+  <div class="article-prose mb-12">
     {{ . }}
   </div>
   {{ end }}

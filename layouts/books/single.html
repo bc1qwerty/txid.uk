@@ -1,6 +1,6 @@
 {{ define "main" }}
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Book","name":{{ .Title | jsonify }},"author":{"@type":"Person","name":{{ .Params.author | jsonify }}}{{ with .Params.cover }},"image":{{ . | absURL | jsonify }}{{ end }},"review":{"@type":"Review","author":{"@type":"Person","name":{{ site.Params.author | jsonify }}},"datePublished":{{ .Date.Format "2006-01-02" | jsonify }},"url":{{ .Permalink | jsonify }}}}
+{"@context":"https://schema.org","@type":"Book","name":{{ .Title | jsonify }}{{ with .Params.originalTitle }},"alternativeHeadline":{{ . | jsonify }}{{ end }},"author":{"@type":"Person","name":{{ .Params.author | jsonify }}}{{ with .Params.cover }},"image":{{ . | absURL | jsonify }}{{ end }}{{ with .Params.publisher }},"publisher":{"@type":"Organization","name":{{ . | jsonify }}}{{ end }}{{ with .Params.publishYear }},"datePublished":"{{ . }}"{{ end }},"url":{{ .Permalink | jsonify }}{{ if .Content }},"description":{{ (.Content | html) | jsonify | truncate 300 }}{{ end }},"review":{"@type":"Review","author":{"@type":"Person","name":{{ site.Params.author | jsonify }}},"datePublished":{{ .Date.Format "2006-01-02" | jsonify }},"url":{{ .Permalink | jsonify }}}}
 </script>
 <article class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
   <!-- Breadcrumb -->
@@ -16,7 +16,10 @@
     <span class="text-xs font-medium text-bitcoin uppercase tracking-wider">서평</span>
     <div class="mt-4 flex gap-6 items-start">
       {{ with .Params.cover }}
-      <img class="w-32 rounded-lg shadow-lg flex-shrink-0" src="{{ . }}" alt="{{ $.Title }} — {{ $.Params.author }}">
+      <picture>
+        <source srcset="{{ . | replace ".jpg" ".webp" | replace ".jpeg" ".webp" }}" type="image/webp">
+        <img class="w-32 rounded-lg shadow-lg flex-shrink-0" src="{{ . }}" alt="{{ $.Title }} — {{ $.Params.author }}" width="128" height="192" loading="lazy">
+      </picture>
       {{ end }}
       <div>
         <h1 class="text-3xl sm:text-4xl font-bold text-white leading-tight">{{ .Title }}</h1>
@@ -41,17 +44,7 @@
     </div>
   </header>
 
-  <div class="prose prose-invert prose-gray max-w-none
-    prose-headings:text-white prose-headings:font-semibold
-    prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
-    prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
-    prose-p:text-gray-300 prose-p:leading-relaxed
-    prose-a:text-bitcoin prose-a:no-underline hover:prose-a:underline
-    prose-strong:text-white
-    prose-blockquote:border-bitcoin prose-blockquote:text-gray-400
-    prose-code:text-bitcoin prose-code:bg-gray-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-    prose-li:text-gray-300
-    prose-img:rounded-xl">
+  <div class="article-prose">
     {{ .Content }}
   </div>
 

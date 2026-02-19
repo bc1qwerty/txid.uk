@@ -12,13 +12,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <meta name="msapplication-TileColor" content="#f7931a">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png">
 
   <!-- SEO -->
   {{- $description := .Description | default site.Params.description -}}
+  {{- $ogImage := .Params.cover | default .Params.image | default site.Params.ogImage | absURL -}}
   <meta name="description" content="{{ $description }}">
   <meta name="author" content="{{ site.Params.author }}">
   <link rel="canonical" href="{{ .Permalink }}">
@@ -28,12 +35,15 @@
   <meta property="og:description" content="{{ $description }}">
   <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
   <meta property="og:url" content="{{ .Permalink }}">
-  <meta property="og:image" content="{{ site.Params.ogImage | absURL }}">
+  <meta property="og:image" content="{{ $ogImage }}">
 
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ .Title }}">
   <meta name="twitter:description" content="{{ $description }}">
+  <meta name="twitter:image" content="{{ $ogImage }}">
+  <meta name="twitter:site" content="@bc1qwerty">
+  <meta name="twitter:creator" content="@bc1qwerty">
 
   {{ with .OutputFormats.Get "RSS" -}}
   <link rel="alternate" type="application/rss+xml" title="{{ $.Site.Title }} RSS" href="{{ .RelPermalink }}">
@@ -42,17 +52,17 @@
   <!-- Schema.org -->
   <script type="application/ld+json">
   {{ if .IsHome -}}
-  {"@context":"https://schema.org","@type":"WebSite","name":{{ site.Title | jsonify }},"url":{{ site.BaseURL | jsonify }},"author":{"@type":"Person","name":{{ site.Params.author | jsonify }}}}
+  {"@context":"https://schema.org","@type":"WebSite","name":{{ site.Title | jsonify }},"url":{{ site.BaseURL | jsonify }},"description":{{ site.Params.description | jsonify }},"publisher":{"@type":"Organization","name":{{ site.Params.author | jsonify }},"logo":"{{ site.BaseURL }}favicon.svg"}}
   {{- else if .IsPage -}}
-  {"@context":"https://schema.org","@type":"Article","headline":{{ .Title | jsonify }},"datePublished":{{ .Date.Format "2006-01-02" | jsonify }},"author":{"@type":"Person","name":{{ site.Params.author | jsonify }}},"url":{{ .Permalink | jsonify }}}
+  {"@context":"https://schema.org","@type":"Article","headline":{{ .Title | jsonify }},"description":{{ $description | jsonify }},"datePublished":{{ .Date.Format "2006-01-02" | jsonify }},"image":"{{ $ogImage }}","author":{"@type":"Person","name":{{ site.Params.author | jsonify }}},"url":{{ .Permalink | jsonify }}}
   {{- end }}
   </script>
 
   <!-- CSS via Hugo Pipes -->
   {{ $css := resources.Get "css/compiled.css" }}
   {{ if $css }}
-    {{ $css = $css | fingerprint }}
-    <link rel="stylesheet" href="{{ $css.RelPermalink }}">
+    {{ $css = $css | minify | fingerprint "sha512" }}
+    <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
   {{ end }}
 
   {{ block "head" . }}{{ end }}
@@ -111,8 +121,8 @@
   <!-- JS via Hugo Pipes -->
   {{ $js := resources.Get "js/main.js" }}
   {{ if $js }}
-    {{ $js = $js | minify | fingerprint }}
-    <script src="{{ $js.RelPermalink }}" defer></script>
+    {{ $js = $js | minify | fingerprint "sha512" }}
+    <script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
   {{ end }}
 </body>
 </html>

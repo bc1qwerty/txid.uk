@@ -49,14 +49,14 @@
 
   <!-- Breadcrumb -->
   {{ if not $pathFound }}
-  <nav class="mb-6 text-sm text-gray-600">
+  <nav class="mb-6 text-sm text-gray-600 flex flex-wrap items-center gap-1.5" aria-label="breadcrumb">
     <a href="/" class="hover:text-gray-400 transition-colors">홈</a>
-    <span class="mx-1.5">/</span>
+    <span aria-hidden="true">/</span>
     {{ with .Parent }}
     <a href="{{ .Permalink }}" class="hover:text-gray-400 transition-colors">{{ .Title }}</a>
-    <span class="mx-1.5">/</span>
+    <span aria-hidden="true">/</span>
     {{ end }}
-    <span class="text-gray-500">{{ .Title }}</span>
+    <span class="text-gray-500" aria-current="page">{{ .Title }}</span>
   </nav>
   {{ end }}
 
@@ -84,17 +84,7 @@
   </header>
 
   <!-- Content -->
-  <div class="prose prose-invert prose-gray max-w-none
-    prose-headings:text-white prose-headings:font-semibold
-    prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
-    prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
-    prose-p:text-gray-300 prose-p:leading-relaxed
-    prose-a:text-bitcoin prose-a:no-underline hover:prose-a:underline
-    prose-strong:text-white
-    prose-blockquote:border-bitcoin prose-blockquote:text-gray-400
-    prose-code:text-bitcoin prose-code:bg-gray-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-    prose-li:text-gray-300
-    prose-img:rounded-xl">
+  <div class="article-prose">
     {{ .Content }}
   </div>
 
