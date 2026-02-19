@@ -462,30 +462,14 @@ initClock('sidebarClock');
 
 // ── Visitor Counter (GoatCounter) ──
 (function() {
-    var totalEl = document.getElementById('visitorTotal');
-    if (!totalEl) return;
-    var path = location.pathname;
-    var proxyUrl = '/api/gc/' + encodeURIComponent(path) + '.json';
-
-    function updateCount(data) {
-        if (data && (data.count_unique || data.count)) {
-            totalEl.textContent = data.count_unique || data.count;
-        }
-    }
-
-    // 자체 도메인 프록시로 요청 (광고 차단기 우회)
-    fetch(proxyUrl)
-        .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-        .then(updateCount)
-        .catch(function() {
-            // 프록시 실패 시 직접 요청 시도
-            var gcEl = document.getElementById('goatcounter-data');
-            if (!gcEl || !gcEl.dataset.code) return;
-            fetch('https://' + gcEl.dataset.code + '.goatcounter.com/counter/' + encodeURIComponent(path) + '.json')
-                .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-                .then(updateCount)
-                .catch(function() {});
-        });
+    var el = document.getElementById('visitorTotal');
+    var gc = document.querySelector('script[data-goatcounter]');
+    if (!el || !gc) return;
+    var base = gc.dataset.goatcounter.replace('/count', '');
+    fetch(base + '/counter/' + encodeURIComponent(location.pathname) + '.json')
+        .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function(d) { if (d.count_unique || d.count) el.textContent = d.count_unique || d.count; })
+        .catch(function() {});
 })();
 
 // ── Quote Rotation ──
