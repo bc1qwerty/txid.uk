@@ -11,7 +11,7 @@ const staticDir = join(__dirname, '..', 'static');
 const font = opentype.loadSync(join(__dirname, 'fonts', 'SpaceMono-Bold.ttf'));
 
 // Measure "TXID" to fit inside the square
-const text = 'TXID';
+const text = 'TX';
 const viewBox = 64;
 const padding = 5;
 const available = viewBox - padding * 2;
