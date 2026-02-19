@@ -30,7 +30,7 @@
     <span class="sidebar-label">지금 읽는 책</span>
     <a href="{{ with .slug }}/books/{{ . }}/{{ else }}#{{ end }}" class="reading-card">
         {{ with .cover }}
-        <img src="{{ . }}" alt="{{ $.Site.Params.reading.name }}" class="reading-cover" loading="lazy">
+        <img src="{{ . }}" alt="{{ $.Site.Params.reading.name }}" class="reading-cover" loading="lazy" width="40" height="56">
         {{ end }}
         <span class="reading-title">{{ .name }}</span>
     </a>

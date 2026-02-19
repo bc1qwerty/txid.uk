@@ -1,10 +1,14 @@
+// ── Safe localStorage helpers ──
+function safeGet(key) { try { return safeGet(key); } catch(e) { return null; } }
+function safeSet(key, val) { try { safeSet(key, val); } catch(e) {} }
+
 // ── Theme Toggle ──
 var THEME_COLORS = { dark: '#09090b', light: '#fafafa' };
 var themeToggle = document.getElementById('themeToggle');
 var html = document.documentElement;
 
 // 시스템 설정 감지 (prefers-color-scheme 지원)
-var savedTheme = localStorage.getItem('theme');
+var savedTheme = safeGet('theme');
 if (savedTheme !== 'dark' && savedTheme !== 'light') {
     savedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
@@ -19,7 +23,7 @@ if (themeToggle) themeToggle.addEventListener('click', function() {
     var current = html.getAttribute('data-theme');
     var next = current === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
+    safeSet('theme', next);
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.content = THEME_COLORS[next];
     setTimeout(function() {
@@ -83,8 +87,8 @@ function throttle(fn, delay) {
     }
 
     // --- Init states ---
-    var savedLeft = localStorage.getItem('sidebar-state');
-    var savedRight = localStorage.getItem('sidebar-right-state');
+    var savedLeft = safeGet('sidebar-state');
+    var savedRight = safeGet('sidebar-right-state');
     if (isDesktop()) {
         setLeft(savedLeft !== 'open');
         setRight(savedRight !== 'open');
@@ -101,7 +105,7 @@ function throttle(fn, delay) {
             if (leftColumn.classList.contains('collapsed')) {
                 setLeft(false);
                 if (isDesktop()) {
-                    localStorage.setItem('sidebar-state', 'open');
+                    safeSet('sidebar-state', 'open');
                 } else {
                     if (overlay) overlay.classList.add('active');
                     document.body.style.overflow = 'hidden';
@@ -133,7 +137,7 @@ function throttle(fn, delay) {
             var wasCollapsed = leftColumn.classList.contains('collapsed');
             setLeft(!wasCollapsed);
             if (isDesktop()) {
-                localStorage.setItem('sidebar-state', wasCollapsed ? 'open' : 'collapsed');
+                safeSet('sidebar-state', wasCollapsed ? 'open' : 'collapsed');
             } else {
                 if (wasCollapsed) {
                     if (overlay) overlay.classList.add('active');
@@ -151,7 +155,7 @@ function throttle(fn, delay) {
             var wasCollapsed = rightColumn.classList.contains('collapsed');
             setRight(!wasCollapsed);
             if (isDesktop()) {
-                localStorage.setItem('sidebar-right-state', wasCollapsed ? 'open' : 'collapsed');
+                safeSet('sidebar-right-state', wasCollapsed ? 'open' : 'collapsed');
             } else {
                 if (wasCollapsed) {
                     if (overlay) overlay.classList.add('active');
@@ -416,7 +420,7 @@ initClock('sidebarClock');
         var current = document.documentElement.getAttribute('data-theme');
         var next = current === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
+        safeSet('theme', next);
         var meta = document.querySelector('meta[name="theme-color"]');
         if (meta) meta.content = THEME_COLORS[next];
         setTimeout(function() {
