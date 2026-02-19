@@ -32,3 +32,5 @@ weight: 4
 
 - [오스트리아 경제학이란?](/start/austrian-economics/) — 자생적 질서 이론의 학문적 배경
 - [자유주의란?](/start/libertarianism/) — 자생적 질서가 자유주의의 근거가 되는 이유
+- [프리드리히 하이에크](/people/friedrich-hayek/) — 자생적 질서 이론의 핵심 이론가
+- [경제계산 문제](/ideas/economic-calculation/) — 중앙 계획이 자생적 질서를 대체할 수 없는 이유

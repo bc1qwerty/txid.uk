@@ -38,3 +38,5 @@ weight: 5
 
 - [자생적 질서](/ideas/spontaneous-order/) — 시장가격은 자생적 질서의 대표적 사례
 - [오스트리아 경제학이란?](/start/austrian-economics/) — 경제계산 문제의 학문적 배경
+- [주관적 가치론](/ideas/subjective-value/) — 가격 계산의 이론적 기초
+- [루트비히 폰 미제스](/people/ludwig-von-mises/) — 경제계산 문제를 최초로 제기한 경제학자

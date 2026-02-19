@@ -44,3 +44,4 @@ weight: 2
 
 - [건전화폐](/ideas/sound-money/) — 낮은 시간선호를 가능하게 하는 조건
 - [오스트리아 경제학이란?](/start/austrian-economics/) — 시간선호 이론의 학문적 배경
+- [오스트리아 경기변동이론](/ideas/abct/) — 시간선호 왜곡이 경기변동을 일으키는 과정

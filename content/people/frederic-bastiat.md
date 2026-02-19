@@ -98,3 +98,4 @@ weight: 6
 - [건전화폐](/ideas/sound-money/) — 인플레이션은 바스티아적 의미의 합법적 약탈
 - [비침해 원칙](/ideas/non-aggression-principle/) — 바스티아의 법 이론의 현대적 표현
 - [자유주의란?](/start/libertarianism/) — 바스티아가 영향을 미친 정치철학
+- [합법적 약탈](/ideas/legal-plunder/) — 바스티아가 명명한 법의 타락

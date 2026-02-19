@@ -112,6 +112,14 @@ function throttle(fn, delay) {
             }
         });
     }
+    if (avatar) {
+        avatar.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                avatar.click();
+            }
+        });
+    }
     if (avatarOverlay) {
         avatarOverlay.addEventListener('click', function() {
             avatarOverlay.classList.remove('active');
@@ -203,6 +211,7 @@ var observer = new IntersectionObserver(function(entries) {
     entries.forEach(function(entry) {
         if (entry.isIntersecting) {
             entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
         }
     });
 }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
@@ -248,7 +257,7 @@ fadeSections.forEach(function(section) { observer.observe(section); });
 
     function search(query) {
         var q = query.toLowerCase().trim();
-        filtered = q ? items.filter(function(i) { return i.name.toLowerCase().includes(q) || (i.author && i.author.toLowerCase().includes(q)); }) : items;
+        filtered = q ? items.filter(function(i) { return (i.name && i.name.toLowerCase().includes(q)) || (i.author && i.author.toLowerCase().includes(q)); }) : items;
         activeIndex = 0;
         render();
     }
@@ -283,8 +292,9 @@ fadeSections.forEach(function(section) { observer.observe(section); });
     }
 
     function go() {
-        if (filtered[activeIndex]) {
-            window.location.href = filtered[activeIndex].url;
+        var target = filtered[activeIndex];
+        if (target && target.url) {
+            window.location.href = target.url;
         }
     }
 
@@ -311,10 +321,19 @@ fadeSections.forEach(function(section) { observer.observe(section); });
     results.addEventListener('mousemove', function(e) {
         var item = e.target.closest('.cmd-result');
         if (item) {
-            activeIndex = parseInt(item.dataset.index, 10);
-            render();
+            var newIndex = parseInt(item.dataset.index, 10);
+            if (newIndex !== activeIndex) {
+                activeIndex = newIndex;
+                render();
+            }
         }
     });
+
+    // ── Header / Mobile Search Buttons ──
+    var headerSearchBtn = document.getElementById('headerSearchBtn');
+    if (headerSearchBtn) headerSearchBtn.addEventListener('click', open);
+    var mobileSearchBtn = document.getElementById('mobileSearchBtn');
+    if (mobileSearchBtn) mobileSearchBtn.addEventListener('click', open);
 })();
 
 // ── Project Uptime Ping ──
@@ -383,25 +402,6 @@ function initClock(id) {
 }
 initClock('sidebarClock');
 
-// ── Header Search Button ──
-(function() {
-    function openSearch() {
-        var overlay = document.getElementById('cmdPalette');
-        var input = document.getElementById('cmdInput');
-        if (overlay) {
-            overlay.hidden = false;
-            if (input) {
-                input.value = '';
-                input.focus();
-            }
-            document.body.style.overflow = 'hidden';
-        }
-    }
-    var btn = document.getElementById('headerSearchBtn');
-    if (btn) btn.addEventListener('click', openSearch);
-    var mobileBtn = document.getElementById('mobileSearchBtn');
-    if (mobileBtn) mobileBtn.addEventListener('click', openSearch);
-})();
 
 // ── Mobile Theme Toggle ──
 (function() {

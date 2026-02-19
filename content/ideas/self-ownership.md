@@ -34,7 +34,7 @@ weight: 11
 
 ## 자기 소유권에서 재산권으로
 
-자기 소유권은 재산권의 논리적 출발점입니다. 이 연결 고리를 로크와 머레이 로스바드(Murray Rothbard)가 다음과 같이 설명합니다.
+자기 소유권은 재산권의 논리적 출발점입니다. 이 연결 고리를 로크와 [머레이 로스바드(Murray Rothbard)](/people/murray-rothbard/)가 다음과 같이 설명합니다.
 
 ### 개척의 원리 (Homesteading Principle)
 

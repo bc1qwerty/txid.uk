@@ -56,3 +56,6 @@ weight: 8
 - [건전화폐](/ideas/sound-money/) — 법정화폐의 반대 개념
 - [경기변동이론](/ideas/abct/) — 법정화폐 시스템이 경기변동을 만드는 메커니즘
 - [비트코인이란?](/start/bitcoin/) — 법정화폐의 대안으로서의 비트코인
+- [칸티용 효과](/ideas/cantillon-effect/) — 법정화폐 시스템의 불평등 메커니즘
+- [닉슨 쇼크](/ideas/nixon-shock/) — 완전한 법정화폐 시대의 시작
+- [인플레이션 세금](/ideas/inflation-tax/) — 법정화폐의 숨겨진 세금

@@ -86,3 +86,5 @@ weight: 2
 - [오스트리아 경제학이란?](/start/austrian-economics/) — 멩거가 창시한 학파의 전체 개요
 - [건전화폐](/ideas/sound-money/) — 멩거의 화폐 기원론이 비트코인에 적용되는 방식
 - [자생적 질서](/ideas/spontaneous-order/) — 멩거가 보여준 화폐의 자발적 등장
+- [주관적 가치론](/ideas/subjective-value/) — 멩거가 창시한 혁명적 가치 이론
+- [한계효용](/ideas/marginal-utility/) — 멩거가 해결한 물-다이아몬드 역설

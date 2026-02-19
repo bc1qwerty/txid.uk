@@ -84,3 +84,4 @@ weight: 1
 - [비트코인이란?](/start/bitcoin/) — 사토시가 만든 시스템의 기초
 - [작업증명](/ideas/proof-of-work/) — 사토시가 이중지불 문제를 해결한 메커니즘
 - [건전화폐](/ideas/sound-money/) — 비트코인이 건전화폐인 이유
+- [반감기](/ideas/halving/) — 사토시가 설계한 공급 감소 메커니즘
