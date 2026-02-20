@@ -1,6 +1,6 @@
 // ── Safe localStorage helpers ──
-function safeGet(key) { try { return safeGet(key); } catch(e) { return null; } }
-function safeSet(key, val) { try { safeSet(key, val); } catch(e) {} }
+function safeGet(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
+function safeSet(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
 
 // ── Theme Toggle ──
 var THEME_COLORS = { dark: '#09090b', light: '#fafafa' };
