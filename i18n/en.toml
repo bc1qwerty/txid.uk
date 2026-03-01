@@ -1,0 +1,10 @@
+[nav_home]
+other = "Home"
+[nav_about]
+other = "About"
+[hub_visit]
+other = "Visit"
+[hub_coming_soon]
+other = "Coming Soon"
+[footer_made]
+other = "Made with"

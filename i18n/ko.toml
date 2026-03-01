@@ -1,0 +1,10 @@
+[nav_home]
+other = "홈"
+[nav_about]
+other = "소개"
+[hub_visit]
+other = "방문하기"
+[hub_coming_soon]
+other = "준비 중"
+[footer_made]
+other = "Made with"

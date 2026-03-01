@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="{{ .Site.Language.Lang }}" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ .Site.Title }}</title>
+  <meta name="description" content="{{ .Site.Params.description }}">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="icon" href="/images/favicon.svg">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ "/" | relLangURL }}" class="logo">₿</a>
+      <div class="nav-right">
+        {{ range .Site.Languages }}
+          {{ if ne .Lang $.Site.Language.Lang }}
+            <a href="{{ "/" | absLangURL }}" class="lang-switch">{{ .LanguageName }}</a>
+          {{ end }}
+        {{ end }}
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="avatar">₿</div>
+        <h1>{{ .Site.Params.hero.name }}</h1>
+        <p class="handle">@{{ .Site.Params.hero.handle }}</p>
+        {{ if eq .Site.Language.Lang "ko" }}
+          <p class="tagline">{{ .Site.Params.hero.tagline_ko }}</p>
+        {{ else }}
+          <p class="tagline">{{ .Site.Params.hero.tagline_en }}</p>
+        {{ end }}
+        <div class="social-links">
+          {{ range .Site.Params.social }}
+            <a href="{{ .url }}" target="_blank" rel="noopener">{{ .name }}</a>
+          {{ end }}
+        </div>
+      </div>
+    </section>
+
+    <section class="hubs">
+      <div class="hubs-grid">
+        {{ range .Site.Params.hubs }}
+        <div class="hub-card {{ if eq .status "soon" }}soon{{ end }}">
+          <div class="hub-icon">{{ .icon }}</div>
+          <div class="hub-info">
+            <h2>
+              {{ if eq $.Site.Language.Lang "ko" }}{{ .name_ko }}{{ else }}{{ .name_en }}{{ end }}
+            </h2>
+            <p>
+              {{ if eq $.Site.Language.Lang "ko" }}{{ .desc_ko }}{{ else }}{{ .desc_en }}{{ end }}
+            </p>
+          </div>
+          <div class="hub-action">
+            {{ if eq .status "live" }}
+              <a href="{{ .url }}" target="_blank" rel="noopener" class="btn">{{ i18n "hub_visit" }} →</a>
+            {{ else }}
+              <span class="btn btn-disabled">{{ i18n "hub_coming_soon" }}</span>
+            {{ end }}
+          </div>
+        </div>
+        {{ end }}
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>{{ i18n "footer_made" }} ♥ &amp; ₿ · <a href="https://github.com/bc1qwerty" target="_blank">bc1qwerty</a></p>
+  </footer>
+</body>
+</html>
