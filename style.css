@@ -146,14 +146,22 @@ header {
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
-nav {
+.nav-top {
   max-width: var(--max-w);
   margin: 0 auto;
   padding: 0 20px;
-  height: 60px;
+  height: 44px;
   display: flex;
   align-items: center;
   gap: 16px;
+}
+.nav-search {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 20px 10px;
+}
+.nav-search #search-wrap {
+  max-width: 100%;
 }
 .logo {
   color: var(--accent);
@@ -168,7 +176,7 @@ nav {
 
 #search-wrap {
   flex: 1;
-  max-width: 480px;
+  max-width: 600px;
   position: relative;
 }
 #search-input {
@@ -1038,7 +1046,7 @@ footer {
    ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
   nav { gap: 8px; padding: 0 12px; }
-  #search-wrap { max-width: none; flex: 1; }
+  .nav-search #search-wrap { max-width: none; }
   .search-shortcut { display: none; }
   #nav-links { display: none; }
   #stats-bar { gap: 16px; padding: 10px 12px; }
