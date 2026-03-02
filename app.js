@@ -1519,11 +1519,9 @@ window.App = {
     updateThemeBtn();
   },
 
-  toggleLang() {
-    lang = lang === 'ko' ? 'en' : lang === 'en' ? 'ja' : 'ko';
+  setLang(newLang) {
+    lang = newLang;
     document.documentElement.lang = lang;
-    const labels = { ko: 'EN', en: '日', ja: 'KO' };
-    document.getElementById('lang-btn').textContent = labels[lang];
     document.getElementById('search-input').placeholder = t('search_ph');
     document.getElementById('tagline').textContent = t('tagline');
     document.querySelectorAll('[data-ko]').forEach(el => {
@@ -1606,6 +1604,9 @@ function updateThemeBtn() {
   const saved = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', saved);
   updateThemeBtn();
+  // 언어 select 초기값 동기화
+  const sel = document.getElementById('lang-btn');
+  if (sel) sel.value = lang;
 })();
 
 // Enter 키 검색
