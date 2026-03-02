@@ -1793,7 +1793,7 @@ function openConverter() {
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   const rates = { krw, usd };
   function updateFrom(unit, val) {
-    const n = parseFloat(val) || 0;
+    const n = parseFloat(String(val).replace(/,/g, '')) || 0;
     let btc = unit==='btc'?n : unit==='sat'?n/1e8 : unit==='krw'?(rates.krw?n/rates.krw:0) : (rates.usd?n/rates.usd:0);
     if (unit!=='btc') document.getElementById('conv-btc').value = btc ? btc.toFixed(8) : '';
     if (unit!=='sat') document.getElementById('conv-sat').value = btc ? Math.round(btc*1e8) : '';
