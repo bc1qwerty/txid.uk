@@ -494,6 +494,16 @@ async function updateStats() {
       }
     } catch {}
 
+    // 멤풀 TPS
+    try {
+      const recent = await api('/mempool/recent');
+      if (Array.isArray(recent) && recent.length) {
+        const now = Math.floor(Date.now()/1000);
+        const oneMin = recent.filter(tx => now - (tx.firstSeen||0) < 60).length;
+        flashStat('s-tps', (oneMin/60).toFixed(1) + ' tx/s');
+      }
+    } catch {}
+
     // 반감기 카운트다운
     const currentHeight = Number(height);
     const nextHalving = Math.ceil((currentHeight + 1) / 210000) * 210000;
@@ -988,6 +998,7 @@ async function renderBlock(app, param) {
         ${favButton('block', block.id, favLabel)}
         <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
       </div>
+      ${getAddrLabel(address) ? `<div class="addr-label-display" id="addr-label-display">${escHtml(getAddrLabel(address))}</div>` : '<div class="addr-label-display" id="addr-label-display" style="display:none"></div>'}
       <div class="page-hash-wrap"><div class="page-hash" title="${block.id}">${block.id}</div><button class="copy-hash-btn" onclick="copyToClip('${block.id}',this)" title="${t('copy')}">⧉</button></div>
 
       <div class="info-grid">
@@ -1138,6 +1149,7 @@ async function renderTx(app, txid) {
         ${favButton('tx', tx.txid, favLabel)}
         <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
       </div>
+      ${getAddrLabel(address) ? `<div class="addr-label-display" id="addr-label-display">${escHtml(getAddrLabel(address))}</div>` : '<div class="addr-label-display" id="addr-label-display" style="display:none"></div>'}
       <div class="page-hash-wrap"><div class="page-hash" title="${tx.txid}">${tx.txid}</div><button class="copy-hash-btn" onclick="copyToClip('${tx.txid}',this)" title="${t('copy')}">⧉</button></div>
 
       <div class="info-grid">
@@ -1277,10 +1289,12 @@ async function renderAddress(app, address) {
       <div class="page-actions">
         <div class="page-title">${t('address')}</div>
         ${favButton('address', address, favLabel)}
+        <button class="icon-btn" id="addr-label-btn" onclick="promptAddrLabel('${address}')" title="${getAddrLabel(address)||'메모 추가'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
         <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
         <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" onclick="toggleMonitor('${address}')">${icon('bell')} ${t('monitoring')}</button>
         <button class="monitor-btn" onclick="App.showQR('${address}')">📱 ${t('qrView')}</button>
       </div>
+      ${getAddrLabel(address) ? `<div class="addr-label-display" id="addr-label-display">${escHtml(getAddrLabel(address))}</div>` : '<div class="addr-label-display" id="addr-label-display" style="display:none"></div>'}
       <div class="page-hash-wrap"><div class="page-hash" title="${address}">${address}</div><button class="copy-hash-btn" onclick="copyToClip('${address}',this)" title="${t('copy')}">⧉</button></div>
 
       <div class="addr-summary">
