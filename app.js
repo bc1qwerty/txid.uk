@@ -174,6 +174,14 @@ function t(key) { return (i18n[lang] && i18n[lang][key]) || key; }
 
 // ── 유틸 ──
 function satToBtc(sat) { return (sat / 1e8).toFixed(8); }
+function btcWithKrw(sat) {
+  if (!sat || !window._btcKrw) return formatBtc(sat) + ' BTC';
+  const btc = sat / 1e8;
+  const krw = btc * window._btcKrw;
+  const krwStr = krw >= 1e8 ? (krw/1e8).toFixed(2)+'억' : krw >= 1e4 ? Math.round(krw/1e4)+'만' : Math.round(krw).toLocaleString();
+  return formatBtc(sat) + ` BTC <small style="color:var(--text3);font-size:.72em">≈ ₩${krwStr}</small>`;
+}
+
 function formatBtc(sat) { return satToBtc(sat) + ' BTC'; }
 function formatNum(n) { return n == null ? '—' : Number(n).toLocaleString(); }
 function formatBytes(bytes) {
@@ -566,6 +574,11 @@ function navigate(hash) {
 
 window.addEventListener('hashchange', route);
 window.addEventListener('load', route);
+
+// 스크롤 위치 저장/복원
+const _scrollPos = {};
+function saveScroll() { _scrollPos[location.hash] = window.scrollY; }
+window.addEventListener('scroll', () => { if (window._routeReady) saveScroll(); }, { passive: true });
 
 function route() {
   if (window._txPollInterval) { clearInterval(window._txPollInterval); window._txPollInterval = null; }
