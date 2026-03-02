@@ -20,7 +20,7 @@ const MempoolViz = (() => {
   let resizeObserver = null;
 
   const CONFIRMED_COUNT = 6;
-  const MEMPOOL_COLS = 3;
+  const MEMPOOL_COLS = 1;
   const TOTAL_COLS = CONFIRMED_COUNT + MEMPOOL_COLS;
   const PX = 3;
   const GAP = 6;
@@ -212,10 +212,10 @@ const MempoolViz = (() => {
     ctx.fillStyle = '#0d1117';
     ctx.fillRect(0, 0, W, H);
 
-    // ── 확인된 블록 ──
+    // ── 확인된 블록 (오름차순: 왼쪽=오래된, 오른쪽=최신) ──
     for (let i = 0; i < CONFIRMED_COUNT; i++) {
       const x = xs[i], y = LABEL_TOP;
-      const d = confirmedData[i];
+      const d = confirmedData[CONFIRMED_COUNT - 1 - i];  // 역순 렌더
 
       // 픽셀 배열 lazy 생성
       if (d && !d.pixels) {
@@ -255,23 +255,30 @@ const MempoolViz = (() => {
     ctx.fillStyle = '#21262d';
     ctx.fillRect(divX, LABEL_TOP - 4, DIVIDER_W, bh + 8);
 
-    // ── 멤풀 블록 ──
-    for (let i = 0; i < MEMPOOL_COLS; i++) {
-      const x = xs[CONFIRMED_COUNT + i], y = LABEL_TOP;
-      const mb = mempoolBlocks[i];
-      drawBlock(x, y, bw, bh, mb?.txs, maxTx, true, i);
+    // ── 멤풀 블록 (NEXT 1개) ──
+    {
+      const x = xs[CONFIRMED_COUNT], y = LABEL_TOP;
+      const mb = mempoolBlocks[0];
+      drawBlock(x, y, bw, bh, mb?.txs, maxTx, true, 0);
 
-      // 상단 라벨
+      // 상단: NEXT + 대기 블록 수
       ctx.font = 'bold 9px "Space Mono", monospace'; ctx.textAlign = 'center';
-      ctx.fillStyle = i === 0 ? '#f7931a' : '#445';
-      ctx.fillText(i === 0 ? 'NEXT' : '+' + (i+1), x + bw / 2, 12);
+      ctx.fillStyle = '#f7931a';
+      ctx.fillText('NEXT', x + bw / 2, 12);
+
+      // 대기 블록 수 (오른쪽 상단)
+      if (window._mempoolBlockCount > 1) {
+        ctx.font = '7px "Space Mono", monospace'; ctx.textAlign = 'right';
+        ctx.fillStyle = '#445';
+        ctx.fillText('+' + (window._mempoolBlockCount - 1) + ' 대기', x + bw - 2, 12);
+      }
 
       // 하단: 채움률 / 수수료
       if (mb) {
         const pct = Math.round((mb.txs.length / mb.maxTx) * 100);
         const by = y + bh;
-        ctx.font = '8px "Space Mono", monospace';
-        ctx.fillStyle = i === 0 ? (pct >= 99 ? '#ff8800' : '#f7931a') : '#334';
+        ctx.font = '8px "Space Mono", monospace'; ctx.textAlign = 'center';
+        ctx.fillStyle = pct >= 99 ? '#ff8800' : '#f7931a';
         ctx.fillText(pct >= 99 ? 'FULL' : pct + '%', x + bw / 2, by + 10);
         if (mb.medianFee) {
           ctx.font = '7px "Space Mono", monospace'; ctx.fillStyle = '#2a3040';
