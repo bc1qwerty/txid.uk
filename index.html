@@ -3,309 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>txid.uk</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #0d1117; color: #e8e8e8; font-family: 'SF Mono','Fira Code',monospace; height: 100vh; overflow: hidden; }
-canvas { position: fixed; top:0; left:0; width:100%; height:100%; }
-
-#hud {
-  position:fixed; top:0; left:0; right:0; z-index:10;
-  display:flex; justify-content:space-between; align-items:center;
-  padding:14px 24px;
-  background:linear-gradient(to bottom, rgba(13,17,23,0.97) 70%, transparent);
-}
-.logo { color:#f7931a; font-size:1rem; font-weight:700; letter-spacing:.1em; }
-#stats { display:flex; gap:24px; }
-.stat { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
-.stat-val { color:#f7931a; font-size:.9rem; font-weight:700; }
-.stat-lbl { color:#555; font-size:.6rem; }
-#lang-btn {
-  background:none; border:1px solid #30363d; color:#666;
-  font-family:inherit; font-size:.7rem; padding:4px 10px;
-  border-radius:4px; cursor:pointer; transition:all .2s;
-}
-#lang-btn:hover { border-color:#f7931a; color:#f7931a; }
-
-#legend {
-  position:fixed; left:20px; top:50%; transform:translateY(-50%);
-  z-index:10; display:flex; flex-direction:column; gap:5px; font-size:.62rem;
-}
-.leg { display:flex; align-items:center; gap:6px; color:#555; }
-.leg-dot { width:9px; height:9px; border-radius:1px; flex-shrink:0; }
-
-#hub {
-  position:fixed; bottom:0; left:0; right:0; z-index:10;
-  padding:14px 24px 18px;
-  background:linear-gradient(to top, rgba(13,17,23,0.97) 70%, transparent);
-}
-#hub-inner { max-width:1000px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
-.tagline { font-size:.72rem; color:#444; }
-.hub-links { display:flex; gap:8px; }
-.hub-link {
-  display:flex; flex-direction:column; align-items:center;
-  padding:7px 14px; border:1px solid #21262d; border-radius:6px;
-  text-decoration:none; color:#555; font-size:.68rem; gap:3px; transition:all .2s;
-}
-.hub-link:hover { border-color:#f7931a; color:#f7931a; }
-.hub-link.soon { opacity:.3; pointer-events:none; }
-.hub-link .icon { font-size:.95rem; }
-</style>
+<title>txid.uk — Bitcoin Block Explorer</title>
+<meta name="description" content="Bitcoin Block Explorer & Mempool Viewer. 비트코인 블록 탐색기 & 멤풀 뷰어.">
+<meta name="theme-color" content="#0d1117">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<canvas id="c"></canvas>
 
-<div id="hud">
-  <div class="logo">txid.uk</div>
-  <div id="stats">
-    <div class="stat"><span class="stat-val" id="s-block">—</span><span class="stat-lbl" data-ko="블록 높이" data-en="Block Height">블록 높이</span></div>
-    <div class="stat"><span class="stat-val" id="s-tx">—</span><span class="stat-lbl" data-ko="미확인 TX" data-en="Unconfirmed TX">미확인 TX</span></div>
-    <div class="stat"><span class="stat-val" id="s-size">—</span><span class="stat-lbl" data-ko="멤풀 크기" data-en="Mempool Size">멤풀 크기</span></div>
-    <div class="stat"><span class="stat-val" id="s-fee">—</span><span class="stat-lbl" data-ko="빠른 수수료" data-en="Fast Fee">빠른 수수료</span></div>
-  </div>
-  <button id="lang-btn" onclick="toggleLang()">EN</button>
+<!-- Header -->
+<header id="header">
+  <nav>
+    <a href="#/" class="logo">txid.uk</a>
+    <div id="search-wrap">
+      <input type="text" id="search-input" placeholder="TXID / 블록 높이 / 주소 검색..." autocomplete="off" spellcheck="false">
+      <button id="search-btn" onclick="App.doSearch()">⏎</button>
+    </div>
+    <div class="nav-right">
+      <div id="nav-links">
+        <a href="#/" data-ko="홈" data-en="Home">홈</a>
+        <a href="#/mining" data-ko="채굴" data-en="Mining">채굴</a>
+      </div>
+      <button id="lang-btn" onclick="App.toggleLang()">EN</button>
+    </div>
+  </nav>
+</header>
+
+<!-- Top Stats Bar -->
+<div id="stats-bar">
+  <div class="stat"><span class="stat-val" id="s-block">—</span><span class="stat-lbl" data-ko="블록 높이" data-en="Block Height">블록 높이</span></div>
+  <div class="stat"><span class="stat-val" id="s-tx">—</span><span class="stat-lbl" data-ko="미확인 TX" data-en="Unconfirmed TX">미확인 TX</span></div>
+  <div class="stat"><span class="stat-val" id="s-size">—</span><span class="stat-lbl" data-ko="멤풀 크기" data-en="Mempool Size">멤풀 크기</span></div>
+  <div class="stat"><span class="stat-val" id="s-fee">—</span><span class="stat-lbl" data-ko="빠른 수수료" data-en="Fast Fee">빠른 수수료</span></div>
 </div>
 
-<div id="legend">
-  <div class="leg"><div class="leg-dot" style="background:#ff4444"></div><span>100+ sat/vB</span></div>
-  <div class="leg"><div class="leg-dot" style="background:#ff8800"></div><span>20~100</span></div>
-  <div class="leg"><div class="leg-dot" style="background:#f7931a"></div><span>5~20</span></div>
-  <div class="leg"><div class="leg-dot" style="background:#ffcc00"></div><span>2~5</span></div>
-  <div class="leg"><div class="leg-dot" style="background:#44bb44"></div><span>1~2</span></div>
-  <div class="leg"><div class="leg-dot" style="background:#4488ff"></div><span>0.5~1</span></div>
-  <div class="leg"><div class="leg-dot" style="background:#445566"></div><span>&lt;0.5</span></div>
-</div>
+<!-- Main Content Area -->
+<main id="app"></main>
 
-<div id="hub">
-  <div id="hub-inner">
-    <div class="tagline" id="tagline">비트코인, 오스트리아 경제학, 그리고 자유.</div>
-    <div class="hub-links">
-      <a href="https://learn.txid.uk" class="hub-link"><span class="icon">📚</span><span data-ko="공부방" data-en="Learn">공부방</span></a>
-      <a href="#" class="hub-link soon"><span class="icon">🛠️</span><span data-ko="앱스" data-en="Apps">앱스</span></a>
-      <a href="https://x.com/bc1qwerty" class="hub-link" target="_blank"><span class="icon">𝕏</span><span>X</span></a>
-      <a href="https://github.com/bc1qwerty" class="hub-link" target="_blank"><span class="icon">⌨</span><span>GitHub</span></a>
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <span id="tagline">비트코인, 오스트리아 경제학, 그리고 자유.</span>
+    <div class="footer-links">
+      <a href="https://learn.txid.uk">📚 <span data-ko="공부방" data-en="Learn">공부방</span></a>
+      <a href="https://x.com/bc1qwerty" target="_blank">𝕏</a>
+      <a href="https://github.com/bc1qwerty" target="_blank">GitHub</a>
     </div>
   </div>
-</div>
+</footer>
 
-<script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
-resize();
-addEventListener('resize', () => { resize(); initBlocks(); });
-
-// 수수료 → 색상 (낮은 수수료도 뚜렷하게)
-function feeColor(sat) {
-  if (sat >= 100) return '#ff4444';
-  if (sat >= 20)  return '#ff8800';
-  if (sat >= 5)   return '#f7931a';
-  if (sat >= 2)   return '#ffcc00';
-  if (sat >= 1)   return '#44bb44';
-  if (sat >= 0.5) return '#4488ff';
-  return '#445566';
-}
-
-// 랜덤 수수료 (현실 분포 반영)
-function randomFee(range) {
-  if (range && range.length >= 2) {
-    const min = range[0], max = range[range.length-1];
-    return min + Math.random() * (max - min);
-  }
-  // 기본 분포: 현재 저수수료 환경
-  const r = Math.random();
-  if (r < 0.5)  return 0.1 + Math.random() * 0.9;
-  if (r < 0.75) return 1 + Math.random() * 4;
-  if (r < 0.9)  return 5 + Math.random() * 15;
-  return 20 + Math.random() * 80;
-}
-
-// ── 블록 ──
-const COLS = 7, PX = 4;
-let blocks = [], mempoolFeeRange = null;
-
-function makeBlock(index, confirmed, txCount) {
-  const BLOCK_W = 110, BLOCK_H = 160;
-  const totalW = COLS * (BLOCK_W + 18);
-  const startX = (canvas.width - totalW) / 2 + 60;
-  const x = startX + index * (BLOCK_W + 18);
-  const y = canvas.height / 2 - BLOCK_H / 2;
-  const maxTx = Math.floor((BLOCK_W / PX)) * Math.floor((BLOCK_H / PX));
-  const txs = [];
-  const count = Math.min(txCount, maxTx);
-  for (let i = 0; i < count; i++) txs.push(feeColor(randomFee()));
-  return { index, x, y, w: BLOCK_W, h: BLOCK_H, txs, maxTx, confirmed, fillAnim: count / maxTx };
-}
-
-function initBlocks() {
-  blocks = [];
-  for (let i = 0; i < COLS - 1; i++) {
-    // 확인된 블록들 — 꽉 차 있음
-    blocks.push(makeBlock(i, true, 2000));
-  }
-  // 마지막 = 현재 멤풀
-  blocks.push(makeBlock(COLS - 1, false, 800));
-}
-initBlocks();
-
-function drawBlock(b) {
-  ctx.fillStyle = '#0d1117';
-  ctx.fillRect(b.x, b.y, b.w, b.h);
-
-  const cols = Math.floor(b.w / PX);
-  const rows = Math.floor(b.h / PX);
-  let i = 0;
-  for (let r = rows - 1; r >= 0 && i < b.txs.length; r--) {
-    for (let c = 0; c < cols && i < b.txs.length; c++, i++) {
-      ctx.fillStyle = b.txs[i];
-      ctx.globalAlpha = b.confirmed ? 0.6 : 0.9;
-      ctx.fillRect(b.x + c*PX, b.y + r*PX, PX-1, PX-1);
-    }
-  }
-  ctx.globalAlpha = 1;
-
-  // 테두리
-  ctx.strokeStyle = b.confirmed ? '#1e2530' : '#f7931a';
-  ctx.lineWidth = b.confirmed ? 1 : 2;
-  ctx.strokeRect(b.x, b.y, b.w, b.h);
-
-  // 라벨
-  ctx.font = '10px monospace';
-  ctx.textAlign = 'center';
-  if (!b.confirmed) {
-    ctx.fillStyle = '#f7931a';
-    ctx.fillText('MEMPOOL', b.x + b.w/2, b.y - 10);
-    const pct = Math.round((b.txs.length / b.maxTx) * 100);
-    ctx.fillStyle = '#555';
-    ctx.fillText(pct + '%', b.x + b.w/2, b.y + b.h + 14);
-  } else {
-    ctx.fillStyle = '#2a3040';
-    const ago = COLS - 1 - b.index;
-    ctx.fillText(lang === 'ko' ? `~${ago}블록 전` : `~${ago} blk ago`, b.x + b.w/2, b.y - 10);
-  }
-}
-
-// ── TX 파티클 ──
-const particles = [];
-class Tx {
-  constructor() {
-    const mb = blocks[COLS-1];
-    this.x = canvas.width + Math.random() * 300 + 50;
-    this.y = mb.y + Math.random() * mb.h;
-    this.tx = mb.x + Math.random() * mb.w;
-    this.ty = mb.y + Math.random() * mb.h;
-    this.fee = randomFee(mempoolFeeRange);
-    this.color = feeColor(this.fee);
-    this.speed = 3 + Math.random() * 2;
-    this.alive = true;
-  }
-  update() {
-    const dx = this.tx - this.x, dy = this.ty - this.y;
-    const d = Math.sqrt(dx*dx+dy*dy);
-    if (d < 4) { this.alive = false; return; }
-    this.x += dx/d * this.speed;
-    this.y += dy/d * this.speed;
-  }
-  draw() {
-    ctx.save();
-    ctx.globalAlpha = 0.85;
-    ctx.fillStyle = this.color;
-    ctx.shadowColor = this.color;
-    ctx.shadowBlur = 8;
-    ctx.fillRect(this.x, this.y, 4, 4);
-    ctx.restore();
-  }
-}
-
-// 블록 확인 (주기적 shift)
-let lastConfirm = Date.now();
-function confirmBlock() {
-  for (let i = 0; i < COLS-2; i++) {
-    blocks[i].txs = [...blocks[i+1].txs];
-  }
-  const mb = blocks[COLS-1];
-  mb.txs = mb.txs.slice(Math.floor(mb.txs.length * 0.4));
-  lastConfirm = Date.now();
-}
-
-// ── 애니메이션 ──
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#0d1117';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // 연결선
-  for (let i = 0; i < blocks.length-1; i++) {
-    const a = blocks[i], b = blocks[i+1];
-    ctx.strokeStyle = '#1a2030';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(a.x+a.w, a.y+a.h/2);
-    ctx.lineTo(b.x, b.y+b.h/2);
-    ctx.stroke();
-  }
-
-  blocks.forEach(drawBlock);
-
-  // 파티클 업데이트
-  for (let i = particles.length-1; i >= 0; i--) {
-    const p = particles[i];
-    p.update();
-    if (p.alive) {
-      p.draw();
-    } else {
-      const mb = blocks[COLS-1];
-      if (mb.txs.length < mb.maxTx) mb.txs.push(p.color);
-      particles.splice(i, 1);
-    }
-  }
-  if (Math.random() < 0.4 && particles.length < 60) particles.push(new Tx());
-
-  // 블록 확인 시뮬레이션 (10초)
-  if (Date.now() - lastConfirm > 10000) confirmBlock();
-
-  requestAnimationFrame(animate);
-}
-animate();
-
-// ── API ──
-async function fetchData() {
-  try {
-    const [mRes, fRes, bRes, mbRes] = await Promise.all([
-      fetch('https://mempool.space/api/mempool'),
-      fetch('https://mempool.space/api/v1/fees/recommended'),
-      fetch('https://mempool.space/api/blocks/tip/height'),
-      fetch('https://mempool.space/api/v1/fees/mempool-blocks'),
-    ]);
-    const [mem, fees, height, mblocks] = await Promise.all([mRes.json(), fRes.json(), bRes.json(), mbRes.json()]);
-
-    document.getElementById('s-block').textContent = height.toLocaleString();
-    document.getElementById('s-tx').textContent = mem.count.toLocaleString();
-    document.getElementById('s-size').textContent = (mem.vsize/1e6).toFixed(1)+' MB';
-    document.getElementById('s-fee').textContent = fees.fastestFee+' sat/vB';
-
-    if (mblocks && mblocks[0]) {
-      mempoolFeeRange = mblocks[0].feeRange;
-      const mb = blocks[COLS-1];
-      mb.txs = [];
-      const nTx = Math.min(mblocks[0].nTx, mb.maxTx);
-      for (let i = 0; i < nTx; i++) mb.txs.push(feeColor(randomFee(mblocks[0].feeRange)));
-    }
-  } catch(e) { console.warn(e); }
-}
-fetchData();
-setInterval(fetchData, 30000);
-
-// ── 언어 ──
-let lang = 'ko';
-function toggleLang() {
-  lang = lang === 'ko' ? 'en' : 'ko';
-  document.getElementById('lang-btn').textContent = lang === 'ko' ? 'EN' : 'KO';
-  document.getElementById('tagline').textContent = lang === 'ko'
-    ? '비트코인, 오스트리아 경제학, 그리고 자유.'
-    : 'Bitcoin, Austrian Economics, and Liberty.';
-  document.querySelectorAll('[data-ko]').forEach(el => el.textContent = lang === 'ko' ? el.dataset.ko : el.dataset.en);
-}
-</script>
+<script src="mempool.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
