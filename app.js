@@ -696,7 +696,7 @@ async function renderHome(app) {
   const chartsDiv = document.createElement('div');
   chartsDiv.id = 'home-charts';
   chartsDiv.innerHTML = `<div class="charts-grid">
-    <div class="chart-card"><h3>${icon('trending-up')} ${t('btcPrice')} (${t('days30')})</h3><div id="price-info" class="chart-subtitle">${t('loading')}</div><canvas id="price-chart"></canvas></div>
+    <div class="chart-card"><h3>${icon('trending-up')} ${t('btcPrice')} (${t('days30')})</h3><div id="price-info" class="chart-subtitle">${t('loading')}</div><div id="price-chart" style="height:200px"></div></div>
     <div class="chart-card"><h3>${icon('package')} ${t('mempoolSizeHistory')}</h3><div class="chart-subtitle">&nbsp;</div><canvas id="mempool-history-chart"></canvas></div>
   </div>`;
   app.appendChild(chartsDiv);
@@ -2366,6 +2366,78 @@ function renderNotFound(app, msg) {
     </div>`;
 }
 window.renderNotFound = renderNotFound;
+
+
+// ── 공유 ──
+function shareUrl(url) {
+  if (navigator.share) {
+    navigator.share({ title: 'txid.uk', url }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('🔗', lang==='ko'?'링크 복사됨!':lang==='ja'?'リンクをコピー':'Link copied!', null, 2000);
+    });
+  }
+}
+window.shareUrl = shareUrl;
+
+// ── 주소 라벨 ──
+function getAddrLabel(addr) {
+  try { return JSON.parse(localStorage.getItem('addr_labels')||'{}')[addr] || ''; } catch { return ''; }
+}
+function setAddrLabel(addr, label) {
+  try {
+    const m = JSON.parse(localStorage.getItem('addr_labels')||'{}');
+    if (label) m[addr] = label; else delete m[addr];
+    localStorage.setItem('addr_labels', JSON.stringify(m));
+  } catch {}
+}
+function promptAddrLabel(addr) {
+  const cur = getAddrLabel(addr);
+  const v = prompt(lang==='ko'?`"${addr.slice(0,12)}…" 메모 (비우면 삭제)`:`Label for "${addr.slice(0,12)}…" (empty to remove)`, cur);
+  if (v === null) return;
+  setAddrLabel(addr, v.trim());
+  showToast('📝', v.trim()?(lang==='ko'?'메모 저장됨':'Saved'):(lang==='ko'?'메모 삭제됨':'Removed'), null, 2000);
+  const el = document.getElementById('addr-label-display');
+  if (el) { el.textContent = v.trim(); el.style.display = v.trim() ? '' : 'none'; }
+}
+window.getAddrLabel = getAddrLabel;
+window.promptAddrLabel = promptAddrLabel;
+
+// ── 검색 히스토리 ──
+function getSearchHistory() {
+  try { return JSON.parse(localStorage.getItem('search_history') || '[]'); } catch { return []; }
+}
+function addSearchHistory(query, type) {
+  let h = getSearchHistory().filter(x => x.query !== query);
+  h.unshift({ query, type });
+  localStorage.setItem('search_history', JSON.stringify(h.slice(0, 5)));
+}
+function showSearchHistory() {
+  const hist = getSearchHistory();
+  document.getElementById('search-history-drop')?.remove();
+  if (!hist.length) return;
+  const drop = document.createElement('div');
+  drop.id = 'search-history-drop';
+  drop.className = 'search-history-drop';
+  drop.innerHTML = hist.map(h => {
+    const ic = h.type==='block'?'▣':h.type==='tx'?'↔':'◎';
+    const q = escHtml(h.query.slice(0,28)) + (h.query.length>28?'…':'');
+    return `<div class="sh-item" onclick="document.getElementById('search-input').value='${escHtml(h.query)}';document.getElementById('search-history-drop')?.remove();App.doSearch(false)">${ic} <span class="sh-q">${q}</span><span class="sh-t">${h.type}</span></div>`;
+  }).join('');
+  document.getElementById('search-wrap')?.appendChild(drop);
+}
+window.showSearchHistory = showSearchHistory;
+window.addSearchHistory = addSearchHistory;
+
+// ── 검색 입력 검증 ──
+function validateSearchInput(q) {
+  if (!q) return false;
+  if (/^\d{1,7}$/.test(q)) return true;
+  if (/^[0-9a-fA-F]{64}$/.test(q)) return true;
+  if (/^(bc1|1|3)[a-zA-Z0-9]{25,62}$/.test(q)) return true;
+  return false;
+}
+window.validateSearchInput = validateSearchInput;
 
 // ── 오프라인 감지 ──
 function checkOnline() {
