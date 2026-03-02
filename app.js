@@ -116,6 +116,12 @@ const i18n = {
     krwPrice: 'BTC価格', monitoring_active: 'モニタリング中',
     copy: 'コピー', copied: 'コピー完了',
     btcKrw: 'BTC/KRW', btcUsd: 'BTC/USD',
+    qrView: 'QRコード',
+    speed: '速度',
+    channels: 'チャンネル数',
+    capacity: '総容量',
+    nodes: 'ノード数',
+    avgChannelSize: '平均チャンネルサイズ',
   },
   en: {
     home: 'Home', mining: 'Mining', search_ph: 'Search TXID / Block Height / Address...',
@@ -316,16 +322,17 @@ function favButton(type, value, label) {
 function renderFavoritesSection() {
   const favs = getFavorites();
   if (!favs.length) return '';
-  const chips = favs.slice(0, 6).map(f => {
+  const chips = favs.slice(0, 10).map(f => {
     const href = f.type === 'block' ? `#/block/${f.value}` : f.type === 'tx' ? `#/tx/${f.value}` : `#/address/${f.value}`;
     return `<a href="${href}" class="fav-chip">
       <span>${f.type === 'block' ? '▣' : f.type === 'tx' ? '↔' : '◎'} ${escHtml(f.label)}</span>
       <span class="fav-remove" onclick="event.preventDefault();event.stopPropagation();removeFavorite('${f.type}','${escHtml(f.value)}');document.getElementById('fav-section')?.remove();route();">✕</span>
     </a>`;
   }).join('');
+  const countBadge = favs.length > 10 ? `<span class="fav-count">+${favs.length - 10}개 더</span>` : '';
   return `<div class="fav-section" id="fav-section">
     <div class="section-title">${icon('star')} ${t('favorites')}</div>
-    <div class="fav-chips">${chips}</div>
+    <div class="fav-chips">${chips}${countBadge}</div>
   </div>`;
 }
 
@@ -352,7 +359,7 @@ function toggleMonitor(address) {
     if (btn.dataset.addr === address) {
       const isMonitored = !!getMonitoredAddrs()[address];
       btn.classList.toggle('active', isMonitored);
-      btn.textContent = isMonitored ? '🔔 ' + t('monitoring') : '🔔 ' + t('monitoring');
+      btn.innerHTML = isMonitored ? icon('bell') + ' ' + t('monitoring') + ' ✓' : icon('bell') + ' ' + t('monitoring');
     }
   });
 }
@@ -463,6 +470,19 @@ async function updateStats() {
     flashStat('s-size', (mem.vsize / 1e6).toFixed(1) + ' MB');
     flashStat('s-fee', fees.fastestFee + ' sat/vB');
 
+    // BTC/KRW 업비트
+    try {
+      const upbit = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC').then(r => r.json());
+      if (upbit && upbit[0]) {
+        const price = upbit[0].trade_price;
+        const change = upbit[0].signed_change_rate * 100;
+        const priceStr = price >= 1e8 ? (price/1e8).toFixed(2)+'억' : Math.round(price/1e4)+'만';
+        flashStat('s-krw', '₩'+priceStr);
+        const krwCh = document.getElementById('s-krw-change');
+        if (krwCh) { krwCh.textContent = (change>=0?'+':'')+change.toFixed(2)+'%'; krwCh.className='stat-change '+(change>=0?'up':'down'); }
+      }
+    } catch {}
+
     // Footer live stats
     const fh = document.getElementById('footer-height');
     const ft = document.getElementById('footer-mempool');
@@ -493,8 +513,10 @@ function updateActiveNav(path) {
   document.querySelectorAll('#nav-links a').forEach(a => {
     a.classList.toggle('active', a.dataset.page === path);
   });
-  document.querySelectorAll('#mobile-bottom-nav .mnav-item[data-page]').forEach(a => {
-    a.classList.toggle('active', a.dataset.page === path);
+  document.querySelectorAll('#mobile-bottom-nav .mnav-item').forEach(a => {
+    const page = a.dataset.page;
+    const isActive = page !== undefined && page === path;
+    a.classList.toggle('active', isActive);
   });
 }
 
@@ -515,6 +537,7 @@ window.addEventListener('hashchange', route);
 window.addEventListener('load', route);
 
 function route() {
+  if (window._txPollInterval) { clearInterval(window._txPollInterval); window._txPollInterval = null; }
   const { path, param } = getRoute();
   const app = document.getElementById('app');
 
@@ -798,7 +821,8 @@ async function loadBtcPriceChart() {
 
     const canvas = document.getElementById('price-chart');
     if (!canvas) return;
-    drawLineChart(canvas, prices.map(p => p[1]), '#f7931a');
+    const priceColor = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#f7931a";
+    drawLineChart(canvas, prices.map(p => p[1]), priceColor);
   } catch {}
 }
 
@@ -854,15 +878,17 @@ function drawLineChart(canvas, values, color) {
   });
   ctx.stroke();
 
-  // Gradient fill
-  const grad = ctx.createLinearGradient(0, padT, 0, H - padB);
-  grad.addColorStop(0, color.replace(')', ',0.2)').replace('rgb', 'rgba'));
-  grad.addColorStop(1, color.replace(')', ',0)').replace('rgb', 'rgba'));
-  // Use hex to rgba
+  // Gradient fill (separate path)
   const r = parseInt(color.slice(1, 3), 16), g = parseInt(color.slice(3, 5), 16), b = parseInt(color.slice(5, 7), 16);
   const grad2 = ctx.createLinearGradient(0, padT, 0, H - padB);
   grad2.addColorStop(0, `rgba(${r},${g},${b},0.15)`);
   grad2.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  ctx.beginPath();
+  values.forEach((v, i) => {
+    const x = padL + (i / (values.length - 1)) * chartW;
+    const y = padT + chartH - ((v - minVal) / range) * chartH;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
   ctx.lineTo(padL + chartW, H - padB);
   ctx.lineTo(padL, H - padB);
   ctx.closePath();
@@ -939,7 +965,7 @@ async function renderBlock(app, param) {
         <div class="page-title">${t('blockExplorer')} #${formatNum(block.height)}</div>
         ${favButton('block', block.id, favLabel)}
       </div>
-      <div class="page-hash" title="${block.id}">${block.id}</div>
+      <div class="page-hash-wrap"><div class="page-hash" title="${block.id}">${block.id}</div><button class="copy-hash-btn" onclick="copyToClip('${block.id}',this)" title="${t('copy')}">⧉</button></div>
 
       <div class="info-grid">
         <div class="info-item"><div class="info-label">${t('height')}</div><div class="info-value accent">${formatNum(block.height)}</div></div>
@@ -1069,7 +1095,7 @@ async function renderTx(app, txid) {
         </div>
         ${favButton('tx', tx.txid, favLabel)}
       </div>
-      <div class="page-hash" title="${tx.txid}">${tx.txid}</div>
+      <div class="page-hash-wrap"><div class="page-hash" title="${tx.txid}">${tx.txid}</div><button class="copy-hash-btn" onclick="copyToClip('${tx.txid}',this)" title="${t('copy')}">⧉</button></div>
 
       <div class="info-grid">
         <div class="info-item"><div class="info-label">TXID</div><div class="info-value small">${tx.txid}</div></div>
@@ -1085,7 +1111,7 @@ async function renderTx(app, txid) {
         <div class="info-item"><div class="info-label">${t('rbf')}</div><div class="info-value">${tx.vin && tx.vin.some(v => v.sequence < 0xfffffffe) ? 'Yes' : 'No'}</div></div>
       </div>
 
-      ${!isConfirmed ? `<div class="info-grid" style="margin-bottom:20px"><div class="info-item"><div class="info-label">${t('estimatedConf')}</div><div class="info-value accent">${t('unconfirmed')}</div></div></div>` : ''}
+      ${!isConfirmed ? `<div class="tx-status-bar unconfirmed" id="tx-poll-status">⏳ ${t('unconfirmed')} | ${feeRate.toFixed(1)} sat/vB | ${t('estimatedConf')}: ~10-60min</div>` : ''}
 
       <div class="tx-flow-summary">
         <div class="fs-item"><div class="fs-label">${t('inputs')}</div><div class="fs-val">${isCoinbase ? '' + t('coinbaseReward') : formatBtc(totalIn)}</div></div>
@@ -1120,15 +1146,45 @@ async function renderTx(app, txid) {
             const addr = o.scriptpubkey_address || (isOpReturn ? 'OP_RETURN' : 'Unknown');
             const addrType = getAddrType(o.scriptpubkey_type);
             const itemClass = isOpReturn ? 'tx-io-item op-return-item' : 'tx-io-item';
+            let opReturnText = "";
+            if (isOpReturn) {
+              try {
+                const hexData = o.scriptpubkey.replace(/^6a/, "").replace(/^[0-9a-f]{2}/, "");
+                const bytes = hexData.match(/.{2}/g) || [];
+                const text = bytes.map(b => String.fromCharCode(parseInt(b, 16))).join("");
+                const isPrintable = /^[\x20-\x7E]*$/.test(text) && text.length > 0;
+                opReturnText = isPrintable
+                  ? `<div class="op-return-decoded">💬 "${escHtml(text)}"</div>`
+                  : `<div class="op-return-decoded">0x${hexData.slice(0, 40)}${hexData.length > 40 ? "…" : ""}</div>`;
+              } catch {}
+            }
             return `<div class="${itemClass} stagger-item" style="--i:${i}">
               <div class="io-addr" ${!isOpReturn && addr !== 'Unknown' ? `onclick="location.hash='#/address/${addr}'"` : ''}>${isOpReturn ? '📝 OP_RETURN' : addr}</div>
               <div class="io-val">${formatBtc(o.value)}</div>
               <div class="io-type">${addrType}</div>
+              ${opReturnText}
             </div>`;
           }).join('')}
         </div>
       </div>
     `;
+  // 미확인 TX 폴링
+  if (!isConfirmed) {
+    window._txPollInterval = setInterval(async () => {
+      try {
+        const updated = await api('/tx/' + txid);
+        if (updated.status && updated.status.confirmed) {
+          clearInterval(window._txPollInterval);
+          window._txPollInterval = null;
+          const statusBar = document.getElementById('tx-poll-status');
+          if (statusBar) {
+            statusBar.className = 'tx-status-bar confirmed';
+            statusBar.textContent = '✓ ' + t('confirmed') + ' — Block #' + formatNum(updated.status.block_height);
+          }
+        }
+      } catch {}
+    }, 20000);
+  }
   } catch (e) {
     app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
@@ -1180,7 +1236,7 @@ async function renderAddress(app, address) {
         <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" onclick="toggleMonitor('${address}')">${icon('bell')} ${t('monitoring')}</button>
         <button class="monitor-btn" onclick="App.showQR('${address}')">📱 ${t('qrView')}</button>
       </div>
-      <div class="page-hash" title="${address}">${address}</div>
+      <div class="page-hash-wrap"><div class="page-hash" title="${address}">${address}</div><button class="copy-hash-btn" onclick="copyToClip('${address}',this)" title="${t('copy')}">⧉</button></div>
 
       <div class="addr-summary">
         <div class="addr-stat stagger-item" style="--i:0"><div class="as-val">${getAddrTypeFromAddr(address)}</div><div class="as-lbl">${t('type')}</div></div>
@@ -1304,13 +1360,13 @@ async function renderMining(app) {
 
       <div class="mining-grid">
         <div class="mining-card stagger-item" style="--i:4">
-          <h3>${icon('trending-up')} ${t('hashrate')} (30${lang === 'ko' ? '일' : ' days'})</h3>
+          <h3>${icon('trending-up')} ${t('hashrate')} (30${lang === 'ko' ? '일' : lang === 'ja' ? '日' : ' days'})</h3>
           <canvas id="hashrate-chart"></canvas>
         </div>
         <div class="mining-card stagger-item" style="--i:5">
           <h3>${icon('target')} ${t('diffAdj')}</h3>
           <div style="margin-bottom:8px;font-size:.75rem;color:var(--text2)">
-            ${t('progress')}: ${diffProgress.toFixed(1)}% (${diffAdj.remainingBlocks || '?'} ${lang === 'ko' ? '블록 남음' : 'blocks left'})
+            ${t('progress')}: ${diffProgress.toFixed(1)}% (${diffAdj.remainingBlocks || '?'} ${lang === 'ko' ? '블록 남음' : lang === 'ja' ? 'ブロック残り' : 'blocks left'})
           </div>
           <div class="diff-bar-wrap">
             <div class="diff-bar" style="width:${diffProgress}%"></div>
@@ -1320,7 +1376,7 @@ async function renderMining(app) {
             ${t('estimatedAdj')}: <span style="color:${estChange >= 0 ? 'var(--green)' : 'var(--red)'}">${estChange >= 0 ? '+' : ''}${estChange.toFixed(2)}%</span>
           </div>
           <div style="margin-top:4px;font-size:.68rem;color:var(--text3)">
-            ${lang === 'ko' ? '예상 시간' : 'Estimated'}: ${diffAdj.estimatedRetargetDate ? new Date(diffAdj.estimatedRetargetDate).toLocaleDateString() : '?'}
+            ${lang === 'ko' ? '예상 시간' : lang === 'ja' ? '推定時間' : 'Estimated'}: ${diffAdj.estimatedRetargetDate ? new Date(diffAdj.estimatedRetargetDate).toLocaleDateString() : '?'}
           </div>
         </div>
       </div>
@@ -1328,7 +1384,7 @@ async function renderMining(app) {
       <div class="mining-card stagger-item" style="--i:6;margin-bottom:20px">
         <h3>${icon('trophy')} ${t('topMiners')} (${t('blocks144')})</h3>
         <table class="miners-table">
-          <thead><tr><th>${t('miner')}</th><th>${lang === 'ko' ? '블록' : 'Blocks'}</th><th>%</th><th></th></tr></thead>
+          <thead><tr><th>${t('miner')}</th><th>${lang === 'ko' ? '블록' : lang === 'ja' ? 'ブロック' : 'Blocks'}</th><th>%</th><th></th></tr></thead>
           <tbody>
             ${topMiners.slice(0, 15).map(([name, count], i) => {
               const pct = (count / recentBlocks.length * 100).toFixed(1);
@@ -1375,20 +1431,24 @@ function renderHashrateChart(data) {
 
   ctx.clearRect(0, 0, W, H);
 
-  ctx.strokeStyle = '#21262d';
+  const cssBorder = getComputedStyle(document.documentElement).getPropertyValue("--border").trim() || "#21262d";
+  const cssText3 = getComputedStyle(document.documentElement).getPropertyValue("--text3").trim() || "#6e7681";
+  const cssAccent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#f7931a";
+
+  ctx.strokeStyle = cssBorder;
   ctx.lineWidth = 0.5;
   for (let i = 0; i <= 4; i++) {
     const y = padT + (chartH / 4) * i;
     ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
     const val = maxVal - (range / 4) * i;
-    ctx.fillStyle = '#6e7681';
+    ctx.fillStyle = cssText3;
     ctx.font = '9px monospace';
     ctx.textAlign = 'right';
     ctx.fillText(val.toFixed(0) + ' EH/s', padL - 4, y + 3);
   }
 
   ctx.beginPath();
-  ctx.strokeStyle = '#f7931a';
+  ctx.strokeStyle = cssAccent;
   ctx.lineWidth = 1.5;
   values.forEach((v, i) => {
     const x = padL + (i / (values.length - 1)) * chartW;
@@ -1397,9 +1457,18 @@ function renderHashrateChart(data) {
   });
   ctx.stroke();
 
+  // Parse accent color for gradient
+  const accentHex = cssAccent.startsWith('#') ? cssAccent : '#f7931a';
+  const ar = parseInt(accentHex.slice(1, 3), 16), ag = parseInt(accentHex.slice(3, 5), 16), ab = parseInt(accentHex.slice(5, 7), 16);
   const grad = ctx.createLinearGradient(0, padT, 0, H - padB);
-  grad.addColorStop(0, 'rgba(247,147,26,0.15)');
-  grad.addColorStop(1, 'rgba(247,147,26,0)');
+  grad.addColorStop(0, `rgba(${ar},${ag},${ab},0.15)`);
+  grad.addColorStop(1, `rgba(${ar},${ag},${ab},0)`);
+  ctx.beginPath();
+  values.forEach((v, i) => {
+    const x = padL + (i / (values.length - 1)) * chartW;
+    const y = padT + chartH - ((v - minVal) / range) * chartH;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
   ctx.lineTo(padL + chartW, H - padB);
   ctx.lineTo(padL, H - padB);
   ctx.closePath();
@@ -1419,7 +1488,7 @@ function renderFeeCalcModal() {
   const txTypes = [
     { label: 'Simple send (P2WPKH)', vb: 141 },
     { label: 'Multi-input 2-in-2-out', vb: 208 },
-    { label: lang === 'ko' ? '직접 입력' : 'Custom', vb: 0 },
+    { label: lang === 'ko' ? '직접 입력' : lang === 'ja' ? 'カスタム' : 'Custom', vb: 0 },
   ];
 
   return `<div class="modal-overlay" id="fee-calc-modal" onclick="if(event.target===this)this.remove()">
@@ -1456,10 +1525,12 @@ function updateFeeCalc() {
   }
 
   const fees = statsData.fees || {};
+  const timeUnit = lang === "ko" ? "분" : lang === "ja" ? "分" : "min";
+  const hourUnit = lang === "ko" ? "시간+" : lang === "ja" ? "時間+" : "h+";
   const rows = [
-    { label: t('fast'), rate: fees.fastestFee || 10, time: '~10' + (lang === 'ko' ? '분' : 'min') },
-    { label: t('normal'), rate: fees.halfHourFee || 5, time: '~30' + (lang === 'ko' ? '분' : 'min') },
-    { label: t('slow'), rate: fees.hourFee || 2, time: '~1' + (lang === 'ko' ? '시간+' : 'h+') },
+    { label: t('fast'), rate: fees.fastestFee || 10, time: '~10' + timeUnit },
+    { label: t('normal'), rate: fees.halfHourFee || 5, time: '~30' + timeUnit },
+    { label: t('slow'), rate: fees.hourFee || 2, time: '~1' + hourUnit },
   ];
 
   const tbody = document.querySelector('#fc-table tbody');
@@ -1524,11 +1595,14 @@ window.App = {
   },
   setLang(newLang) {
     lang = newLang;
+    const btn = document.getElementById("lang-btn");
+    if (btn) btn.textContent = { ko: "KO", en: "EN", ja: "日" }[lang] || "KO";
     document.documentElement.lang = lang;
     document.getElementById('search-input').placeholder = t('search_ph');
     document.getElementById('tagline').textContent = t('tagline');
     document.querySelectorAll('[data-ko]').forEach(el => {
-      el.textContent = lang === 'ko' ? el.dataset.ko : el.dataset.en;
+      const val = el.dataset[lang] || el.dataset.en || el.dataset.ko;
+      el.textContent = val;
     });
     route();
   },
@@ -1543,7 +1617,7 @@ window.App = {
 
     const detected = detectSearchType(q);
     if (!detected) {
-      alert(t('notFound'));
+      showToast("🔍 " + t("search"), t("notFound"), null, 3000);
       return;
     }
 

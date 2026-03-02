@@ -332,6 +332,8 @@ const MempoolViz = (() => {
     const _lang3 = document.documentElement.lang || 'ko';
     const _conn = _lang3==='ko'?'○ 연결 중…':_lang3==='ja'?'○ 接続中…':'○ connecting…';
     ctx.fillText(wsOk ? '● LIVE' : _conn, W - PAD, 13);
+    const fws = document.getElementById('footer-ws');
+    if (fws) { fws.textContent = wsOk ? '● LIVE' : '○'; fws.style.color = wsOk ? 'var(--green)' : 'var(--text3)'; }
 
     animId = requestAnimationFrame(animate);
   }

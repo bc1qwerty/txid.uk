@@ -41,8 +41,8 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
     </div>
     <div class="nav-right">
       <div id="nav-links">
-        <a href="#/" data-page="" data-ko="홈" data-en="Home">홈</a>
-        <a href="#/mining" data-page="mining" data-ko="채굴" data-en="Mining">채굴</a>
+        <a href="#/" data-page="" data-ko="홈" data-en="Home" data-ja="ホーム" data-ja="ホーム">홈</a>
+        <a href="#/mining" data-page="mining" data-ko="채굴" data-en="Mining" data-ja="マイニング" data-ja="マイニング">채굴</a>
       </div>
       <span id="monitor-badge" class="monitor-badge" style="display:none" title="모니터링 중">0</span>
       <button id="theme-btn" onclick="App.toggleTheme()" title="테마 전환"></button>
@@ -60,10 +60,10 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
 
 <!-- Top Stats Bar -->
 <div id="stats-bar">
-  <div class="stat"><span class="stat-val" id="s-block">—</span><span class="stat-lbl" data-ko="블록 높이" data-en="Block Height">블록 높이</span></div>
-  <div class="stat"><span class="stat-val" id="s-tx">—</span><span class="stat-lbl" data-ko="미확인 TX" data-en="Unconfirmed TX">미확인 TX</span></div>
-  <div class="stat"><span class="stat-val" id="s-size">—</span><span class="stat-lbl" data-ko="멤풀 크기" data-en="Mempool Size">멤풀 크기</span></div>
-  <div class="stat"><span class="stat-val" id="s-fee">—</span><span class="stat-lbl" data-ko="빠른 수수료" data-en="Fast Fee">빠른 수수료</span></div>
+  <div class="stat"><span class="stat-val" id="s-block">—</span><span class="stat-lbl" data-ko="블록 높이" data-en="Block Height" data-ja="ブロック高" data-ja="ブロック高">블록 높이</span></div>
+  <div class="stat"><span class="stat-val" id="s-tx">—</span><span class="stat-lbl" data-ko="미확인 TX" data-en="Unconfirmed TX" data-ja="未確認TX" data-ja="未確認TX">미확인 TX</span></div>
+  <div class="stat"><span class="stat-val" id="s-size">—</span><span class="stat-lbl" data-ko="멤풀 크기" data-en="Mempool Size" data-ja="メンプール" data-ja="メンプール">멤풀 크기</span></div>
+  <div class="stat"><span class="stat-val" id="s-fee">—</span><span class="stat-lbl" data-ko="빠른 수수료" data-en="Fast Fee" data-ja="速い手数料" data-ja="速い手数料">빠른 수수료</span></div>
 </div>
 
 <!-- Main Content Area -->
@@ -74,12 +74,12 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
   <div class="footer-inner">
     <span id="tagline">비트코인, 오스트리아 경제학, 그리고 자유.</span>
     <div class="footer-live">
-      <span data-ko="블록" data-en="Block">블록</span> <span id="footer-height">—</span>
+      <span data-ko="블록" data-en="Block" data-ja="ブロック">블록</span> <span id="footer-height">—</span>
       ·
-      <span data-ko="멤풀" data-en="Mempool">멤풀</span> <span id="footer-mempool">—</span>
+      <span data-ko="멤풀" data-en="Mempool" data-ja="メンプール">멤풀</span> <span id="footer-mempool">—</span>
     </div>
     <div class="footer-links">
-      <a href="https://learn.txid.uk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="vertical-align:middle;margin-right:4px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span data-ko="공부방" data-en="Learn">공부방</span></a>
+      <a href="https://learn.txid.uk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="vertical-align:middle;margin-right:4px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span data-ko="공부방" data-en="Learn" data-ja="学習" data-ja="学習">공부방</span></a>
       <a href="https://x.com/bc1qwerty" target="_blank">𝕏</a>
     </div>
   </div>
@@ -89,15 +89,15 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
 <nav id="mobile-bottom-nav">
   <a href="#/" data-page="" class="mnav-item active">
     <span class="mnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
-    <span class="mnav-label" data-ko="홈" data-en="Home">홈</span>
+    <span class="mnav-label" data-ko="홈" data-en="Home" data-ja="ホーム" data-ja="ホーム">홈</span>
   </a>
   <a href="javascript:void(0)" onclick="App.openMobileSearch()" class="mnav-item">
     <span class="mnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="6"/><line x1="21" y1="21" x2="16.35" y2="16.35"/></svg></span>
-    <span class="mnav-label" data-ko="검색" data-en="Search">검색</span>
+    <span class="mnav-label" data-ko="검색" data-en="Search" data-ja="検索" data-ja="検索">검색</span>
   </a>
   <a href="#/mining" data-page="mining" class="mnav-item">
     <span class="mnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M14 10-8.5 8.5c-.83.83-.83 2.17 0 3 .83.83 2.17.83 3 0L17 13"/><path d="M15 11 9 5"/><path d="m16 2-4 4"/><path d="m22 8-4-4"/></svg></span>
-    <span class="mnav-label" data-ko="채굴" data-en="Mining">채굴</span>
+    <span class="mnav-label" data-ko="채굴" data-en="Mining" data-ja="マイニング" data-ja="マイニング">채굴</span>
   </a>
 </nav>
 

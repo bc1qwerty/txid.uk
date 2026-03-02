@@ -776,6 +776,14 @@ footer {
 .tx-io-item.op-return-item .io-val {
   color: var(--text3);
 }
+.op-return-decoded {
+  font-size: .68rem;
+  color: var(--accent);
+  opacity: .85;
+  margin-top: 3px;
+  word-break: break-all;
+  font-family: var(--font);
+}
 
 /* Flow Arrow */
 .tx-flow-arrow {
@@ -1531,3 +1539,67 @@ h1, h2, h3, h4, button, select,
   transition: background .15s, color .15s;
 }
 #lang-menu button:hover { background: var(--bg3); color: var(--accent); }
+
+/* ── 복사 버튼 ── */
+.page-hash-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; overflow: hidden; }
+.page-hash-wrap .page-hash { flex: 1; min-width: 0; margin-bottom: 0; }
+.copy-hash-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-size: .75rem;
+  padding: 3px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+  flex-shrink: 0;
+  font-family: var(--font-ko);
+}
+.copy-hash-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── TX 상태 바 ── */
+.tx-status-bar {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: .78rem;
+  margin-bottom: 12px;
+  font-family: var(--font-ko);
+}
+.tx-status-bar.unconfirmed { background: rgba(247,147,26,.1); border: 1px solid rgba(247,147,26,.3); color: #f7931a; }
+.tx-status-bar.confirmed { background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.3); color: var(--green); }
+
+/* ── OP_RETURN ── */
+.op-return-decoded { font-size: .68rem; color: var(--accent); opacity: .85; margin-top: 3px; word-break: break-all; font-family: var(--font); }
+.op-return-item { opacity: .8; }
+
+/* ── 가격 변동 ── */
+.stat-change { font-size: .62rem; line-height: 1; display: block; }
+.stat-change.up { color: var(--green); }
+.stat-change.down { color: var(--red); }
+.price-current { font-weight: 600; color: var(--text1); margin-right: 6px; }
+.price-change { font-size: .7rem; }
+.price-change.up { color: var(--green); }
+.price-change.down { color: var(--red); }
+
+/* ── 즐겨찾기 카운트 ── */
+.fav-count { font-size: .65rem; color: var(--text3); padding: 4px 8px; font-family: var(--font-ko); }
+
+/* ── 모바일 네비 활성 ── */
+.mnav-item.active { color: var(--accent) !important; }
+.mnav-item.active .mnav-icon svg { stroke: var(--accent); }
+
+/* ── block-card hover shadow ── */
+.block-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+[data-theme="light"] .block-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+
+/* ── body transition ── */
+body { transition: background .2s, color .2s; }
+
+/* ── 모바일 반응형 보완 ── */
+@media (max-width: 600px) {
+  .page-hash-wrap { flex-direction: column; align-items: flex-start; }
+  .page-hash-wrap .page-hash { width: 100%; }
+  .tx-flow { flex-direction: column; }
+  .tx-flow-arrow { flex-direction: row; padding: 8px 0; }
+  #stats-bar { grid-template-columns: repeat(3, 1fr); display: grid; gap: 12px; }
+}
