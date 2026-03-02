@@ -275,8 +275,18 @@ const MempoolViz = (() => {
             blocks[bi].txs = [];
             const maxTx = blocks[bi].maxTx;
             const count = Math.min(cb.tx_count || 2000, maxTx);
+            // 실제 블록 수수료 분포 사용 (extras.feeRange)
+            const feeRange = cb.extras && cb.extras.feeRange ? cb.extras.feeRange : null;
             for (let j = 0; j < count; j++) {
-              blocks[bi].txs.push(feeColor(randomFee(null)));
+              if (feeRange && feeRange.length >= 2) {
+                // feeRange 배열의 분포를 반영해서 픽셀 색상 결정
+                const bucketCount = feeRange.length - 1;
+                const bucketIdx = Math.floor(Math.random() * bucketCount);
+                const fee = feeRange[bucketIdx] + Math.random() * (feeRange[bucketIdx + 1] - feeRange[bucketIdx]);
+                blocks[bi].txs.push(feeColor(fee));
+              } else {
+                blocks[bi].txs.push(feeColor(randomFee(null)));
+              }
             }
           }
         }
