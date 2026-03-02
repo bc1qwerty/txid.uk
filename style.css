@@ -381,15 +381,13 @@ footer {
   display: block;
 }
 #mempool-legend {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: .6rem;
-  z-index: 2;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: .68rem;
+  padding: 6px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
 }
 .leg { display: flex; align-items: center; gap: 5px; color: var(--text3); }
 .leg-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
