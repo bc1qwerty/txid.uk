@@ -46,11 +46,14 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
       </div>
       <span id="monitor-badge" class="monitor-badge" style="display:none" title="모니터링 중">0</span>
       <button id="theme-btn" onclick="App.toggleTheme()" title="테마 전환"></button>
-    <select id="lang-btn" onchange="App.setLang(this.value)">
-      <option value="ko">KO</option>
-      <option value="en">EN</option>
-      <option value="ja">日</option>
-    </select>
+    <div id="lang-wrap">
+      <button id="lang-btn" onclick="App.toggleLangMenu()">KO</button>
+      <div id="lang-menu">
+        <button onclick="App.setLang('ko')">KO</button>
+        <button onclick="App.setLang('en')">EN</button>
+        <button onclick="App.setLang('ja')">日</button>
+      </div>
+    </div>
     </div>
   </nav>
 </header>

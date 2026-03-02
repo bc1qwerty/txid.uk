@@ -1519,6 +1519,9 @@ window.App = {
     updateThemeBtn();
   },
 
+  toggleLangMenu() {
+    document.getElementById('lang-menu')?.classList.toggle('open');
+  },
   setLang(newLang) {
     lang = newLang;
     document.documentElement.lang = lang;
@@ -1604,14 +1607,19 @@ function updateThemeBtn() {
   const saved = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', saved);
   updateThemeBtn();
-  // 언어 select 초기값 동기화
-  const sel = document.getElementById('lang-btn');
-  if (sel) sel.value = lang;
+  // 언어 버튼 초기값 동기화
+  const lbtn = document.getElementById('lang-btn');
+  if (lbtn) lbtn.textContent = { ko: 'KO', en: 'EN', ja: '日' }[lang] || 'KO';
 })();
 
 // Enter 키 검색
 document.getElementById('search-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') App.doSearch(false);
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#lang-wrap')) {
+    document.getElementById('lang-menu')?.classList.remove('open');
+  }
 });
 document.getElementById('mobile-search-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') App.doSearch(true);
