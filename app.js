@@ -887,10 +887,21 @@ function renderFeeHistogram(mempoolBlocks, canvasEl) {
 // CHARTS
 // ═══════════════════════════════════════════
 async function loadBtcPriceChart() {
+  const infoElFail = () => {
+    const el = document.getElementById('price-info');
+    if (el && el.textContent.includes(t('loading'))) {
+      // 이미 updateStats에서 가격을 받았으면 그걸로 표시
+      const p = window._btcUsd;
+      if (p) el.innerHTML = `<span class="price-current">$${formatNum(Math.round(p))}</span>`;
+      else el.textContent = 'Price unavailable';
+    }
+    const c = document.getElementById('price-chart');
+    if (c) c.style.display = 'none';
+  };
   try {
-    // OHLCV 데이터 (CoinGecko - 30일 일봉)
-    const data = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=30').then(r => r.json());
-    if (!data?.length) return;
+    // OHLCV 데이터 (CoinGecko - 30일 일봉, 8초 타임아웃)
+    const data = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=30', {signal: AbortSignal.timeout(8000)}).then(r => r.json());
+    if (!data?.length) { infoElFail(); return; }
 
     const current = data[data.length - 1][4];
     const prev = data[data.length - 2]?.[4] || current;
@@ -944,7 +955,7 @@ async function loadBtcPriceChart() {
       const priceColor = '#f7931a';
       drawLineChart(canvas, data.map(d => d[4]), priceColor);
     }
-  } catch(e) { console.warn('price chart:', e); }
+  } catch(e) { console.warn('price chart:', e); infoElFail(); }
 }
 
 async function loadMempoolHistoryChart() {
