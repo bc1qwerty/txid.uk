@@ -513,6 +513,13 @@ async function updateStats() {
       }
     } catch {}
 
+    // BTC 도미넌스
+    try {
+      const gdata = await fetch('https://api.coingecko.com/api/v3/global').then(r=>r.json());
+      const dom = gdata?.data?.market_cap_percentage?.btc;
+      if (dom) flashStat('s-dom', dom.toFixed(1) + '%');
+    } catch {}
+
     // 반감기 카운트다운
     const currentHeight = Number(height);
     const nextHalving = Math.ceil((currentHeight + 1) / 210000) * 210000;
@@ -973,7 +980,7 @@ async function loadLightningStats() {
 // BLOCK PAGE
 // ═══════════════════════════════════════════
 async function renderBlock(app, param) {
-  app.innerHTML = `<div class="loading">${t('loading')}</div>`;
+  app.innerHTML = `<div class="skeleton-page"><div class="skel skel-title"></div><div class="skel skel-hash"></div><div class="skel-grid">${'<div class="skel skel-info-item"></div>'.repeat(8)}</div></div>`;
 
   try {
     let block;
@@ -1080,6 +1087,7 @@ async function renderBlock(app, param) {
     });
 
     loadBlockTxs(block.id, block.tx_count, 0);
+    // 블록 treemap 버튼 (page-actions에 이미 있음)
   } catch (e) {
     app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
@@ -1146,7 +1154,7 @@ async function loadBlockTxs(blockHash, totalCount, startIdx) {
 // TRANSACTION PAGE
 // ═══════════════════════════════════════════
 async function renderTx(app, txid) {
-  app.innerHTML = `<div class="loading">${t('loading')}</div>`;
+  app.innerHTML = `<div class="skeleton-page"><div class="skel skel-title"></div><div class="skel skel-hash"></div><div class="skel-grid">${'<div class="skel skel-info-item"></div>'.repeat(6)}</div><div class="skel skel-section"></div></div>`;
 
   try {
     const tx = await api('/tx/' + txid);
@@ -1995,6 +2003,68 @@ window.removeFavorite = removeFavorite;
 window.toggleMonitor = toggleMonitor;
 window.updateFeeCalc = updateFeeCalc;
 
+
+// ── TX 플로우 다이어그램 ──
+function renderTxFlowDiagram(tx) {
+  const container = document.getElementById('tx-flow-diagram');
+  if (!container) return;
+  const ins = (tx.vin || []).slice(0, 5);
+  const outs = (tx.vout || []).slice(0, 5);
+  const moreIn = (tx.vin||[]).length > 5 ? `<div class="tfd-more">+${tx.vin.length-5}개 더</div>` : '';
+  const moreOut = (tx.vout||[]).length > 5 ? `<div class="tfd-more">+${tx.vout.length-5}개 더</div>` : '';
+
+  const inItems = ins.map((v,i) => {
+    const val = v.prevout?.value != null ? formatBtc(v.prevout.value)+' BTC' : 'coinbase';
+    const addr = v.prevout?.scriptpubkey_address ? v.prevout.scriptpubkey_address.slice(0,14)+'…' : '—';
+    return `<div class="tfd-node tfd-in" style="--i:${i}">${escHtml(addr)}<span>${val}</span></div>`;
+  }).join('') + moreIn;
+
+  const outItems = outs.map((v,i) => {
+    const val = formatBtc(v.value)+' BTC';
+    const addr = v.scriptpubkey_address ? v.scriptpubkey_address.slice(0,14)+'…' : (v.scriptpubkey_type||'—');
+    return `<div class="tfd-node tfd-out" style="--i:${i}">${escHtml(addr)}<span>${val}</span></div>`;
+  }).join('') + moreOut;
+
+  container.innerHTML = `<div class="tfd-col">${inItems}</div><div class="tfd-arrow">→</div><div class="tfd-col">${outItems}</div>`;
+}
+window.renderTxFlowDiagram = renderTxFlowDiagram;
+
+// ── 키보드 단축키 도움말 ──
+function showShortcuts() {
+  document.getElementById('shortcuts-modal')?.remove();
+  const kbShortcuts = [
+    ['/', lang==='ko'?'검색 포커스':'Focus search'],
+    ['Esc', lang==='ko'?'모달 닫기':'Close modal'],
+    ['?', lang==='ko'?'이 도움말':lang==='ja'?'ショートカット':'This help'],
+  ];
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'shortcuts-modal';
+  modal.innerHTML = `<div class="modal-box" style="max-width:340px">
+    <div class="modal-header">
+      <span>${lang==='ko'?'키보드 단축키':lang==='ja'?'キーボードショートカット':'Keyboard Shortcuts'}</span>
+      <button class="modal-close" onclick="document.getElementById('shortcuts-modal')?.remove()">✕</button>
+    </div>
+    <div class="shortcuts-list">
+      ${kbShortcuts.map(([k,d]) => `<div class="shortcut-row"><kbd class="shortcut-key">${k}</kbd><span class="shortcut-desc">${d}</span></div>`).join('')}
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+window.showShortcuts = showShortcuts;
+
+// ── 404 페이지 ──
+function renderNotFound(app, msg) {
+  app.innerHTML = `
+    <div class="not-found-page">
+      <div class="nf-code">404</div>
+      <div class="nf-msg">${msg || (lang==='ko'?'페이지를 찾을 수 없습니다':'Page not found')}</div>
+      <a href="#/" class="btn-primary" style="margin-top:20px;display:inline-block">${lang==='ko'?'홈으로':lang==='ja'?'ホームへ':'Go Home'}</a>
+    </div>`;
+}
+window.renderNotFound = renderNotFound;
+
 // ── 오프라인 감지 ──
 function checkOnline() {
   const offline = !navigator.onLine;
@@ -2010,3 +2080,11 @@ function checkOnline() {
 }
 window.addEventListener('online', checkOnline);
 window.addEventListener('offline', checkOnline);
+
+// 시스템 다크모드 변경 감지
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+  if (!localStorage.getItem('theme')) {
+    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    if (typeof updateThemeBtn === 'function') updateThemeBtn();
+  }
+});

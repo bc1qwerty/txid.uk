@@ -1690,3 +1690,35 @@ body { transition: background .2s, color .2s; }
   .block-card .bc-fee-bar { display: none; }
   .block-card { padding: 12px; }
 }
+
+/* ── Skeleton 로딩 ── */
+@keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+.skel { border-radius:6px; background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%); background-size:800px 100%; animation:shimmer 1.4s infinite; }
+.skeleton-page { padding:20px 0; }
+.skel-title { height:28px; width:220px; margin-bottom:16px; }
+.skel-hash { height:18px; width:100%; max-width:580px; margin-bottom:20px; }
+.skel-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:20px; }
+.skel-info-item { height:56px; }
+.skel-section { height:120px; margin-top:16px; }
+
+/* ── 404 페이지 ── */
+.not-found-page { text-align:center; padding:60px 20px; }
+.nf-code { font-size:5rem; font-weight:700; color:var(--accent); font-family:var(--font); opacity:.4; line-height:1; }
+.nf-msg { color:var(--text2); font-size:.9rem; margin-top:12px; font-family:var(--font-ko); }
+
+/* ── 키보드 단축키 ── */
+.shortcuts-list { padding:4px 0 8px; }
+.shortcut-row { display:flex; align-items:center; gap:12px; padding:7px 0; border-bottom:1px solid var(--border); }
+.shortcut-row:last-child { border-bottom:none; }
+.shortcut-key { background:var(--bg3); border:1px solid var(--border); border-radius:4px; padding:3px 8px; font-family:var(--font); font-size:.72rem; color:var(--text2); white-space:nowrap; }
+.shortcut-desc { color:var(--text2); font-size:.8rem; font-family:var(--font-ko); }
+
+/* ── TX 플로우 다이어그램 ── */
+.tx-flow-diagram { display:flex; align-items:flex-start; gap:16px; padding:16px; background:var(--bg2); border:1px solid var(--border); border-radius:8px; margin-top:16px; overflow-x:auto; }
+.tfd-col { display:flex; flex-direction:column; gap:6px; min-width:150px; flex:1; }
+.tfd-node { font-size:.68rem; padding:6px 10px; background:var(--bg3); border:1px solid var(--border); border-radius:5px; font-family:var(--font); color:var(--text2); display:flex; flex-direction:column; gap:2px; }
+.tfd-node span { color:var(--accent); font-size:.65rem; }
+.tfd-in { border-left:2px solid #4488ff; }
+.tfd-out { border-left:2px solid var(--accent); }
+.tfd-arrow { font-size:1.4rem; color:var(--text3); flex-shrink:0; padding-top:10px; }
+.tfd-more { font-size:.65rem; color:var(--text3); text-align:center; padding:4px; }
