@@ -34,6 +34,9 @@ const i18n = {
     blocks144: '최근 144 블록 (~1일)',
     progress: '진행률', estimatedAdj: '예상 조정',
     last2016: '최근 2016 블록',
+    search: '검색',
+    coinbaseReward: '코인베이스 - 블록 보상',
+    block: '블록',
   },
   en: {
     home: 'Home', mining: 'Mining', search_ph: 'Search TXID / Block Height / Address...',
@@ -62,6 +65,9 @@ const i18n = {
     blocks144: 'Last 144 blocks (~1 day)',
     progress: 'Progress', estimatedAdj: 'Est. Adjustment',
     last2016: 'Last 2016 blocks',
+    search: 'Search',
+    coinbaseReward: 'Coinbase - Block Reward',
+    block: 'Block',
   }
 };
 
@@ -88,6 +94,45 @@ function fullDate(ts) { return new Date(ts * 1000).toLocaleString(); }
 function shortHash(h) { return h ? h.slice(0, 8) + '...' + h.slice(-8) : '—'; }
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+// 수수료 → 색상 레벨
+function feeLevel(sat) {
+  if (sat >= 100) return 'extreme';
+  if (sat >= 20) return 'high';
+  if (sat >= 5) return 'medium';
+  if (sat >= 2) return 'low';
+  if (sat >= 1) return 'economy';
+  if (sat >= 0.5) return 'minimal';
+  return 'negligible';
+}
+function feeColorHex(sat) {
+  if (sat >= 100) return '#ff4444';
+  if (sat >= 20) return '#ff8800';
+  if (sat >= 5) return '#f7931a';
+  if (sat >= 2) return '#ffcc00';
+  if (sat >= 1) return '#44bb44';
+  if (sat >= 0.5) return '#4488ff';
+  return '#445566';
+}
+function coloredFeeRate(sat) {
+  const level = feeLevel(sat);
+  return `<span class="fee-color" data-level="${level}">${Number(sat).toFixed(1)} sat/vB</span>`;
+}
+
+// 스켈레톤 생성
+function skeletonCards(n) {
+  let html = '<div class="skeleton-grid">';
+  for (let i = 0; i < n; i++) {
+    html += `<div class="skeleton-card" style="--i:${i}">
+      <div class="skeleton-line w60 h20"></div>
+      <div class="skeleton-line w80"></div>
+      <div class="skeleton-line w40"></div>
+      <div class="skeleton-line w100 mb0"></div>
+    </div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
 // ── API 호출 ──
 async function api(path) {
   const res = await fetch(API + path);
@@ -106,14 +151,52 @@ async function updateStats() {
       api('/mempool'), api('/v1/fees/recommended'), api('/blocks/tip/height')
     ]);
     statsData = { mem, fees, height };
-    document.getElementById('s-block').textContent = formatNum(height);
-    document.getElementById('s-tx').textContent = formatNum(mem.count);
-    document.getElementById('s-size').textContent = (mem.vsize / 1e6).toFixed(1) + ' MB';
-    document.getElementById('s-fee').textContent = fees.fastestFee + ' sat/vB';
+
+    flashStat('s-block', formatNum(height));
+    flashStat('s-tx', formatNum(mem.count));
+    flashStat('s-size', (mem.vsize / 1e6).toFixed(1) + ' MB');
+    flashStat('s-fee', fees.fastestFee + ' sat/vB');
   } catch (e) { console.warn('Stats fetch error:', e); }
 }
+
+function flashStat(id, newVal) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const oldVal = el.textContent;
+  el.textContent = newVal;
+  if (oldVal !== '—' && oldVal !== newVal) {
+    el.classList.remove('flash');
+    void el.offsetWidth; // force reflow
+    el.classList.add('flash');
+  }
+}
+
 updateStats();
 setInterval(updateStats, 30000);
+
+// ── 네비게이션 활성 상태 ──
+function updateActiveNav(path) {
+  // Desktop nav
+  document.querySelectorAll('#nav-links a').forEach(a => {
+    a.classList.toggle('active', a.dataset.page === path);
+  });
+  // Mobile bottom nav
+  document.querySelectorAll('#mobile-bottom-nav .mnav-item[data-page]').forEach(a => {
+    a.classList.toggle('active', a.dataset.page === path);
+  });
+}
+
+// ── 검색 플레이스홀더 로테이션 ──
+const placeholders_ko = ['TXID 검색...', '블록 높이 입력...', '주소 검색...', 'bc1q... 주소 입력...'];
+const placeholders_en = ['Search TXID...', 'Enter block height...', 'Search address...', 'Enter bc1q... address...'];
+let phIndex = 0;
+setInterval(() => {
+  phIndex = (phIndex + 1) % placeholders_ko.length;
+  const input = document.getElementById('search-input');
+  if (input && input !== document.activeElement) {
+    input.placeholder = (lang === 'ko' ? placeholders_ko : placeholders_en)[phIndex];
+  }
+}, 3000);
 
 // ── 라우터 ──
 function getRoute() {
@@ -132,11 +215,12 @@ window.addEventListener('load', route);
 function route() {
   const { path, param } = getRoute();
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="loading">${t('loading')}</div>`;
 
   // 멤풀 캔버스 숨기기/보이기
   const mempoolSection = document.getElementById('mempool-section');
   if (mempoolSection) mempoolSection.style.display = path === '' ? '' : 'none';
+
+  updateActiveNav(path);
 
   switch (path) {
     case '': renderHome(app); break;
@@ -159,7 +243,6 @@ function detectSearchType(q) {
 }
 
 async function resolveHex64(hex) {
-  // 블록 해시인지 TXID인지 확인
   try {
     const block = await api('/block/' + hex);
     if (block && block.id) return 'block';
@@ -169,6 +252,16 @@ async function resolveHex64(hex) {
     if (tx && tx.txid) return 'tx';
   } catch {}
   return null;
+}
+
+// ── 브레드크럼 ──
+function breadcrumb(items) {
+  return `<div class="breadcrumb">${items.map((item, i) => {
+    if (i < items.length - 1) {
+      return `<a href="${item.href}">${item.label}</a><span class="bc-sep">›</span>`;
+    }
+    return `<span>${item.label}</span>`;
+  }).join('')}</div>`;
 }
 
 // ═══════════════════════════════════════════
@@ -206,12 +299,12 @@ async function renderHome(app) {
   // 수수료 히스토그램
   const feeSection = document.createElement('div');
   feeSection.id = 'fee-histogram';
-  feeSection.innerHTML = `<h3>${t('feeDistribution')}</h3><canvas id="fee-chart"></canvas>`;
+  feeSection.innerHTML = `<h3><span class="section-icon">📊</span> ${t('feeDistribution')}</h3><canvas id="fee-chart"></canvas>`;
   app.appendChild(feeSection);
 
-  // 최근 블록
+  // 최근 블록 - skeleton loading
   const blocksSection = document.createElement('div');
-  blocksSection.innerHTML = `<div class="section-title">${t('recentBlocks')}</div><div class="blocks-grid" id="recent-blocks"><div class="loading">${t('loading')}</div></div>`;
+  blocksSection.innerHTML = `<div class="section-title"><span class="section-icon">⛏️</span> ${t('recentBlocks')}</div><div class="blocks-grid" id="recent-blocks">${skeletonCards(8)}</div>`;
   app.appendChild(blocksSection);
 
   // 데이터 로드
@@ -221,13 +314,9 @@ async function renderHome(app) {
       api('/v1/fees/mempool-blocks')
     ]);
 
-    // 최근 블록 렌더
     renderRecentBlocks(blocks.slice(0, 8));
-
-    // 수수료 히스토그램
     renderFeeHistogram(mempoolBlocks);
 
-    // 멤풀 비주얼 업데이트
     if (typeof MempoolViz !== 'undefined') {
       MempoolViz.updateData(blocks.slice(0, 6), mempoolBlocks);
     }
@@ -239,11 +328,31 @@ async function renderHome(app) {
 function renderRecentBlocks(blocks) {
   const grid = document.getElementById('recent-blocks');
   if (!grid) return;
-  grid.innerHTML = blocks.map(b => {
+  grid.innerHTML = blocks.map((b, idx) => {
     const pool = b.extras && b.extras.pool ? b.extras.pool.name : 'Unknown';
     const totalFees = b.extras ? b.extras.totalFees : 0;
+    const feeRange = b.extras && b.extras.feeRange ? b.extras.feeRange : null;
+    const avgFeeRate = b.extras && b.extras.avgFeeRate ? b.extras.avgFeeRate : null;
+    const medianFee = b.extras && b.extras.medianFee ? b.extras.medianFee : null;
+
+    // Fee bar gradient
+    let feeBarStyle = 'background: var(--border);';
+    if (feeRange && feeRange.length >= 2) {
+      const minFee = feeRange[0];
+      const maxFee = feeRange[feeRange.length - 1];
+      feeBarStyle = `background: linear-gradient(90deg, ${feeColorHex(minFee)}, ${feeColorHex(maxFee)});`;
+    }
+
+    // Fee range text
+    let feeRangeText = '';
+    if (feeRange && feeRange.length >= 2) {
+      feeRangeText = `${Math.round(feeRange[0])}~${Math.round(feeRange[feeRange.length - 1])} sat/vB`;
+    } else if (medianFee) {
+      feeRangeText = `~${Math.round(medianFee)} sat/vB`;
+    }
+
     return `
-      <div class="block-card" onclick="location.hash='#/block/${b.id}'">
+      <div class="block-card stagger-item" style="--i:${idx}" onclick="location.hash='#/block/${b.id}'" title="${b.id}">
         <div class="bc-top">
           <span class="bc-height">#${formatNum(b.height)}</span>
           <span class="bc-time" title="${fullDate(b.timestamp)}">${timeAgo(b.timestamp)}</span>
@@ -251,6 +360,8 @@ function renderRecentBlocks(blocks) {
         <div class="bc-row"><span>TX</span><span>${formatNum(b.tx_count)}</span></div>
         <div class="bc-row"><span>${t('size')}</span><span>${formatBytes(b.size)}</span></div>
         <div class="bc-row"><span>${t('fee')}</span><span>${formatBtc(totalFees)}</span></div>
+        ${feeRangeText ? `<div class="bc-fee-range">${feeRangeText}</div>` : ''}
+        <div class="bc-fee-bar" style="${feeBarStyle}"></div>
         <div class="bc-miner">${escHtml(pool)}</div>
       </div>
     `;
@@ -269,7 +380,6 @@ function renderFeeHistogram(mempoolBlocks) {
   ctx.scale(dpr, dpr);
   const W = rect.width, H = rect.height;
 
-  // 수수료 범위별 TX 수 집계
   const ranges = [
     { label: '0-1', min: 0, max: 1, color: '#445566', count: 0 },
     { label: '1-2', min: 1, max: 2, color: '#4488ff', count: 0 },
@@ -309,7 +419,6 @@ function renderFeeHistogram(mempoolBlocks) {
     ctx.fill();
     ctx.globalAlpha = 1;
 
-    // 카운트
     if (r.count > 0) {
       ctx.fillStyle = '#8b949e';
       ctx.font = '10px monospace';
@@ -317,15 +426,13 @@ function renderFeeHistogram(mempoolBlocks) {
       ctx.fillText(formatNum(r.count), x + bw / 2, y - 4);
     }
 
-    // 라벨
-    ctx.fillStyle = '#555';
+    ctx.fillStyle = '#6e7681';
     ctx.font = '9px monospace';
     ctx.textAlign = 'center';
     ctx.fillText(r.label, x + bw / 2, H - 4);
   });
 
-  // 단위 라벨
-  ctx.fillStyle = '#555';
+  ctx.fillStyle = '#6e7681';
   ctx.font = '9px monospace';
   ctx.textAlign = 'right';
   ctx.fillText('sat/vB', W - 4, H - 4);
@@ -350,10 +457,24 @@ async function renderBlock(app, param) {
     const totalFees = block.extras ? block.extras.totalFees || 0 : 0;
     const reward = block.extras ? block.extras.reward || 0 : 0;
     const totalOutput = block.extras ? block.extras.totalOutputAmt || 0 : 0;
+    const medianFee = block.extras ? block.extras.medianFee || 0 : 0;
+    const avgFeeRate = block.extras && block.extras.avgFeeRate ? block.extras.avgFeeRate : null;
+    const feeRange = block.extras && block.extras.feeRange ? block.extras.feeRange : null;
+
+    let feeRangeHtml = '';
+    if (feeRange && feeRange.length >= 2) {
+      feeRangeHtml = `${coloredFeeRate(feeRange[0])} ~ ${coloredFeeRate(feeRange[feeRange.length - 1])}`;
+    }
 
     app.innerHTML = `
+      ${breadcrumb([
+        { href: '#/', label: t('home') },
+        { href: '#/block/' + param, label: t('block') },
+        { href: '#/block/' + param, label: '#' + formatNum(block.height) }
+      ])}
+
       <div class="page-title">${t('blockExplorer')} #${formatNum(block.height)}</div>
-      <div class="page-hash">${block.id}</div>
+      <div class="page-hash" title="${block.id}">${block.id}</div>
 
       <div class="info-grid">
         <div class="info-item"><div class="info-label">${t('height')}</div><div class="info-value accent">${formatNum(block.height)}</div></div>
@@ -368,12 +489,14 @@ async function renderBlock(app, param) {
         <div class="info-item"><div class="info-label">${t('totalFees')}</div><div class="info-value">${formatBtc(totalFees)}</div></div>
         <div class="info-item"><div class="info-label">${t('subsidy')}</div><div class="info-value">${formatBtc(reward - totalFees)}</div></div>
         <div class="info-item"><div class="info-label">${t('totalOutput')}</div><div class="info-value">${formatBtc(totalOutput)}</div></div>
-        <div class="info-item"><div class="info-label">${t('miner')}</div><div class="info-value accent">${escHtml(pool)}</div></div>
+        <div class="info-item"><div class="info-label">${t('miner')}</div><div class="info-value accent">⛏ ${escHtml(pool)}</div></div>
         <div class="info-item"><div class="info-label">${t('txCount')}</div><div class="info-value">${formatNum(block.tx_count)}</div></div>
+        ${avgFeeRate ? `<div class="info-item"><div class="info-label">${t('feeRate')} (avg)</div><div class="info-value">${coloredFeeRate(avgFeeRate)}</div></div>` : ''}
+        ${feeRangeHtml ? `<div class="info-item"><div class="info-label">${t('feeRate')} (min~max)</div><div class="info-value">${feeRangeHtml}</div></div>` : ''}
       </div>
 
-      <div class="section-title">${t('transactions')}</div>
-      <div id="block-txs"><div class="loading">${t('loading')}</div></div>
+      <div class="section-title"><span class="section-icon">📋</span> ${t('transactions')}</div>
+      <div id="block-txs">${skeletonCards(4)}</div>
       <div id="block-txs-pagination"></div>
     `;
 
@@ -383,13 +506,12 @@ async function renderBlock(app, param) {
   }
 }
 
-let blockTxCache = {};
 async function loadBlockTxs(blockHash, totalCount, startIdx) {
   const container = document.getElementById('block-txs');
   const pagination = document.getElementById('block-txs-pagination');
   if (!container) return;
 
-  container.innerHTML = `<div class="loading">${t('loading')}</div>`;
+  container.innerHTML = skeletonCards(4);
 
   try {
     const txs = await api(`/block/${blockHash}/txs/${startIdx}`);
@@ -406,18 +528,21 @@ async function loadBlockTxs(blockHash, totalCount, startIdx) {
             <th>${t('outputs')}</th>
             <th>${t('value')} (BTC)</th>
             <th>${t('fee')} (sat)</th>
+            <th>${t('feeRate')}</th>
             <th>${t('size')}</th>
           </tr></thead>
           <tbody>
             ${txs.map((tx, i) => {
               const isCoinbase = tx.vin && tx.vin[0] && tx.vin[0].is_coinbase;
               const totalOut = tx.vout ? tx.vout.reduce((s, o) => s + (o.value || 0), 0) : 0;
-              return `<tr>
-                <td class="txid-col"><a href="#/tx/${tx.txid}">${isCoinbase ? '<span class="coinbase">[CB]</span> ' : ''}${tx.txid.slice(0, 16)}...</a></td>
+              const feeRate = !isCoinbase && tx.weight ? (tx.fee / (tx.weight / 4)).toFixed(1) : null;
+              return `<tr class="stagger-item" style="--i:${i}">
+                <td class="txid-col"><a href="#/tx/${tx.txid}">${isCoinbase ? '<span class="coinbase">⛏ [CB]</span> ' : ''}${tx.txid.slice(0, 16)}...</a></td>
                 <td>${tx.vin ? tx.vin.length : 0}</td>
                 <td>${tx.vout ? tx.vout.length : 0}</td>
                 <td>${satToBtc(totalOut)}</td>
                 <td>${isCoinbase ? '—' : formatNum(tx.fee)}</td>
+                <td>${feeRate ? coloredFeeRate(feeRate) : '—'}</td>
                 <td>${formatNum(tx.size)}</td>
               </tr>`;
             }).join('')}
@@ -450,6 +575,7 @@ async function renderTx(app, txid) {
     const totalIn = tx.vin ? tx.vin.reduce((s, v) => s + (v.prevout ? v.prevout.value || 0 : 0), 0) : 0;
     const totalOut = tx.vout ? tx.vout.reduce((s, o) => s + (o.value || 0), 0) : 0;
     const isCoinbase = tx.vin && tx.vin[0] && tx.vin[0].is_coinbase;
+    const feeRate = !isCoinbase && tx.weight ? (tx.fee / (tx.weight / 4)) : 0;
 
     function getAddrType(scriptpubkey_type) {
       const types = {
@@ -460,19 +586,28 @@ async function renderTx(app, txid) {
       return types[scriptpubkey_type] || scriptpubkey_type || '?';
     }
 
+    // Breadcrumb
+    let bcItems = [{ href: '#/', label: t('home') }];
+    if (isConfirmed) {
+      bcItems.push({ href: '#/block/' + tx.status.block_hash, label: t('block') + ' #' + formatNum(tx.status.block_height) });
+    }
+    bcItems.push({ href: '#/tx/' + txid, label: 'TX ' + shortHash(txid) });
+
     app.innerHTML = `
+      ${breadcrumb(bcItems)}
+
       <div class="page-title">
-        ${t('transaction')}
+        ${isCoinbase ? '⛏️ ' : ''}${t('transaction')}
         <span class="badge ${isConfirmed ? 'badge-confirmed' : 'badge-unconfirmed'}">${isConfirmed ? t('confirmed') : t('unconfirmed')}</span>
       </div>
-      <div class="page-hash">${tx.txid}</div>
+      <div class="page-hash" title="${tx.txid}">${tx.txid}</div>
 
       <div class="info-grid">
         <div class="info-item"><div class="info-label">TXID</div><div class="info-value small">${tx.txid}</div></div>
         <div class="info-item"><div class="info-label">${t('height')}</div><div class="info-value">${isConfirmed ? `<a href="#/block/${tx.status.block_hash}">${formatNum(tx.status.block_height)}</a>` : '—'}</div></div>
         <div class="info-item"><div class="info-label">${t('timestamp')}</div><div class="info-value">${isConfirmed ? fullDate(tx.status.block_time) + '<br><small style="color:var(--text3)">' + timeAgo(tx.status.block_time) + '</small>' : '—'}</div></div>
         <div class="info-item"><div class="info-label">${t('fee')}</div><div class="info-value">${isCoinbase ? '—' : formatNum(tx.fee) + ' sat (' + formatBtc(tx.fee) + ')'}</div></div>
-        <div class="info-item"><div class="info-label">${t('feeRate')}</div><div class="info-value">${isCoinbase ? '—' : (tx.fee / (tx.weight / 4)).toFixed(2) + ' sat/vB'}</div></div>
+        <div class="info-item"><div class="info-label">${t('feeRate')}</div><div class="info-value">${isCoinbase ? '—' : coloredFeeRate(feeRate)}</div></div>
         <div class="info-item"><div class="info-label">${t('size')}</div><div class="info-value">${formatNum(tx.size)} bytes</div></div>
         <div class="info-item"><div class="info-label">${t('vsize')}</div><div class="info-value">${formatNum(Math.ceil(tx.weight / 4))} vBytes</div></div>
         <div class="info-item"><div class="info-label">${t('weight')}</div><div class="info-value">${formatNum(tx.weight)} WU</div></div>
@@ -484,7 +619,7 @@ async function renderTx(app, txid) {
       ${!isConfirmed ? `<div class="info-grid" style="margin-bottom:20px"><div class="info-item"><div class="info-label">${t('estimatedConf')}</div><div class="info-value accent">${t('unconfirmed')}</div></div></div>` : ''}
 
       <div class="tx-flow-summary">
-        <div class="fs-item"><div class="fs-label">${t('inputs')}</div><div class="fs-val">${isCoinbase ? t('coinbaseTx') : formatBtc(totalIn)}</div></div>
+        <div class="fs-item"><div class="fs-label">${t('inputs')}</div><div class="fs-val">${isCoinbase ? '⛏️ ' + t('coinbaseReward') : formatBtc(totalIn)}</div></div>
         <div class="fs-item"><div class="fs-label">→</div><div class="fs-val"></div></div>
         <div class="fs-item"><div class="fs-label">${t('outputs')}</div><div class="fs-val green">${formatBtc(totalOut)}</div></div>
         ${!isCoinbase ? `<div class="fs-item"><div class="fs-label">${t('fee')}</div><div class="fs-val red">${formatBtc(tx.fee)}</div></div>` : ''}
@@ -493,26 +628,31 @@ async function renderTx(app, txid) {
       <div class="tx-flow">
         <div class="tx-flow-col">
           <h4>${t('inputs')} (${tx.vin ? tx.vin.length : 0})</h4>
-          ${(tx.vin || []).map(v => {
-            if (v.is_coinbase) return `<div class="tx-io-item"><div class="io-addr" style="color:var(--accent)">${t('coinbaseTx')}</div><div class="io-val">${formatBtc(totalOut)}</div></div>`;
+          ${(tx.vin || []).map((v, i) => {
+            if (v.is_coinbase) return `<div class="tx-io-item coinbase-item stagger-item" style="--i:${i}"><div class="io-addr" style="color:var(--accent)">⛏️ ${t('coinbaseReward')}</div><div class="io-val">${formatBtc(totalOut)}</div></div>`;
             const addr = v.prevout ? (v.prevout.scriptpubkey_address || 'Unknown') : 'Unknown';
             const val = v.prevout ? v.prevout.value || 0 : 0;
             const addrType = v.prevout ? getAddrType(v.prevout.scriptpubkey_type) : '?';
-            return `<div class="tx-io-item">
+            return `<div class="tx-io-item stagger-item" style="--i:${i}">
               <div class="io-addr" onclick="location.hash='#/address/${addr}'">${addr}</div>
               <div class="io-val">${formatBtc(val)}</div>
               <div class="io-type">${addrType}</div>
             </div>`;
           }).join('')}
         </div>
-        <div class="tx-flow-arrow">→</div>
+        <div class="tx-flow-arrow">
+          <div class="arrow-icon">→</div>
+          ${!isCoinbase ? `<div class="arrow-fee">${formatNum(tx.fee)} sat<br>${feeRate.toFixed(1)} sat/vB</div>` : ''}
+        </div>
         <div class="tx-flow-col">
           <h4>${t('outputs')} (${tx.vout ? tx.vout.length : 0})</h4>
-          ${(tx.vout || []).map(o => {
-            const addr = o.scriptpubkey_address || (o.scriptpubkey_type === 'op_return' ? 'OP_RETURN' : 'Unknown');
+          ${(tx.vout || []).map((o, i) => {
+            const isOpReturn = o.scriptpubkey_type === 'op_return';
+            const addr = o.scriptpubkey_address || (isOpReturn ? 'OP_RETURN' : 'Unknown');
             const addrType = getAddrType(o.scriptpubkey_type);
-            return `<div class="tx-io-item">
-              <div class="io-addr" ${addr !== 'OP_RETURN' && addr !== 'Unknown' ? `onclick="location.hash='#/address/${addr}'"` : ''} ${addr === 'OP_RETURN' ? 'style="color:var(--text3)"' : ''}>${addr}</div>
+            const itemClass = isOpReturn ? 'tx-io-item op-return-item' : 'tx-io-item';
+            return `<div class="${itemClass} stagger-item" style="--i:${i}">
+              <div class="io-addr" ${!isOpReturn && addr !== 'Unknown' ? `onclick="location.hash='#/address/${addr}'"` : ''}>${isOpReturn ? '📝 OP_RETURN' : addr}</div>
               <div class="io-val">${formatBtc(o.value)}</div>
               <div class="io-type">${addrType}</div>
             </div>`;
@@ -549,19 +689,25 @@ async function renderAddress(app, address) {
     }
 
     app.innerHTML = `
+      ${breadcrumb([
+        { href: '#/', label: t('home') },
+        { href: '#/address/' + address, label: t('address') },
+        { href: '#/address/' + address, label: shortHash(address) }
+      ])}
+
       <div class="page-title">${t('address')}</div>
-      <div class="page-hash">${address}</div>
+      <div class="page-hash" title="${address}">${address}</div>
 
       <div class="addr-summary">
-        <div class="addr-stat"><div class="as-val">${getAddrTypeFromAddr(address)}</div><div class="as-lbl">${t('type')}</div></div>
-        <div class="addr-stat"><div class="as-val">${formatBtc(balance)}</div><div class="as-lbl">${t('balance')}</div></div>
-        <div class="addr-stat"><div class="as-val">${formatBtc(totalReceived)}</div><div class="as-lbl">${t('totalReceived')}</div></div>
-        <div class="addr-stat"><div class="as-val">${formatBtc(totalSent)}</div><div class="as-lbl">${t('totalSent')}</div></div>
-        <div class="addr-stat"><div class="as-val">${formatNum(txCount)}</div><div class="as-lbl">${t('txCount')}</div></div>
+        <div class="addr-stat stagger-item" style="--i:0"><div class="as-val">${getAddrTypeFromAddr(address)}</div><div class="as-lbl">${t('type')}</div></div>
+        <div class="addr-stat stagger-item" style="--i:1"><div class="as-val">${formatBtc(balance)}</div><div class="as-lbl">${t('balance')}</div></div>
+        <div class="addr-stat stagger-item" style="--i:2"><div class="as-val">${formatBtc(totalReceived)}</div><div class="as-lbl">${t('totalReceived')}</div></div>
+        <div class="addr-stat stagger-item" style="--i:3"><div class="as-val">${formatBtc(totalSent)}</div><div class="as-lbl">${t('totalSent')}</div></div>
+        <div class="addr-stat stagger-item" style="--i:4"><div class="as-val">${formatNum(txCount)}</div><div class="as-lbl">${t('txCount')}</div></div>
       </div>
 
-      <div class="section-title">${t('txHistory')}</div>
-      <div id="addr-txs"><div class="loading">${t('loading')}</div></div>
+      <div class="section-title"><span class="section-icon">📋</span> ${t('txHistory')}</div>
+      <div id="addr-txs">${skeletonCards(4)}</div>
       <div id="addr-txs-more"></div>
     `;
 
@@ -576,16 +722,16 @@ async function loadAddrTxs(address, lastTxid) {
   const moreBtn = document.getElementById('addr-txs-more');
   if (!container) return;
 
-  if (!lastTxid) container.innerHTML = `<div class="loading">${t('loading')}</div>`;
+  if (!lastTxid) container.innerHTML = skeletonCards(4);
 
   try {
     const url = lastTxid ? `/address/${address}/txs/chain/${lastTxid}` : `/address/${address}/txs`;
     const txs = await api(url);
 
-    const html = txs.map(tx => {
+    const html = txs.map((tx, i) => {
       const totalOut = tx.vout ? tx.vout.reduce((s, o) => s + (o.value || 0), 0) : 0;
       const isConfirmed = tx.status && tx.status.confirmed;
-      return `<tr>
+      return `<tr class="stagger-item" style="--i:${i}">
         <td class="txid-col"><a href="#/tx/${tx.txid}">${tx.txid.slice(0, 16)}...</a></td>
         <td><span class="badge ${isConfirmed ? 'badge-confirmed' : 'badge-unconfirmed'}" style="font-size:.6rem;padding:1px 5px">${isConfirmed ? formatNum(tx.status.block_height) : t('unconfirmed')}</span></td>
         <td>${satToBtc(totalOut)}</td>
@@ -627,7 +773,7 @@ async function loadAddrTxs(address, lastTxid) {
 // MINING PAGE
 // ═══════════════════════════════════════════
 async function renderMining(app) {
-  app.innerHTML = `<div class="loading">${t('loading')}</div>`;
+  app.innerHTML = skeletonCards(6);
 
   try {
     const [hashrate, diffAdj, blocks] = await Promise.all([
@@ -636,7 +782,6 @@ async function renderMining(app) {
       api('/v1/blocks')
     ]);
 
-    // 마이너 통계 계산 (최근 144블록)
     const recentBlocks = blocks.slice(0, 144);
     const minerMap = {};
     let totalFees = 0, totalReward = 0;
@@ -648,7 +793,6 @@ async function renderMining(app) {
     });
     const topMiners = Object.entries(minerMap).sort((a, b) => b[1] - a[1]);
 
-    // 평균 블록 시간
     let avgBlockTime = 600;
     if (recentBlocks.length > 1) {
       const first = recentBlocks[recentBlocks.length - 1].timestamp;
@@ -660,22 +804,27 @@ async function renderMining(app) {
     const estChange = diffAdj.difficultyChange || 0;
 
     app.innerHTML = `
-      <div class="page-title">${t('miningStats')}</div>
+      ${breadcrumb([
+        { href: '#/', label: t('home') },
+        { href: '#/mining', label: t('miningStats') }
+      ])}
+
+      <div class="page-title"><span class="section-icon">⛏️</span> ${t('miningStats')}</div>
 
       <div class="mining-stats-row">
-        <div class="ms-card"><div class="ms-val">${formatNum(recentBlocks[0]?.height)}</div><div class="ms-lbl">${t('blockHeight')}</div></div>
-        <div class="ms-card"><div class="ms-val">${Math.round(avgBlockTime / 60 * 10) / 10} min</div><div class="ms-lbl">${t('avgBlockTime')} (${t('blocks144')})</div></div>
-        <div class="ms-card"><div class="ms-val">${formatBtc(Math.round(totalReward / recentBlocks.length))}</div><div class="ms-lbl">${t('blockReward')} (avg)</div></div>
-        <div class="ms-card"><div class="ms-val">${formatBtc(Math.round(totalFees / recentBlocks.length))}</div><div class="ms-lbl">${t('fee')} (avg/block)</div></div>
+        <div class="ms-card stagger-item" style="--i:0"><div class="ms-val">${formatNum(recentBlocks[0]?.height)}</div><div class="ms-lbl">${t('blockHeight')}</div></div>
+        <div class="ms-card stagger-item" style="--i:1"><div class="ms-val">${Math.round(avgBlockTime / 60 * 10) / 10} min</div><div class="ms-lbl">${t('avgBlockTime')} (${t('blocks144')})</div></div>
+        <div class="ms-card stagger-item" style="--i:2"><div class="ms-val">${formatBtc(Math.round(totalReward / recentBlocks.length))}</div><div class="ms-lbl">${t('blockReward')} (avg)</div></div>
+        <div class="ms-card stagger-item" style="--i:3"><div class="ms-val">${formatBtc(Math.round(totalFees / recentBlocks.length))}</div><div class="ms-lbl">${t('fee')} (avg/block)</div></div>
       </div>
 
       <div class="mining-grid">
-        <div class="mining-card">
-          <h3>${t('hashrate')} (30${lang === 'ko' ? '일' : ' days'})</h3>
+        <div class="mining-card stagger-item" style="--i:4">
+          <h3><span class="section-icon">📈</span> ${t('hashrate')} (30${lang === 'ko' ? '일' : ' days'})</h3>
           <canvas id="hashrate-chart"></canvas>
         </div>
-        <div class="mining-card">
-          <h3>${t('diffAdj')}</h3>
+        <div class="mining-card stagger-item" style="--i:5">
+          <h3><span class="section-icon">🎯</span> ${t('diffAdj')}</h3>
           <div style="margin-bottom:8px;font-size:.75rem;color:var(--text2)">
             ${t('progress')}: ${diffProgress.toFixed(1)}% (${diffAdj.remainingBlocks || '?'} ${lang === 'ko' ? '블록 남음' : 'blocks left'})
           </div>
@@ -692,15 +841,15 @@ async function renderMining(app) {
         </div>
       </div>
 
-      <div class="mining-card" style="margin-bottom:20px">
-        <h3>${t('topMiners')} (${t('blocks144')})</h3>
+      <div class="mining-card stagger-item" style="--i:6;margin-bottom:20px">
+        <h3><span class="section-icon">🏆</span> ${t('topMiners')} (${t('blocks144')})</h3>
         <table class="miners-table">
           <thead><tr><th>${t('miner')}</th><th>${lang === 'ko' ? '블록' : 'Blocks'}</th><th>%</th><th></th></tr></thead>
           <tbody>
-            ${topMiners.slice(0, 15).map(([name, count]) => {
+            ${topMiners.slice(0, 15).map(([name, count], i) => {
               const pct = (count / recentBlocks.length * 100).toFixed(1);
-              return `<tr>
-                <td>${escHtml(name)}</td>
+              return `<tr class="stagger-item" style="--i:${i + 7}">
+                <td>⛏ ${escHtml(name)}</td>
                 <td>${count}</td>
                 <td>${pct}%</td>
                 <td><div class="miner-bar" style="width:${pct}%"></div></td>
@@ -711,7 +860,6 @@ async function renderMining(app) {
       </div>
     `;
 
-    // 해시레이트 차트
     renderHashrateChart(hashrate);
   } catch (e) {
     app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
@@ -750,7 +898,7 @@ function renderHashrateChart(data) {
     const y = padT + (chartH / 4) * i;
     ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
     const val = maxVal - (range / 4) * i;
-    ctx.fillStyle = '#555';
+    ctx.fillStyle = '#6e7681';
     ctx.font = '9px monospace';
     ctx.textAlign = 'right';
     ctx.fillText(val.toFixed(0) + ' EH/s', padL - 4, y + 3);
@@ -790,14 +938,16 @@ window.App = {
     document.querySelectorAll('[data-ko]').forEach(el => {
       el.textContent = lang === 'ko' ? el.dataset.ko : el.dataset.en;
     });
-    // 현재 페이지 다시 렌더
     route();
   },
 
-  async doSearch() {
-    const input = document.getElementById('search-input');
+  async doSearch(fromMobile) {
+    const inputId = fromMobile ? 'mobile-search-input' : 'search-input';
+    const input = document.getElementById(inputId);
     const q = input.value.trim();
     if (!q) return;
+
+    if (fromMobile) App.closeMobileSearch();
 
     const detected = detectSearchType(q);
     if (!detected) {
@@ -813,7 +963,6 @@ window.App = {
         navigate('#/address/' + detected.val);
         break;
       case 'hex64':
-        // 블록 해시 또는 TXID 확인
         const app = document.getElementById('app');
         app.innerHTML = `<div class="loading">${t('loading')}</div>`;
         const resolved = await resolveHex64(detected.val);
@@ -823,12 +972,40 @@ window.App = {
         break;
     }
     input.value = '';
+  },
+
+  openMobileSearch() {
+    const overlay = document.getElementById('mobile-search-overlay');
+    overlay.classList.add('open');
+    const input = document.getElementById('mobile-search-input');
+    setTimeout(() => input.focus(), 100);
+  },
+
+  closeMobileSearch() {
+    const overlay = document.getElementById('mobile-search-overlay');
+    overlay.classList.remove('open');
   }
 };
 
 // Enter 키 검색
 document.getElementById('search-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') App.doSearch();
+  if (e.key === 'Enter') App.doSearch(false);
+});
+document.getElementById('mobile-search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') App.doSearch(true);
+  if (e.key === 'Escape') App.closeMobileSearch();
+});
+
+// "/" 키로 검색 포커스
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+    e.preventDefault();
+    document.getElementById('search-input').focus();
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('search-input').blur();
+    App.closeMobileSearch();
+  }
 });
 
 // loadBlockTxs, loadAddrTxs 글로벌

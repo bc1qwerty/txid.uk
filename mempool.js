@@ -12,6 +12,7 @@ const MempoolViz = (() => {
   let mempoolFeeRange = null;
   let lastConfirm = Date.now();
   let initialized = false;
+  let initRetries = 0;
 
   const COLS = 7;
   const PX = 4;
@@ -43,12 +44,15 @@ const MempoolViz = (() => {
   function makeBlock(index, confirmed, txCount, feeRange) {
     const W = canvas.width;
     const H = canvas.height;
-    const BLOCK_W = Math.min(110, Math.floor((W - 80) / COLS - 12));
-    const BLOCK_H = Math.min(160, H - 60);
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = W / dpr;
+    const cssH = H / dpr;
+    const BLOCK_W = Math.min(110, Math.floor((cssW - 80) / COLS - 12));
+    const BLOCK_H = Math.min(160, cssH - 60);
     const totalW = COLS * (BLOCK_W + 12);
-    const startX = (W - totalW) / 2 + 6;
+    const startX = (cssW - totalW) / 2 + 6;
     const x = startX + index * (BLOCK_W + 12);
-    const y = (H - BLOCK_H) / 2;
+    const y = (cssH - BLOCK_H) / 2;
     const maxTx = Math.floor(BLOCK_W / PX) * Math.floor(BLOCK_H / PX);
     const count = Math.min(txCount, maxTx);
     const txs = [];
@@ -87,6 +91,17 @@ const MempoolViz = (() => {
     ctx.lineWidth = b.confirmed ? 1 : 2;
     ctx.strokeRect(b.x, b.y, b.w, b.h);
 
+    // 멤풀 블록 glow effect
+    if (!b.confirmed) {
+      ctx.save();
+      ctx.shadowColor = '#f7931a';
+      ctx.shadowBlur = 8;
+      ctx.strokeStyle = 'rgba(247,147,26,0.4)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(b.x, b.y, b.w, b.h);
+      ctx.restore();
+    }
+
     // 라벨
     ctx.font = '10px monospace';
     ctx.textAlign = 'center';
@@ -94,7 +109,7 @@ const MempoolViz = (() => {
       ctx.fillStyle = '#f7931a';
       ctx.fillText('MEMPOOL', b.x + b.w / 2, b.y - 8);
       const pct = Math.round((b.txs.length / b.maxTx) * 100);
-      ctx.fillStyle = '#555';
+      ctx.fillStyle = '#6e7681';
       ctx.fillText(pct + '%', b.x + b.w / 2, b.y + b.h + 14);
     } else {
       ctx.fillStyle = '#2a3040';
@@ -103,12 +118,14 @@ const MempoolViz = (() => {
     }
   }
 
-  // TX 파티클
+  // TX 파티클 with glow
   class Tx {
     constructor() {
       const mb = blocks[COLS - 1];
-      if (!mb) return;
-      this.x = canvas.width + Math.random() * 200 + 30;
+      if (!mb) { this.alive = false; return; }
+      const dpr = window.devicePixelRatio || 1;
+      const cssW = canvas.width / dpr;
+      this.x = cssW + Math.random() * 200 + 30;
       this.y = mb.y + Math.random() * mb.h;
       this.tx = mb.x + Math.random() * mb.w;
       this.ty = mb.y + Math.random() * mb.h;
@@ -116,6 +133,7 @@ const MempoolViz = (() => {
       this.color = feeColor(this.fee);
       this.speed = 2 + Math.random() * 2.5;
       this.alive = true;
+      this.size = 3;
     }
     update() {
       const dx = this.tx - this.x, dy = this.ty - this.y;
@@ -126,11 +144,15 @@ const MempoolViz = (() => {
     }
     draw() {
       ctx.save();
-      ctx.globalAlpha = 0.85;
+      ctx.globalAlpha = 0.9;
       ctx.fillStyle = this.color;
       ctx.shadowColor = this.color;
-      ctx.shadowBlur = 6;
-      ctx.fillRect(this.x, this.y, 3, 3);
+      ctx.shadowBlur = 10;
+      ctx.fillRect(this.x - 1, this.y - 1, this.size, this.size);
+      // Second pass for brighter glow
+      ctx.globalAlpha = 0.5;
+      ctx.shadowBlur = 20;
+      ctx.fillRect(this.x, this.y, this.size - 1, this.size - 1);
       ctx.restore();
     }
   }
@@ -139,7 +161,6 @@ const MempoolViz = (() => {
     for (let i = 0; i < COLS - 2; i++) {
       blocks[i].txs = [...blocks[i + 1].txs];
     }
-    // 마지막 확인 블록 ← 멤풀의 40%
     if (blocks[COLS - 2] && blocks[COLS - 1]) {
       blocks[COLS - 2].txs = blocks[COLS - 1].txs.slice(0, Math.floor(blocks[COLS - 1].txs.length * 0.6));
     }
@@ -150,10 +171,11 @@ const MempoolViz = (() => {
 
   function animate() {
     if (!canvas || !ctx) return;
-    const W = canvas.width;
-    const H = canvas.height;
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = canvas.width / dpr;
+    const cssH = canvas.height / dpr;
 
-    ctx.clearRect(0, 0, W, H);
+    ctx.clearRect(0, 0, cssW, cssH);
 
     // 연결선
     for (let i = 0; i < blocks.length - 1; i++) {
@@ -195,13 +217,21 @@ const MempoolViz = (() => {
     if (!canvas) return;
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
+
+    // canvas가 아직 레이아웃되지 않은 경우 재시도
+    if (rect.width === 0 || rect.height === 0) {
+      if (initRetries < 10) {
+        initRetries++;
+        requestAnimationFrame(resizeCanvas);
+      }
+      return;
+    }
+
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-    // 블록 좌표를 CSS 좌표계로 다시 계산
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     initBlocks();
+    initRetries = 0;
   }
 
   return {
@@ -209,6 +239,7 @@ const MempoolViz = (() => {
       if (!canvasEl) return;
       canvas = canvasEl;
       ctx = canvas.getContext('2d');
+      initRetries = 0;
 
       resizeCanvas();
 
@@ -227,10 +258,9 @@ const MempoolViz = (() => {
     updateData(confirmedBlocks, mempoolBlocks) {
       if (!canvas) return;
 
-      // 확인된 블록 업데이트
       if (confirmedBlocks && confirmedBlocks.length) {
         for (let i = 0; i < Math.min(confirmedBlocks.length, COLS - 1); i++) {
-          const bi = COLS - 2 - i; // 오른쪽부터
+          const bi = COLS - 2 - i;
           if (blocks[bi]) {
             const cb = confirmedBlocks[i];
             blocks[bi].txs = [];
@@ -243,7 +273,6 @@ const MempoolViz = (() => {
         }
       }
 
-      // 멤풀 블록 업데이트
       if (mempoolBlocks && mempoolBlocks[0]) {
         mempoolFeeRange = mempoolBlocks[0].feeRange;
         const mb = blocks[COLS - 1];

@@ -16,12 +16,13 @@
     <a href="#/" class="logo">txid.uk</a>
     <div id="search-wrap">
       <input type="text" id="search-input" placeholder="TXID / 블록 높이 / 주소 검색..." autocomplete="off" spellcheck="false">
-      <button id="search-btn" onclick="App.doSearch()">⏎</button>
+      <kbd class="search-shortcut" id="search-shortcut">/</kbd>
+      <button id="search-btn" onclick="App.doSearch()">🔍</button>
     </div>
     <div class="nav-right">
       <div id="nav-links">
-        <a href="#/" data-ko="홈" data-en="Home">홈</a>
-        <a href="#/mining" data-ko="채굴" data-en="Mining">채굴</a>
+        <a href="#/" data-page="" data-ko="홈" data-en="Home">홈</a>
+        <a href="#/mining" data-page="mining" data-ko="채굴" data-en="Mining">채굴</a>
       </div>
       <button id="lang-btn" onclick="App.toggleLang()">EN</button>
     </div>
@@ -50,6 +51,30 @@
     </div>
   </div>
 </footer>
+
+<!-- Mobile Bottom Nav -->
+<nav id="mobile-bottom-nav">
+  <a href="#/" data-page="" class="mnav-item active">
+    <span class="mnav-icon">🏠</span>
+    <span class="mnav-label" data-ko="홈" data-en="Home">홈</span>
+  </a>
+  <a href="javascript:void(0)" onclick="App.openMobileSearch()" class="mnav-item">
+    <span class="mnav-icon">🔍</span>
+    <span class="mnav-label" data-ko="검색" data-en="Search">검색</span>
+  </a>
+  <a href="#/mining" data-page="mining" class="mnav-item">
+    <span class="mnav-icon">⛏️</span>
+    <span class="mnav-label" data-ko="채굴" data-en="Mining">채굴</span>
+  </a>
+</nav>
+
+<!-- Mobile Search Overlay -->
+<div id="mobile-search-overlay" class="mobile-search-overlay">
+  <div class="mobile-search-inner">
+    <input type="text" id="mobile-search-input" placeholder="TXID / 블록 높이 / 주소 검색..." autocomplete="off" spellcheck="false">
+    <button onclick="App.closeMobileSearch()">✕</button>
+  </div>
+</div>
 
 <script src="mempool.js"></script>
 <script src="app.js"></script>
