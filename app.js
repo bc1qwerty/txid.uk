@@ -437,7 +437,7 @@ async function onNewBlock(block) {
           api('/v1/blocks'),
           api('/v1/fees/mempool-blocks')
         ]);
-        renderRecentBlocks(newBlocks.slice(0, 7));
+        renderRecentBlocks(newBlocks.slice(0, 8));
         if (typeof MempoolViz !== 'undefined') {
           MempoolViz.updateData(newBlocks.slice(0, 6), mempoolBlocks);
         }
@@ -697,7 +697,7 @@ async function renderHome(app) {
       api('/v1/fees/mempool-blocks')
     ]);
 
-    renderRecentBlocks(blocks.slice(0, 7));
+    renderRecentBlocks(blocks.slice(0, 8));
 
     if (typeof MempoolViz !== 'undefined') {
       MempoolViz.updateData(blocks.slice(0, 6), mempoolBlocks);

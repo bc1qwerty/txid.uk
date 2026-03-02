@@ -24,7 +24,7 @@ const MempoolViz = (() => {
   function isLight() { return document.documentElement.getAttribute('data-theme') === 'light'; }
   function themeColor(dark, light) { return isLight() ? light : dark; }
 
-  const CONFIRMED_COUNT = 6;
+  const CONFIRMED_COUNT = 5;
   const MEMPOOL_COLS = 1;
   const TOTAL_COLS = CONFIRMED_COUNT + MEMPOOL_COLS;
   const PX = 3;
