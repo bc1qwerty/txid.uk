@@ -1829,9 +1829,24 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   font-family: var(--font-ko); font-size: .8rem; padding: 6px 12px;
   border-radius: 4px; cursor: pointer; transition: all .2s;
   white-space: nowrap; display: flex; align-items: center; gap: 3px;
+  position: relative;
 }
-.tools-dropdown-btn:hover { background: var(--bg3); color: var(--text1); }
-.tools-dropdown:hover .tools-dropdown-btn { background: var(--bg3); color: var(--text1); }
+.tools-dropdown-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: width .2s;
+}
+.tools-dropdown-btn:hover,
+.tools-dropdown:hover .tools-dropdown-btn {
+  color: var(--accent);
+  background: rgba(247,147,26,0.06);
+}
+.tools-dropdown:hover .tools-dropdown-btn::after { width: 60%; }
 .tools-dropdown-menu {
   display: none; position: absolute; top: calc(100% + 6px); right: 0;
   background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
