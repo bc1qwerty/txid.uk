@@ -540,6 +540,7 @@ async function renderHome(app) {
     renderFeeHistogram(mempoolBlocks);
 
     if (typeof MempoolViz !== 'undefined') {
+      window._mempoolBlockCount = mempoolBlocks ? mempoolBlocks.length : 1;
       MempoolViz.updateData(blocks.slice(0, 6), mempoolBlocks);
     }
   } catch (e) {
