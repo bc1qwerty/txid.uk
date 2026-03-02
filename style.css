@@ -217,18 +217,20 @@ header {
   position: absolute;
   right: 4px;
   top: 4px;
-  bottom: 4px;
+  height: calc(100% - 8px);
+  max-height: 30px;
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text2);
   cursor: pointer;
-  padding: 0 12px;
+  padding: 0 11px;
   display: flex;
   align-items: center;
+  justify-content: center;
   transition: background .2s, color .2s, border-color .2s;
 }
-#search-btn svg { stroke: currentColor; width: 16px; height: 16px; }
+#search-btn svg { stroke: currentColor; width: 15px; height: 15px; }
 #search-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 .nav-right {
