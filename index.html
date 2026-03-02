@@ -6,20 +6,18 @@
 <title>txid.uk — Bitcoin Block Explorer</title>
 <meta name="description" content="Bitcoin Block Explorer & Mempool Viewer. 비트코인 블록 탐색기 & 멤풀 뷰어.">
 <meta name="theme-color" content="#f7931a">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="txid.uk">
+<link rel="apple-touch-icon" href="/static/icon-192.svg">
 <link rel="stylesheet" href="style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-  <link rel="manifest" href="/static/manifest.json">
-  <meta name="theme-color" content="#f7931a">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="txid.uk">
-  <link rel="apple-touch-icon" href="/static/icon-192.svg">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 </head>
 <body>
 <!-- SVG 아이콘 스프라이트 -->
@@ -42,6 +40,7 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
         <a href="https://learn.txid.uk" target="_blank" data-ko="공부방" data-en="The Study" data-ja="学習室">공부방</a>
       </div>
       <span id="monitor-badge" class="monitor-badge" style="display:none" title="모니터링 중">0</span>
+      <button class="icon-btn" id="converter-btn" onclick="openConverter()" title="단위 변환기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
       <button id="fee-calc-header-btn" onclick="App.openFeeCalc()" title="수수료 계산기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="11" y2="14"/><line x1="8" y1="18" x2="11" y2="18"/></svg></button>
     <div id="lang-wrap">
       <button id="lang-btn" onclick="App.toggleLangMenu()">KO</button>
@@ -128,10 +127,9 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="mempool.js"></script>
 <script src="app.js"></script>
-<script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>
 <script>
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/static/sw.js").catch(()=>{});
+  navigator.serviceWorker.register("/sw.js").catch(()=>{});
 }
 </script>
 </body>

@@ -486,6 +486,7 @@ async function updateStats() {
       const upbit = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC').then(r => r.json());
       if (upbit && upbit[0]) {
         const price = upbit[0].trade_price;
+        window._btcKrw = price;
         const change = upbit[0].signed_change_rate * 100;
         const priceStr = price >= 1e8 ? (price/1e8).toFixed(2)+'억' : Math.round(price/1e4)+'만';
         flashStat('s-krw', '₩'+priceStr);
@@ -1144,6 +1145,10 @@ async function renderTx(app, txid) {
     const isCoinbase = tx.vin && tx.vin[0] && tx.vin[0].is_coinbase;
     const feeRate = !isCoinbase && tx.weight ? (tx.fee / (tx.weight / 4)) : 0;
 
+    // RBF / CPFP 감지
+    const isRbf = !isCoinbase && tx.vin && tx.vin.some(v => v.sequence < 0xfffffffe && v.sequence !== 0xffffffff);
+    const hasCpfp = !isConfirmed && !isCoinbase && tx.vin && tx.vin.some(v => !v.prevout);
+
     function getAddrType(scriptpubkey_type) {
       const types = {
         'p2pkh': 'P2PKH', 'p2sh': 'P2SH', 'v0_p2wpkh': 'P2WPKH',
@@ -1168,6 +1173,8 @@ async function renderTx(app, txid) {
         <div class="page-title">
           ${isCoinbase ? '' : ''}${t('transaction')}
           <span class="badge ${isConfirmed ? 'badge-confirmed' : 'badge-unconfirmed'}">${isConfirmed ? t('confirmed') : t('unconfirmed')}</span>
+          ${isRbf ? '<span class="tx-badge rbf">RBF</span>' : ''}
+          ${hasCpfp ? '<span class="tx-badge cpfp">CPFP</span>' : ''}
         </div>
         ${favButton('tx', tx.txid, favLabel)}
         <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
@@ -1328,10 +1335,30 @@ async function renderAddress(app, address) {
         <div class="addr-stat stagger-item" style="--i:4"><div class="as-val">${formatNum(txCount)}</div><div class="as-lbl">${t('txCount')}</div></div>
       </div>
 
-      <div class="section-title">${icon('list')} ${t('txHistory')}</div>
-      <div id="addr-txs">${skeletonTable(6)}</div>
-      <div id="addr-txs-more"></div>
+      <div class="addr-tabs">
+        <button class="addr-tab active" data-tab="txs">${t('txHistory')}</button>
+        <button class="addr-tab" data-tab="utxo">UTXO</button>
+      </div>
+      <div id="tab-txs">
+        <div id="addr-txs">${skeletonTable(6)}</div>
+        <div id="addr-txs-more"></div>
+      </div>
+      <div id="tab-utxo" hidden></div>
     `;
+
+    // 탭 전환
+    app.querySelectorAll('.addr-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        app.querySelectorAll('.addr-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.getElementById('tab-txs').hidden = tab !== 'txs';
+        document.getElementById('tab-utxo').hidden = tab !== 'utxo';
+        if (tab === 'utxo' && !document.getElementById('tab-utxo').dataset.loaded) {
+          loadAddrUtxo(address);
+        }
+      });
+    });
 
     loadAddrTxs(address, null);
   } catch (e) {
@@ -1391,6 +1418,35 @@ async function loadAddrTxs(address, lastTxid) {
     container.innerHTML = `<div class="error-box">${t('error')}</div>`;
   }
 }
+
+// ═══════════════════════════════════════════
+// UTXO LOADER
+// ═══════════════════════════════════════════
+async function loadAddrUtxo(address) {
+  const container = document.getElementById('tab-utxo');
+  if (!container) return;
+  container.dataset.loaded = '1';
+  container.innerHTML = `<div class="loading">${t('loading')}</div>`;
+  try {
+    const utxos = await api('/address/' + address + '/utxo');
+    const totalBtc = utxos.reduce((s, u) => s + (u.value || 0), 0);
+    container.innerHTML = `
+      <div class="utxo-sum">${lang==='ko'?'UTXO':lang==='ja'?'UTXO':'UTXO'}: <strong>${formatNum(utxos.length)}</strong> ${lang==='ko'?'개':''} · ${lang==='ko'?'합계':lang==='ja'?'合計':'Total'}: <strong>${satToBtc(totalBtc)} BTC</strong></div>
+      <div class="tx-table-wrap">
+        <table class="utxo-table">
+          <thead><tr><th>TXID</th><th>${lang==='ko'?'블록높이':lang==='ja'?'ブロック高':'Block'}</th><th>BTC</th></tr></thead>
+          <tbody>${utxos.map(u => `<tr>
+            <td><a href="#/tx/${u.txid}" style="color:var(--blue)">${u.txid.slice(0,12)}…:${u.vout}</a></td>
+            <td>${u.status && u.status.confirmed ? formatNum(u.status.block_height) : t('unconfirmed')}</td>
+            <td>${satToBtc(u.value)}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>`;
+  } catch (e) {
+    container.innerHTML = `<div class="error-box">${t('error')}</div>`;
+  }
+}
+window.loadAddrUtxo = loadAddrUtxo;
 
 // ═══════════════════════════════════════════
 // MINING PAGE
@@ -1710,6 +1766,48 @@ function showQRModal(address) {
 }
 
 // ═══════════════════════════════════════════
+// UNIT CONVERTER
+// ═══════════════════════════════════════════
+function openConverter() {
+  const krw = window._btcKrw || 0;
+  const usd = window._btcUsd || 0;
+  document.getElementById('converter-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'converter-modal';
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width:340px">
+      <div class="modal-header">
+        <span>${lang==='ko'?'단위 변환기':lang==='ja'?'単位換算':'Unit Converter'}</span>
+        <button class="modal-close" onclick="document.getElementById('converter-modal')?.remove()">✕</button>
+      </div>
+      <div class="converter-rows" id="conv-rows">
+        ${['BTC','Sat','KRW','USD'].map(u => `
+        <div class="conv-row">
+          <label class="conv-label">${u}</label>
+          <input class="conv-input" id="conv-${u.toLowerCase()}" type="number" min="0" placeholder="0" />
+        </div>`).join('')}
+      </div>
+      ${!krw && !usd ? '<p style="font-size:.7rem;color:var(--text3);margin-top:8px">※ ' + (lang==='ko'?'가격 데이터 로딩 중...':'Loading price data...') + '</p>' : ''}
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  const rates = { krw, usd };
+  function updateFrom(unit, val) {
+    const n = parseFloat(val) || 0;
+    let btc = unit==='btc'?n : unit==='sat'?n/1e8 : unit==='krw'?(rates.krw?n/rates.krw:0) : (rates.usd?n/rates.usd:0);
+    if (unit!=='btc') document.getElementById('conv-btc').value = btc ? btc.toFixed(8) : '';
+    if (unit!=='sat') document.getElementById('conv-sat').value = btc ? Math.round(btc*1e8) : '';
+    if (unit!=='krw') document.getElementById('conv-krw').value = (btc&&rates.krw) ? Math.round(btc*rates.krw).toLocaleString() : '';
+    if (unit!=='usd') document.getElementById('conv-usd').value = (btc&&rates.usd) ? (btc*rates.usd).toFixed(2) : '';
+  }
+  ['btc','sat','krw','usd'].forEach(u => {
+    document.getElementById('conv-'+u)?.addEventListener('input', e => updateFrom(u, e.target.value.replace(/,/g, '')));
+  });
+}
+window.openConverter = openConverter;
+
+// ═══════════════════════════════════════════
 // APP (글로벌)
 // ═══════════════════════════════════════════
 window.App = {
@@ -1871,6 +1969,8 @@ document.addEventListener('keydown', e => {
     if (feeModal) feeModal.remove();
     const qrModal = document.getElementById('qr-modal');
     if (qrModal) qrModal.remove();
+    const convModal = document.getElementById('converter-modal');
+    if (convModal) convModal.remove();
   }
 });
 

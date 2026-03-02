@@ -275,7 +275,7 @@ header {
   width: 60%;
 }
 /* ── 헤더 버튼 공통 ── */
-#lang-btn, #theme-btn, #fee-calc-header-btn {
+#lang-btn, #theme-btn, #fee-calc-header-btn, #converter-btn {
   background: var(--bg2);
   border: 1px solid var(--border);
   color: var(--text2);
@@ -293,10 +293,10 @@ header {
   line-height: 1;
   letter-spacing: .02em;
 }
-#theme-btn, #fee-calc-header-btn { width: 30px; padding: 0; }
-#theme-btn svg, #fee-calc-header-btn svg { display: block; stroke: currentColor; flex-shrink: 0; }
-#lang-btn:hover, #theme-btn:hover, #fee-calc-header-btn:hover,
-#lang-btn:focus, #theme-btn:focus, #fee-calc-header-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
+#theme-btn, #fee-calc-header-btn, #converter-btn { width: 30px; padding: 0; }
+#theme-btn svg, #fee-calc-header-btn svg, #converter-btn svg { display: block; stroke: currentColor; flex-shrink: 0; }
+#lang-btn:hover, #theme-btn:hover, #fee-calc-header-btn:hover, #converter-btn:hover,
+#lang-btn:focus, #theme-btn:focus, #fee-calc-header-btn:focus, #converter-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
 
 /* ── Stats Bar ── */
 #stats-bar {
@@ -1655,3 +1655,28 @@ body { transition: background .2s, color .2s; }
 .conv-label { width:32px; font-size:.7rem; color:var(--text3); font-family:var(--font); text-align:right; flex-shrink:0; }
 .conv-input { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:7px 10px; color:var(--text1); font-family:var(--font); font-size:.85rem; outline:none; transition:border .15s; }
 .conv-input:focus { border-color:var(--accent); }
+
+/* ── 코인베이스 메시지 ── */
+.coinbase-msg { display:flex; align-items:flex-start; gap:10px; padding:10px 14px; background:var(--bg2); border:1px solid var(--border); border-radius:7px; margin-bottom:14px; font-size:.8rem; }
+.coinbase-label { color:var(--accent); font-family:var(--font-ko); font-size:.7rem; font-weight:600; padding:2px 7px; border:1px solid var(--accent); border-radius:4px; white-space:nowrap; flex-shrink:0; }
+.coinbase-text { color:var(--text2); font-family:var(--font); word-break:break-all; line-height:1.5; }
+
+/* ── 주소 UTXO 탭 ── */
+.addr-tabs { display:flex; gap:4px; margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:0; }
+.addr-tab { padding:7px 16px; font-size:.8rem; color:var(--text3); background:none; border:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .15s; font-family:var(--font-ko); }
+.addr-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.utxo-table { width:100%; border-collapse:collapse; font-size:.78rem; }
+.utxo-table th { color:var(--text3); font-weight:500; padding:6px 10px; border-bottom:1px solid var(--border); text-align:left; }
+.utxo-table td { padding:7px 10px; border-bottom:1px solid var(--border); color:var(--text2); }
+.utxo-table td:last-child { color:var(--accent); font-family:var(--font); }
+.utxo-sum { font-size:.82rem; color:var(--text2); margin-bottom:10px; }
+.utxo-sum strong { color:var(--accent); font-family:var(--font); }
+
+/* ── RBF / CPFP 배지 ── */
+.tx-badge { font-size:.62rem; font-weight:700; padding:2px 6px; border-radius:4px; font-family:var(--font); letter-spacing:.04em; vertical-align:middle; }
+.tx-badge.rbf { background:rgba(255,68,68,.15); color:#ff4444; border:1px solid rgba(255,68,68,.3); }
+.tx-badge.cpfp { background:rgba(68,136,255,.15); color:#4488ff; border:1px solid rgba(68,136,255,.3); }
+
+/* ── 변환기 모달 ── */
+.modal-box { background:var(--bg2); border:1px solid var(--border2); border-radius:12px; padding:20px; width:90%; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; font-size:.9rem; font-weight:600; color:var(--text1); }
