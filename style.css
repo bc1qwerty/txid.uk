@@ -275,7 +275,7 @@ header {
   width: 60%;
 }
 /* ── 헤더 버튼 공통 ── */
-#lang-btn, #theme-btn, #fee-calc-header-btn, #converter-btn {
+#lang-btn, #theme-btn, #fee-calc-header-btn, #converter-btn, .icon-btn {
   background: var(--bg2);
   border: 1px solid var(--border);
   color: var(--text2);
@@ -293,10 +293,10 @@ header {
   line-height: 1;
   letter-spacing: .02em;
 }
-#theme-btn, #fee-calc-header-btn, #converter-btn { width: 30px; padding: 0; }
-#theme-btn svg, #fee-calc-header-btn svg, #converter-btn svg { display: block; stroke: currentColor; flex-shrink: 0; }
-#lang-btn:hover, #theme-btn:hover, #fee-calc-header-btn:hover, #converter-btn:hover,
-#lang-btn:focus, #theme-btn:focus, #fee-calc-header-btn:focus, #converter-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
+#theme-btn, #fee-calc-header-btn, #converter-btn, .icon-btn { width: 30px; padding: 0; }
+#theme-btn svg, #fee-calc-header-btn svg, #converter-btn svg, .icon-btn svg { display: block; stroke: currentColor; flex-shrink: 0; }
+#lang-btn:hover, #theme-btn:hover, #fee-calc-header-btn:hover, #converter-btn:hover, .icon-btn:hover,
+#lang-btn:focus, #theme-btn:focus, #fee-calc-header-btn:focus, #converter-btn:focus, .icon-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
 
 /* ── Stats Bar ── */
 #stats-bar {
@@ -1786,9 +1786,9 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 
 /* ── 라이트닝 노드 지도 ── */
 .ln-country-list { display:flex; flex-direction:column; gap:4px; max-height:360px; overflow-y:auto; }
-.ln-country-row { display:grid; grid-template-columns:24px 36px 1fr 48px 40px; align-items:center; gap:8px; font-size:.72rem; }
+.ln-country-row { display:grid; grid-template-columns:28px 80px 1fr 48px 40px; align-items:center; gap:8px; font-size:.72rem; }
 .ln-flag { font-size:.9rem; }
-.ln-cc { color:var(--text3); font-family:var(--font); }
+.ln-cc { color:var(--text2); font-family:var(--font-ko); font-size:.7rem; }
 .ln-bar-wrap { background:var(--bg3); border-radius:3px; height:6px; overflow:hidden; }
 .ln-bar { background:var(--accent); height:100%; border-radius:3px; transition:width .3s; }
 .ln-count { color:var(--text2); font-family:var(--font); text-align:right; }

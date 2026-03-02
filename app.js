@@ -2672,6 +2672,13 @@ async function openLightningMap() {
     const sorted = Object.entries(nodes).sort((a,b)=>b[1].count-a[1].count).slice(0,20);
     const flags = {US:'🇺🇸',DE:'🇩🇪',GB:'🇬🇧',FR:'🇫🇷',NL:'🇳🇱',CA:'🇨🇦',SG:'🇸🇬',JP:'🇯🇵',AU:'🇦🇺',CH:'🇨🇭',
                    FI:'🇫🇮',SE:'🇸🇪',NO:'🇳🇴',BR:'🇧🇷',KR:'🇰🇷',IN:'🇮🇳',RU:'🇷🇺',IT:'🇮🇹',ES:'🇪🇸',PL:'🇵🇱'};
+    const countryNames = {
+      US:'미국',DE:'독일',GB:'영국',FR:'프랑스',NL:'네덜란드',CA:'캐나다',SG:'싱가포르',JP:'일본',
+      AU:'호주',CH:'스위스',FI:'핀란드',SE:'스웨덴',NO:'노르웨이',BR:'브라질',KR:'한국',
+      IN:'인도',RU:'러시아',IT:'이탈리아',ES:'스페인',PL:'폴란드',AT:'오스트리아',CZ:'체코',
+      UA:'우크라이나',TR:'터키',AR:'아르헨티나',MX:'멕시코',ZA:'남아공',TH:'태국',ID:'인도네시아',
+      TW:'대만',HK:'홍콩',CN:'중국',MY:'말레이시아',PH:'필리핀',VN:'베트남',
+    };
     el.innerHTML = `
       <div style="font-size:.72rem;color:var(--text3);margin-bottom:10px">${lang==='ko'?'상위 20개국':'Top 20 countries'} · 전체 ${formatNum(total)}개 노드</div>
       <div class="ln-country-list">
@@ -2679,8 +2686,8 @@ async function openLightningMap() {
           const pct = ((data.count/total)*100).toFixed(1);
           const w = Math.max((data.count/sorted[0][1].count)*100, 2);
           return `<div class="ln-country-row">
-            <span class="ln-flag">${flags[cc]||'🌐'}</span>
-            <span class="ln-cc">${cc}</span>
+            <span class="ln-flag" style="font-size:1.1rem">${flags[cc]||'🌐'}</span>
+            <span class="ln-cc">${countryNames[cc]||cc}</span>
             <div class="ln-bar-wrap"><div class="ln-bar" style="width:${w}%"></div></div>
             <span class="ln-count">${formatNum(data.count)}</span>
             <span class="ln-pct">${pct}%</span>
