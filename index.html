@@ -158,13 +158,14 @@ if ("serviceWorker" in navigator) {
 </script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    var wrap = document.getElementById('footer-visitor');
     fetch('https://txid.goatcounter.com/counter//.json')
       .then(r => r.json())
       .then(d => {
         var el = document.getElementById('footer-visitor-count');
         if (el) el.textContent = Number(d.count_unique || d.count || 0).toLocaleString();
       })
-      .catch(function(){});
+      .catch(function(){ if (wrap) wrap.style.display = 'none'; }); // 차단 시 숨김
   });
 </script>
 <script data-goatcounter="https://txid.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
