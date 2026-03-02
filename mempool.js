@@ -13,6 +13,7 @@ const MempoolViz = (() => {
   let confirmedData = [];
   let mempoolProjected = [];
   let mempoolBlocks = [];
+  let mempoolBlockCount = 1;
   let particles = [];
 
   let initialized = false;
@@ -112,6 +113,7 @@ const MempoolViz = (() => {
 
   function handleMempoolBlocks(projected) {
     mempoolProjected = projected;
+    mempoolBlockCount = projected.length;
     const layout = getLayout();
     if (!layout) return;
     for (let i = 0; i < Math.min(projected.length, MEMPOOL_COLS); i++) {
@@ -266,13 +268,13 @@ const MempoolViz = (() => {
       // 상단: NEXT + 대기 블록 수
       ctx.font = 'bold 10px "Space Mono", monospace'; ctx.textAlign = 'center';
       ctx.fillStyle = '#f7931a';
-      ctx.fillText('NEXT (예측)', x + bw / 2, 13);
+      ctx.fillText('NEXT', x + bw / 2, 13);
 
       // 대기 블록 수
-      if (window._mempoolBlockCount > 1) {
+      if (mempoolBlockCount > 1) {
         ctx.font = '7.5px "Space Mono", monospace'; ctx.textAlign = 'right';
         ctx.fillStyle = '#556';
-        ctx.fillText('+' + (window._mempoolBlockCount - 1) + ' 대기', x + bw - 2, 13);
+        ctx.fillText('+' + (mempoolBlockCount - 1) + ' 대기', x + bw - 2, 13);
       }
 
       // 하단: TX수 / vsize / 수수료
@@ -356,7 +358,7 @@ const MempoolViz = (() => {
     const nTx = mb && mb.nTx ? mb.nTx.toLocaleString() : '—';
     const vsize = mb && mb.vsize ? Math.round(mb.vsize / 1000) + ' kvB' : '—';
     const fee = mb && mb.medianFee ? mb.medianFee.toFixed(2) + ' sat/vB' : '—';
-    const waiting = (window._mempoolBlockCount || 1) - 1;
+    const waiting = (mempoolBlockCount || 1) - 1;
 
     // 기존 모달 제거
     document.getElementById('next-block-modal')?.remove();
@@ -467,8 +469,16 @@ const MempoolViz = (() => {
     updateData(confirmed, mempool) {
       if (!canvas) return;
       if (confirmed?.length) confirmedData = confirmed.slice(0, CONFIRMED_COUNT).map(blockToConfirmedData);
-      if (mempool?.length) { mempoolProjected = mempool; handleMempoolBlocks(mempool); }
+      if (mempool?.length) {
+        mempoolBlockCount = mempool.length;
+        mempoolProjected = mempool;
+        handleMempoolBlocks(mempool);
+      }
       connectWS();
+    },
+
+    isWsConnected() {
+      return ws && ws.readyState === WebSocket.OPEN;
     },
 
     stop() {

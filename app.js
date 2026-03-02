@@ -15,6 +15,7 @@ const ICONS = {
   'package': 'M16.5 9.4 7.5 4.2M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16zM3.3 7l8.7 5 8.7-5M12 22V12',
   'sun': 'M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41M12 6a6 6 0 1 0 0 12A6 6 0 0 0 12 6z',
   'moon': 'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z',
+  'search': 'M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z',
 };
 function icon(name, cls='') {
   const d = ICONS[name];
@@ -72,6 +73,7 @@ const i18n = {
     newBlock: '새 블록 발견!',
     newTx: '새 트랜잭션 발견!',
     mempoolSizeHistory: '멤풀 크기 추이',
+    clickBlockHint: '블록을 클릭해 상세 정보를 확인하세요',
   },
   en: {
     home: 'Home', mining: 'Mining', search_ph: 'Search TXID / Block Height / Address...',
@@ -115,6 +117,7 @@ const i18n = {
     newBlock: 'New block found!',
     newTx: 'New transaction found!',
     mempoolSizeHistory: 'Mempool Size Trend',
+    clickBlockHint: 'Click a block for details',
   }
 };
 
@@ -378,9 +381,7 @@ async function onNewBlock(block) {
           api('/v1/fees/mempool-blocks')
         ]);
         renderRecentBlocks(newBlocks.slice(0, 8));
-        renderFeeHistogram(mempoolBlocks);
         if (typeof MempoolViz !== 'undefined') {
-          window._mempoolBlockCount = mempoolBlocks.length;
           MempoolViz.updateData(newBlocks.slice(0, 6), mempoolBlocks);
         }
       } catch {}
@@ -404,10 +405,11 @@ async function updateStats() {
     ]);
     statsData = { mem, fees, height };
 
-    // 새 블록 감지 (WS에서도 감지하지만 polling fallback)
+    // 새 블록 감지 (WS 미연결 시 polling fallback)
     const h = Number(height);
-    if (lastKnownHeight !== null && h > lastKnownHeight) {
-      onNewBlock(null); // WS가 이미 처리했을 수 있으나 fallback
+    const wsConnected = typeof MempoolViz !== 'undefined' && MempoolViz.isWsConnected?.();
+    if (lastKnownHeight !== null && h > lastKnownHeight && !wsConnected) {
+      onNewBlock(null);
     }
     lastKnownHeight = h;
 
@@ -415,6 +417,12 @@ async function updateStats() {
     flashStat('s-tx', formatNum(mem.count));
     flashStat('s-size', (mem.vsize / 1e6).toFixed(1) + ' MB');
     flashStat('s-fee', fees.fastestFee + ' sat/vB');
+
+    // Footer live stats
+    const fh = document.getElementById('footer-height');
+    const ft = document.getElementById('footer-mempool');
+    if (fh) fh.textContent = '#' + formatNum(height);
+    if (ft) ft.textContent = formatNum(mem.count) + ' TX';
   } catch (e) { console.warn('Stats fetch error:', e); }
 }
 
@@ -445,17 +453,7 @@ function updateActiveNav(path) {
   });
 }
 
-// ── 검색 플레이스홀더 로테이션 ──
-const placeholders_ko = ['TXID 검색...', '블록 높이 입력...', '주소 검색...', 'bc1q... 주소 입력...'];
-const placeholders_en = ['Search TXID...', 'Enter block height...', 'Search address...', 'Enter bc1q... address...'];
-let phIndex = 0;
-setInterval(() => {
-  phIndex = (phIndex + 1) % placeholders_ko.length;
-  const input = document.getElementById('search-input');
-  if (input && input !== document.activeElement) {
-    input.placeholder = (lang === 'ko' ? placeholders_ko : placeholders_en)[phIndex];
-  }
-}, 3000);
+
 
 // ── 라우터 ──
 function getRoute() {
@@ -544,7 +542,7 @@ async function renderHome(app) {
         <div class="leg"><div class="leg-dot" style="background:#4488ff"></div><span>0.5~1</span></div>
         <div class="leg"><div class="leg-dot" style="background:#445566"></div><span>&lt;0.5</span></div>
       </div>
-
+      <div class="mempool-hint">${t('clickBlockHint')}</div>
     `;
     app.before(mempoolSection);
   }
@@ -561,12 +559,6 @@ async function renderHome(app) {
     favDiv.innerHTML = favHtml;
     app.appendChild(favDiv.firstElementChild);
   }
-
-  // 수수료 히스토그램
-  const feeSection = document.createElement('div');
-  feeSection.id = 'fee-histogram';
-  feeSection.innerHTML = '';  // 수수료 분포는 NEXT 블록 클릭 시 모달에서 표시
-  app.appendChild(feeSection);
 
   // 최근 블록
   const blocksSection = document.createElement('div');
@@ -603,10 +595,8 @@ async function renderHome(app) {
     ]);
 
     renderRecentBlocks(blocks.slice(0, 8));
-    renderFeeHistogram(mempoolBlocks);
 
     if (typeof MempoolViz !== 'undefined') {
-      window._mempoolBlockCount = mempoolBlocks ? mempoolBlocks.length : 1;
       MempoolViz.updateData(blocks.slice(0, 6), mempoolBlocks);
     }
   } catch (e) {
@@ -620,14 +610,21 @@ async function renderHome(app) {
   loadLightningStats();
 }
 
+let _lastBlockHeights = null;
 function renderRecentBlocks(blocks) {
   const grid = document.getElementById('recent-blocks');
   if (!grid) return;
+
+  // 블록 높이가 변경되지 않았으면 리빌드 스킵
+  const heights = blocks.map(b => b.height).join(',');
+  if (_lastBlockHeights === heights) return;
+  _lastBlockHeights = heights;
+
   grid.innerHTML = blocks.map((b, idx) => {
-    const pool = b.extras && b.extras.pool ? b.extras.pool.name : 'Unknown';
-    const totalFees = b.extras ? b.extras.totalFees : 0;
-    const feeRange = b.extras && b.extras.feeRange ? b.extras.feeRange : null;
-    const medianFee = b.extras && b.extras.medianFee ? b.extras.medianFee : null;
+    const pool = b.extras?.pool?.name || 'Unknown';
+    const totalFees = b.extras?.totalFees || 0;
+    const feeRange = b.extras?.feeRange || null;
+    const medianFee = b.extras?.medianFee || null;
 
     let feeBarStyle = 'background: var(--border);';
     if (feeRange && feeRange.length >= 2) {
@@ -638,9 +635,11 @@ function renderRecentBlocks(blocks) {
 
     let feeRangeText = '';
     if (feeRange && feeRange.length >= 2) {
-      feeRangeText = `${Math.round(feeRange[0])}~${Math.round(feeRange[feeRange.length - 1])} sat/vB`;
+      const minF = Math.round(feeRange[0]);
+      const maxF = Math.round(feeRange[feeRange.length - 1]);
+      feeRangeText = `<span style="color:${feeColorHex(minF)}">${minF}</span>~<span style="color:${feeColorHex(maxF)}">${maxF}</span> sat/vB`;
     } else if (medianFee) {
-      feeRangeText = `~${Math.round(medianFee)} sat/vB`;
+      feeRangeText = `<span style="color:${feeColorHex(medianFee)}">~${Math.round(medianFee)}</span> sat/vB`;
     }
 
     return `
@@ -866,13 +865,13 @@ async function renderBlock(app, param) {
       block = await api('/block/' + param);
     }
 
-    const pool = block.extras && block.extras.pool ? block.extras.pool.name : 'Unknown';
-    const totalFees = block.extras ? block.extras.totalFees || 0 : 0;
-    const reward = block.extras ? block.extras.reward || 0 : 0;
-    const totalOutput = block.extras ? block.extras.totalOutputAmt || 0 : 0;
-    const medianFee = block.extras ? block.extras.medianFee || 0 : 0;
-    const avgFeeRate = block.extras && block.extras.avgFeeRate ? block.extras.avgFeeRate : null;
-    const feeRange = block.extras && block.extras.feeRange ? block.extras.feeRange : null;
+    const pool = block.extras?.pool?.name || 'Unknown';
+    const totalFees = block.extras?.totalFees || 0;
+    const reward = block.extras?.reward || 0;
+    const totalOutput = block.extras?.totalOutputAmt || 0;
+    const medianFee = block.extras?.medianFee || 0;
+    const avgFeeRate = block.extras?.avgFeeRate || null;
+    const feeRange = block.extras?.feeRange || null;
 
     let feeRangeHtml = '';
     if (feeRange && feeRange.length >= 2) {
@@ -1137,7 +1136,7 @@ async function renderAddress(app, address) {
 
       <div class="addr-summary">
         <div class="addr-stat stagger-item" style="--i:0"><div class="as-val">${getAddrTypeFromAddr(address)}</div><div class="as-lbl">${t('type')}</div></div>
-        <div class="addr-stat stagger-item" style="--i:1"><div class="as-val">${formatBtc(balance)}</div><div class="as-lbl">${t('balance')}</div></div>
+        <div class="addr-stat addr-balance stagger-item" style="--i:1"><div class="as-val">${formatBtc(balance)}</div><div class="as-lbl">${t('balance')}</div></div>
         <div class="addr-stat stagger-item" style="--i:2"><div class="as-val">${formatBtc(totalReceived)}</div><div class="as-lbl">${t('totalReceived')}</div></div>
         <div class="addr-stat stagger-item" style="--i:3"><div class="as-val">${formatBtc(totalSent)}</div><div class="as-lbl">${t('totalSent')}</div></div>
         <div class="addr-stat stagger-item" style="--i:4"><div class="as-val">${formatNum(txCount)}</div><div class="as-lbl">${t('txCount')}</div></div>
@@ -1223,10 +1222,10 @@ async function renderMining(app) {
     const minerMap = {};
     let totalFees = 0, totalReward = 0;
     recentBlocks.forEach(b => {
-      const pool = b.extras && b.extras.pool ? b.extras.pool.name : 'Unknown';
+      const pool = b.extras?.pool?.name || 'Unknown';
       minerMap[pool] = (minerMap[pool] || 0) + 1;
-      totalFees += b.extras ? b.extras.totalFees || 0 : 0;
-      totalReward += b.extras ? b.extras.reward || 0 : 0;
+      totalFees += b.extras?.totalFees || 0;
+      totalReward += b.extras?.reward || 0;
     });
     const topMiners = Object.entries(minerMap).sort((a, b) => b[1] - a[1]);
 
