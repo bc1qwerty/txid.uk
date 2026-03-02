@@ -1729,3 +1729,34 @@ body { transition: background .2s, color .2s; }
 .treemap-legend { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; font-size:.68rem; color:var(--text2); }
 .treemap-legend span { display:flex; align-items:center; gap:4px; }
 .treemap-legend i { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+
+/* ── 접근성: focus-visible ── */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── 빈 상태 UI ── */
+.empty-state { text-align:center; padding:32px 16px; color:var(--text3); font-size:.82rem; font-family:var(--font-ko); }
+.empty-state::before { content:'○'; display:block; font-size:2rem; margin-bottom:10px; opacity:.3; }
+
+/* ── TX 금액 합계 ── */
+.tx-sum { display:flex; gap:20px; flex-wrap:wrap; font-size:.78rem; color:var(--text2); margin-bottom:12px; font-family:var(--font-ko); }
+.tx-sum b { color:var(--accent); font-family:var(--font); }
+
+/* ── 페이지 전환 애니메이션 ── */
+#app { animation: pageIn .15s ease; }
+@keyframes pageIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+/* ── Stats Bar width 고정 ── */
+.stat-val { min-width:60px; display:inline-block; }
+
+/* ── Stats Bar 툴팁 ── */
+.stat[title]:hover::after { content:attr(title); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:var(--bg3); border:1px solid var(--border); color:var(--text2); font-size:.65rem; padding:4px 8px; border-radius:5px; white-space:nowrap; pointer-events:none; z-index:100; font-family:var(--font-ko); }
+.stat { position:relative; }
+
+/* ── @media print ── */
+@media print {
+  header, footer, #stats-bar, .nav-search, .page-actions, .fee-calc-modal, .modal-overlay, #app > .section:last-child { display:none !important; }
+  body { background:#fff; color:#000; }
+  .page-hash { font-size:.7rem; word-break:break-all; }
+  .info-grid { grid-template-columns:1fr 1fr; }
+}

@@ -463,7 +463,11 @@ window.addEventListener('mempool:newblock', (e) => {
 let statsData = {};
 let lastKnownHeight = null;
 
+let _statsLastRun = 0;
 async function updateStats() {
+  const now = Date.now();
+  if (now - _statsLastRun < 5000) return; // 5초 쿨다운
+  _statsLastRun = now;
   try {
     const [mem, fees, height] = await Promise.all([
       api('/mempool'), api('/v1/fees/recommended'), api('/blocks/tip/height')
@@ -1339,6 +1343,7 @@ async function renderAddress(app, address) {
       <div class="page-actions">
         <div class="page-title">${t('address')}</div>
         ${favButton('address', address, favLabel)}
+        <button class="icon-btn" onclick="showQR('${address}', '${lang==='ko'?'주소 QR':'Address QR'}')" title="QR Code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="7" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7"/><rect x="18" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="7" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg></button>
         <button class="icon-btn" id="addr-label-btn" onclick="promptAddrLabel('${address}')" title="${getAddrLabel(address)||'메모 추가'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
         <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
         <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" onclick="toggleMonitor('${address}')">${icon('bell')} ${t('monitoring')}</button>
@@ -1969,8 +1974,17 @@ document.getElementById('search-input').addEventListener('focus', () => {
   if (!document.getElementById('search-input').value) showSearchHistory();
 });
 document.getElementById('search-input').addEventListener('input', e => {
-  if (!e.target.value) showSearchHistory();
-  else document.getElementById('search-history-drop')?.remove();
+  const val = e.target.value.trim();
+  if (!val) { showSearchHistory(); return; }
+  document.getElementById('search-history-drop')?.remove();
+  // 타입 힌트
+  const hint = document.getElementById('search-hint');
+  if (hint) {
+    if (/^\d+$/.test(val)) hint.textContent = '블록 높이';
+    else if (/^[0-9a-fA-F]{64}$/.test(val)) hint.textContent = 'TXID / Block Hash';
+    else if (/^(bc1|1|3)/.test(val)) hint.textContent = '비트코인 주소';
+    else hint.textContent = '';
+  }
 });
 document.addEventListener('click', e => {
   if (!e.target.closest('#lang-wrap')) {
@@ -2258,12 +2272,35 @@ function checkOnline() {
   } else { bar?.remove(); }
 }
 window.addEventListener('online', checkOnline);
+// Stats Bar 30초 주기 업데이트
+setInterval(() => { if (navigator.onLine) updateStats(); }, 30000);
 window.addEventListener('offline', checkOnline);
 
 // 시스템 다크모드 변경 감지
+// 캔버스 ResizeObserver
+if (typeof ResizeObserver !== 'undefined') {
+  const _chartObs = new ResizeObserver(() => {
+    const ids = ['fee-chart','mempool-chart','hashrate-chart','pool-chart','mempool-heatmap'];
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.dispatchEvent(new Event('resize')); });
+  });
+  const app = document.getElementById('app');
+  if (app) _chartObs.observe(app);
+}
+
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
   if (!localStorage.getItem('theme')) {
     document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
     if (typeof updateThemeBtn === 'function') updateThemeBtn();
   }
 });
+
+// ── 전역 오류 핸들러 ──
+window.addEventListener('unhandledrejection', e => {
+  console.warn('Unhandled promise rejection:', e.reason);
+  if (e.reason?.message && !e.reason.message.includes('API')) {
+    showToast('⚠️', (lang==='ko'?'오류가 발생했습니다: ':'Error: ') + String(e.reason.message).slice(0, 60), null, 3000);
+  }
+});
+window.onerror = (msg, src, line) => {
+  console.error('Global error:', msg, src, line);
+};
