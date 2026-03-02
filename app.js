@@ -565,7 +565,7 @@ async function renderHome(app) {
   // 수수료 히스토그램
   const feeSection = document.createElement('div');
   feeSection.id = 'fee-histogram';
-  feeSection.innerHTML = `<h3>${icon('bar-chart')} ${t('feeDistribution')} <span style="font-size:.65rem;color:var(--text3);font-family:var(--font-ko)">현재 멤풀 기준</span></h3><canvas id="fee-chart"></canvas>`;
+  feeSection.innerHTML = '';  // 수수료 분포는 NEXT 블록 클릭 시 모달에서 표시
   app.appendChild(feeSection);
 
   // 최근 블록
@@ -660,8 +660,8 @@ function renderRecentBlocks(blocks) {
   }).join('');
 }
 
-function renderFeeHistogram(mempoolBlocks) {
-  const canvas = document.getElementById('fee-chart');
+function renderFeeHistogram(mempoolBlocks, canvasEl) {
+  const canvas = canvasEl || document.getElementById('fee-chart');
   if (!canvas || !mempoolBlocks || !mempoolBlocks.length) return;
 
   const ctx = canvas.getContext('2d');
@@ -1582,6 +1582,7 @@ document.addEventListener('keydown', e => {
 // 글로벌 함수
 window.loadBlockTxs = loadBlockTxs;
 window.loadAddrTxs = loadAddrTxs;
+window.renderFeeHistogram = renderFeeHistogram;
 window.toggleFavorite = toggleFavorite;
 window.removeFavorite = removeFavorite;
 window.toggleMonitor = toggleMonitor;

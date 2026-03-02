@@ -388,9 +388,21 @@ const MempoolViz = (() => {
             <li>${isKo ? '예측 일치율: 약 85~95%' : 'Prediction accuracy: ~85–95%'}</li>
           </ul>
         </div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+          <div style="font-size:.75rem;color:var(--text2);margin-bottom:6px;font-family:var(--font-ko)">${isKo ? '수수료 분포 (현재 멤풀)' : 'Fee Distribution (Current Mempool)'}</div>
+          <canvas id="modal-fee-chart" style="width:100%;height:100px;display:block"></canvas>
+        </div>
       </div>`;
     modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
     document.body.appendChild(modal);
+
+    // 히스토그램 렌더 (DOM에 추가된 후)
+    requestAnimationFrame(() => {
+      const feeCanvas = document.getElementById('modal-fee-chart');
+      if (feeCanvas && window.renderFeeHistogram && mempoolProjected.length) {
+        window.renderFeeHistogram(mempoolProjected, feeCanvas);
+      }
+    });
   }
 
   return {
