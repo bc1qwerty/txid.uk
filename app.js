@@ -37,6 +37,18 @@ const i18n = {
     search: '검색',
     coinbaseReward: '코인베이스 - 블록 보상',
     block: '블록',
+    favorites: '즐겨찾기',
+    monitoring: '모니터링',
+    feeCalc: '수수료 계산기',
+    speed: '속도', estFee: '예상 수수료', estTime: '예상 시간',
+    fast: '빠름', normal: '보통', slow: '느림',
+    qrView: 'QR 보기', copy: '복사', copied: '복사됨!',
+    btcPrice: 'BTC 가격', days30: '30일',
+    lightning: '라이트닝 네트워크',
+    channels: '채널 수', capacity: '총 용량', nodes: '노드 수', avgChannelSize: '평균 채널 크기',
+    newBlock: '새 블록 발견!',
+    newTx: '새 트랜잭션 발견!',
+    mempoolSizeHistory: '멤풀 크기 추이',
   },
   en: {
     home: 'Home', mining: 'Mining', search_ph: 'Search TXID / Block Height / Address...',
@@ -68,6 +80,18 @@ const i18n = {
     search: 'Search',
     coinbaseReward: 'Coinbase - Block Reward',
     block: 'Block',
+    favorites: 'Favorites',
+    monitoring: 'Monitor',
+    feeCalc: 'Fee Calculator',
+    speed: 'Speed', estFee: 'Est. Fee', estTime: 'Est. Time',
+    fast: 'Fast', normal: 'Normal', slow: 'Slow',
+    qrView: 'QR Code', copy: 'Copy', copied: 'Copied!',
+    btcPrice: 'BTC Price', days30: '30 days',
+    lightning: 'Lightning Network',
+    channels: 'Channels', capacity: 'Total Capacity', nodes: 'Nodes', avgChannelSize: 'Avg Channel Size',
+    newBlock: 'New block found!',
+    newTx: 'New transaction found!',
+    mempoolSizeHistory: 'Mempool Size Trend',
   }
 };
 
@@ -92,6 +116,7 @@ function timeAgo(ts) {
 }
 function fullDate(ts) { return new Date(ts * 1000).toLocaleString(); }
 function shortHash(h) { return h ? h.slice(0, 8) + '...' + h.slice(-8) : '—'; }
+function shortAddr(a) { return a ? a.slice(0, 10) + '...' + a.slice(-6) : '—'; }
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 // 수수료 → 색상 레벨
@@ -133,6 +158,29 @@ function skeletonCards(n) {
   return html;
 }
 
+function skeletonTable(rows) {
+  let html = '<div class="tx-table-wrap"><div class="skeleton-table">';
+  for (let i = 0; i < rows; i++) {
+    html += `<div class="skeleton-table-row">
+      <div class="skeleton" style="flex:3;height:14px"></div>
+      <div class="skeleton" style="flex:1;height:14px"></div>
+      <div class="skeleton" style="flex:1;height:14px"></div>
+      <div class="skeleton" style="flex:1;height:14px"></div>
+    </div>`;
+  }
+  html += '</div></div>';
+  return html;
+}
+
+function skeletonAddrStats(n) {
+  let html = '<div class="addr-summary">';
+  for (let i = 0; i < n; i++) {
+    html += `<div class="skeleton-addr-stat"><div class="skeleton"></div><div class="skeleton"></div></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
 // ── API 호출 ──
 async function api(path) {
   const res = await fetch(API + path);
@@ -143,14 +191,160 @@ async function api(path) {
   try { return JSON.parse(txt); } catch { return txt; }
 }
 
+// ═══════════════════════════════════════════
+// TOAST SYSTEM
+// ═══════════════════════════════════════════
+function showToast(title, body, onClick, duration = 8000) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `<span class="toast-close" onclick="event.stopPropagation();this.parentElement.remove()">✕</span><div class="toast-title">${title}</div><div class="toast-body">${body}</div>`;
+  if (onClick) toast.addEventListener('click', onClick);
+  container.appendChild(toast);
+  requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+// ═══════════════════════════════════════════
+// FAVORITES SYSTEM
+// ═══════════════════════════════════════════
+function getFavorites() {
+  try { return JSON.parse(localStorage.getItem('favorites') || '[]'); } catch { return []; }
+}
+function saveFavorites(favs) { localStorage.setItem('favorites', JSON.stringify(favs)); }
+function isFavorite(type, value) { return getFavorites().some(f => f.type === type && f.value === value); }
+function toggleFavorite(type, value, label) {
+  let favs = getFavorites();
+  const idx = favs.findIndex(f => f.type === type && f.value === value);
+  if (idx >= 0) {
+    favs.splice(idx, 1);
+  } else {
+    favs.push({ type, value, label, addedAt: Date.now() });
+  }
+  saveFavorites(favs);
+  // Update button state
+  document.querySelectorAll('.fav-btn').forEach(btn => {
+    if (btn.dataset.type === type && btn.dataset.value === value) {
+      btn.classList.toggle('active', isFavorite(type, value));
+      btn.textContent = isFavorite(type, value) ? '★' : '☆';
+    }
+  });
+}
+function removeFavorite(type, value) {
+  let favs = getFavorites();
+  saveFavorites(favs.filter(f => !(f.type === type && f.value === value)));
+}
+function favButton(type, value, label) {
+  const active = isFavorite(type, value);
+  return `<button class="fav-btn ${active ? 'active' : ''}" data-type="${type}" data-value="${escHtml(value)}" onclick="event.stopPropagation();toggleFavorite('${type}','${escHtml(value)}','${escHtml(label)}')">${active ? '★' : '☆'}</button>`;
+}
+function renderFavoritesSection() {
+  const favs = getFavorites();
+  if (!favs.length) return '';
+  const chips = favs.slice(0, 6).map(f => {
+    const href = f.type === 'block' ? `#/block/${f.value}` : f.type === 'tx' ? `#/tx/${f.value}` : `#/address/${f.value}`;
+    return `<a href="${href}" class="fav-chip">
+      <span>${f.type === 'block' ? '⛏' : f.type === 'tx' ? '📋' : '📍'} ${escHtml(f.label)}</span>
+      <span class="fav-remove" onclick="event.preventDefault();event.stopPropagation();removeFavorite('${f.type}','${escHtml(f.value)}');document.getElementById('fav-section')?.remove();route();">✕</span>
+    </a>`;
+  }).join('');
+  return `<div class="fav-section" id="fav-section">
+    <div class="section-title"><span class="section-icon">⭐</span> ${t('favorites')}</div>
+    <div class="fav-chips">${chips}</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+// ADDRESS MONITORING
+// ═══════════════════════════════════════════
+function getMonitoredAddrs() {
+  try { return JSON.parse(localStorage.getItem('monitored_addrs') || '{}'); } catch { return {}; }
+}
+function saveMonitoredAddrs(m) {
+  localStorage.setItem('monitored_addrs', JSON.stringify(m));
+  updateMonitorBadge();
+}
+function toggleMonitor(address) {
+  const m = getMonitoredAddrs();
+  if (m[address]) {
+    delete m[address];
+  } else {
+    m[address] = { txCount: null, lastCheck: Date.now() };
+  }
+  saveMonitoredAddrs(m);
+  // Update button
+  document.querySelectorAll('.monitor-btn').forEach(btn => {
+    if (btn.dataset.addr === address) {
+      const isMonitored = !!getMonitoredAddrs()[address];
+      btn.classList.toggle('active', isMonitored);
+      btn.textContent = isMonitored ? '🔔 ' + t('monitoring') : '🔔 ' + t('monitoring');
+    }
+  });
+}
+function updateMonitorBadge() {
+  const badge = document.getElementById('monitor-badge');
+  if (!badge) return;
+  const count = Object.keys(getMonitoredAddrs()).length;
+  badge.textContent = count;
+  badge.style.display = count > 0 ? '' : 'none';
+}
+
+async function checkMonitoredAddresses() {
+  const m = getMonitoredAddrs();
+  const addrs = Object.keys(m);
+  if (!addrs.length) return;
+  for (const addr of addrs) {
+    try {
+      const info = await api('/address/' + addr);
+      const chain = info.chain_stats || {};
+      const mempool = info.mempool_stats || {};
+      const totalTx = chain.tx_count + mempool.tx_count;
+      if (m[addr].txCount !== null && totalTx > m[addr].txCount) {
+        showToast(
+          '📬 ' + t('newTx'),
+          shortAddr(addr),
+          () => { location.hash = '#/address/' + addr; }
+        );
+      }
+      m[addr].txCount = totalTx;
+      m[addr].lastCheck = Date.now();
+    } catch {}
+  }
+  saveMonitoredAddrs(m);
+}
+
 // ── 상단 통계 업데이트 ──
 let statsData = {};
+let lastKnownHeight = null;
+
 async function updateStats() {
   try {
     const [mem, fees, height] = await Promise.all([
       api('/mempool'), api('/v1/fees/recommended'), api('/blocks/tip/height')
     ]);
     statsData = { mem, fees, height };
+
+    // New block detection
+    const h = Number(height);
+    if (lastKnownHeight !== null && h > lastKnownHeight) {
+      // Fetch new block info for toast
+      try {
+        const blocks = await api('/v1/blocks');
+        const newBlock = blocks[0];
+        const pool = newBlock.extras?.pool?.name || 'Unknown';
+        const totalFees = newBlock.extras?.totalFees || 0;
+        showToast(
+          `⛏️ ${t('newBlock')}`,
+          `#${formatNum(newBlock.height)} | ${pool} | ${formatNum(newBlock.tx_count)} TX | ${(totalFees / 1e8).toFixed(4)} BTC`,
+          () => { location.hash = '#/block/' + newBlock.id; }
+        );
+      } catch {}
+    }
+    lastKnownHeight = h;
 
     flashStat('s-block', formatNum(height));
     flashStat('s-tx', formatNum(mem.count));
@@ -166,21 +360,21 @@ function flashStat(id, newVal) {
   el.textContent = newVal;
   if (oldVal !== '—' && oldVal !== newVal) {
     el.classList.remove('flash');
-    void el.offsetWidth; // force reflow
+    void el.offsetWidth;
     el.classList.add('flash');
   }
 }
 
 updateStats();
+updateMonitorBadge();
 setInterval(updateStats, 30000);
+setInterval(checkMonitoredAddresses, 60000);
 
 // ── 네비게이션 활성 상태 ──
 function updateActiveNav(path) {
-  // Desktop nav
   document.querySelectorAll('#nav-links a').forEach(a => {
     a.classList.toggle('active', a.dataset.page === path);
   });
-  // Mobile bottom nav
   document.querySelectorAll('#mobile-bottom-nav .mnav-item[data-page]').forEach(a => {
     a.classList.toggle('active', a.dataset.page === path);
   });
@@ -216,7 +410,6 @@ function route() {
   const { path, param } = getRoute();
   const app = document.getElementById('app');
 
-  // 멤풀 캔버스 숨기기/보이기
   const mempoolSection = document.getElementById('mempool-section');
   if (mempoolSection) mempoolSection.style.display = path === '' ? '' : 'none';
 
@@ -270,7 +463,7 @@ function breadcrumb(items) {
 async function renderHome(app) {
   app.innerHTML = '';
 
-  // 멤풀 섹션 (캔버스는 별도 영역)
+  // 멤풀 섹션
   let mempoolSection = document.getElementById('mempool-section');
   if (!mempoolSection) {
     mempoolSection = document.createElement('div');
@@ -291,9 +484,16 @@ async function renderHome(app) {
   }
   mempoolSection.style.display = '';
 
-  // 멤풀 캔버스 초기화
   if (typeof MempoolViz !== 'undefined') {
     MempoolViz.init(document.getElementById('mempool-canvas'));
+  }
+
+  // 즐겨찾기
+  const favHtml = renderFavoritesSection();
+  if (favHtml) {
+    const favDiv = document.createElement('div');
+    favDiv.innerHTML = favHtml;
+    app.appendChild(favDiv.firstElementChild);
   }
 
   // 수수료 히스토그램
@@ -302,10 +502,32 @@ async function renderHome(app) {
   feeSection.innerHTML = `<h3><span class="section-icon">📊</span> ${t('feeDistribution')}</h3><canvas id="fee-chart"></canvas>`;
   app.appendChild(feeSection);
 
-  // 최근 블록 - skeleton loading
+  // 최근 블록
   const blocksSection = document.createElement('div');
   blocksSection.innerHTML = `<div class="section-title"><span class="section-icon">⛏️</span> ${t('recentBlocks')}</div><div class="blocks-grid" id="recent-blocks">${skeletonCards(8)}</div>`;
   app.appendChild(blocksSection);
+
+  // Charts placeholder
+  const chartsDiv = document.createElement('div');
+  chartsDiv.id = 'home-charts';
+  chartsDiv.innerHTML = `<div class="charts-grid">
+    <div class="chart-card"><h3><span class="section-icon">📈</span> ${t('btcPrice')} (${t('days30')})</h3><div id="price-info" class="chart-subtitle">${t('loading')}</div><canvas id="price-chart"></canvas></div>
+    <div class="chart-card"><h3><span class="section-icon">📦</span> ${t('mempoolSizeHistory')}</h3><div class="chart-subtitle">&nbsp;</div><canvas id="mempool-history-chart"></canvas></div>
+  </div>`;
+  app.appendChild(chartsDiv);
+
+  // Lightning
+  const lnDiv = document.createElement('div');
+  lnDiv.id = 'lightning-section';
+  lnDiv.className = 'lightning-section';
+  lnDiv.innerHTML = `<div class="lightning-header" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+    <h3><span class="section-icon">⚡</span> ${t('lightning')}</h3>
+    <span class="toggle-icon">▼</span>
+  </div>
+  <div class="lightning-body">
+    <div class="lightning-stats-grid" id="ln-stats">${skeletonCards(4)}</div>
+  </div>`;
+  app.appendChild(lnDiv);
 
   // 데이터 로드
   try {
@@ -321,8 +543,14 @@ async function renderHome(app) {
       MempoolViz.updateData(blocks.slice(0, 6), mempoolBlocks);
     }
   } catch (e) {
-    document.getElementById('recent-blocks').innerHTML = `<div class="error-box">${t('error')}</div>`;
+    const el = document.getElementById('recent-blocks');
+    if (el) el.innerHTML = `<div class="error-box">${t('error')}</div>`;
   }
+
+  // Load charts & lightning in parallel
+  loadBtcPriceChart();
+  loadMempoolHistoryChart();
+  loadLightningStats();
 }
 
 function renderRecentBlocks(blocks) {
@@ -332,10 +560,8 @@ function renderRecentBlocks(blocks) {
     const pool = b.extras && b.extras.pool ? b.extras.pool.name : 'Unknown';
     const totalFees = b.extras ? b.extras.totalFees : 0;
     const feeRange = b.extras && b.extras.feeRange ? b.extras.feeRange : null;
-    const avgFeeRate = b.extras && b.extras.avgFeeRate ? b.extras.avgFeeRate : null;
     const medianFee = b.extras && b.extras.medianFee ? b.extras.medianFee : null;
 
-    // Fee bar gradient
     let feeBarStyle = 'background: var(--border);';
     if (feeRange && feeRange.length >= 2) {
       const minFee = feeRange[0];
@@ -343,7 +569,6 @@ function renderRecentBlocks(blocks) {
       feeBarStyle = `background: linear-gradient(90deg, ${feeColorHex(minFee)}, ${feeColorHex(maxFee)});`;
     }
 
-    // Fee range text
     let feeRangeText = '';
     if (feeRange && feeRange.length >= 2) {
       feeRangeText = `${Math.round(feeRange[0])}~${Math.round(feeRange[feeRange.length - 1])} sat/vB`;
@@ -439,6 +664,127 @@ function renderFeeHistogram(mempoolBlocks) {
 }
 
 // ═══════════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════════
+async function loadBtcPriceChart() {
+  try {
+    const data = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30').then(r => r.json());
+    const prices = data.prices || [];
+    if (!prices.length) return;
+
+    const current = prices[prices.length - 1][1];
+    const dayAgo = prices.find(p => p[0] >= prices[prices.length - 1][0] - 86400000);
+    const change24h = dayAgo ? ((current - dayAgo[1]) / dayAgo[1] * 100) : 0;
+
+    const infoEl = document.getElementById('price-info');
+    if (infoEl) {
+      const changeClass = change24h >= 0 ? 'up' : 'down';
+      infoEl.innerHTML = `<span class="price-current">$${formatNum(Math.round(current))}</span><span class="price-change ${changeClass}">${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}% (24h)</span>`;
+    }
+
+    const canvas = document.getElementById('price-chart');
+    if (!canvas) return;
+    drawLineChart(canvas, prices.map(p => p[1]), '#f7931a');
+  } catch {}
+}
+
+async function loadMempoolHistoryChart() {
+  try {
+    // Use mempool stats API
+    const data = await api('/v1/mining/hashrate/3m');
+    // We'll draw the difficulty as a proxy since mempool size history isn't directly available
+    // Use the currentHashrate field as a fallback; try fetching mempool stats
+    let chartData = [];
+    try {
+      const mempoolStats = await fetch('https://mempool.space/api/v1/statistics/2h').then(r => r.json());
+      if (mempoolStats && mempoolStats.length) {
+        chartData = mempoolStats.map(s => s.vbytes_per_second || 0);
+      }
+    } catch {}
+
+    if (!chartData.length && data.hashrates) {
+      chartData = data.hashrates.map(h => h.avgHashrate / 1e18);
+    }
+
+    const canvas = document.getElementById('mempool-history-chart');
+    if (!canvas || !chartData.length) return;
+    drawAreaChart(canvas, chartData, '#4488ff');
+  } catch {}
+}
+
+function drawLineChart(canvas, values, color) {
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const padL = 10, padR = 10, padT = 10, padB = 10;
+  const chartW = W - padL - padR, chartH = H - padT - padB;
+
+  const maxVal = Math.max(...values) * 1.02;
+  const minVal = Math.min(...values) * 0.98;
+  const range = maxVal - minVal || 1;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  values.forEach((v, i) => {
+    const x = padL + (i / (values.length - 1)) * chartW;
+    const y = padT + chartH - ((v - minVal) / range) * chartH;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, padT, 0, H - padB);
+  grad.addColorStop(0, color.replace(')', ',0.2)').replace('rgb', 'rgba'));
+  grad.addColorStop(1, color.replace(')', ',0)').replace('rgb', 'rgba'));
+  // Use hex to rgba
+  const r = parseInt(color.slice(1, 3), 16), g = parseInt(color.slice(3, 5), 16), b = parseInt(color.slice(5, 7), 16);
+  const grad2 = ctx.createLinearGradient(0, padT, 0, H - padB);
+  grad2.addColorStop(0, `rgba(${r},${g},${b},0.15)`);
+  grad2.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  ctx.lineTo(padL + chartW, H - padB);
+  ctx.lineTo(padL, H - padB);
+  ctx.closePath();
+  ctx.fillStyle = grad2;
+  ctx.fill();
+}
+
+function drawAreaChart(canvas, values, color) {
+  drawLineChart(canvas, values, color);
+}
+
+// ═══════════════════════════════════════════
+// LIGHTNING NETWORK STATS
+// ═══════════════════════════════════════════
+async function loadLightningStats() {
+  const container = document.getElementById('ln-stats');
+  if (!container) return;
+  try {
+    const data = await api('/v1/lightning/statistics/latest');
+    const channelCount = data.latest?.channel_count || data.channel_count || 0;
+    const totalCapacity = data.latest?.total_capacity || data.total_capacity || 0;
+    const nodeCount = data.latest?.node_count || data.node_count || 0;
+    const avgSize = channelCount > 0 ? totalCapacity / channelCount : 0;
+
+    container.innerHTML = `
+      <div class="ln-stat stagger-item" style="--i:0"><div class="ln-val">${formatNum(channelCount)}</div><div class="ln-lbl">${t('channels')}</div></div>
+      <div class="ln-stat stagger-item" style="--i:1"><div class="ln-val">${(totalCapacity / 1e8).toFixed(2)} BTC</div><div class="ln-lbl">${t('capacity')}</div></div>
+      <div class="ln-stat stagger-item" style="--i:2"><div class="ln-val">${formatNum(nodeCount)}</div><div class="ln-lbl">${t('nodes')}</div></div>
+      <div class="ln-stat stagger-item" style="--i:3"><div class="ln-val">${formatNum(Math.round(avgSize))} sat</div><div class="ln-lbl">${t('avgChannelSize')}</div></div>
+    `;
+  } catch {
+    container.innerHTML = '<div style="color:var(--text3);font-size:.75rem;padding:8px">Lightning data unavailable</div>';
+  }
+}
+
+// ═══════════════════════════════════════════
 // BLOCK PAGE
 // ═══════════════════════════════════════════
 async function renderBlock(app, param) {
@@ -466,6 +812,8 @@ async function renderBlock(app, param) {
       feeRangeHtml = `${coloredFeeRate(feeRange[0])} ~ ${coloredFeeRate(feeRange[feeRange.length - 1])}`;
     }
 
+    const favLabel = '#' + formatNum(block.height);
+
     app.innerHTML = `
       ${breadcrumb([
         { href: '#/', label: t('home') },
@@ -473,7 +821,10 @@ async function renderBlock(app, param) {
         { href: '#/block/' + param, label: '#' + formatNum(block.height) }
       ])}
 
-      <div class="page-title">${t('blockExplorer')} #${formatNum(block.height)}</div>
+      <div class="page-actions">
+        <div class="page-title">${t('blockExplorer')} #${formatNum(block.height)}</div>
+        ${favButton('block', block.id, favLabel)}
+      </div>
       <div class="page-hash" title="${block.id}">${block.id}</div>
 
       <div class="info-grid">
@@ -496,7 +847,7 @@ async function renderBlock(app, param) {
       </div>
 
       <div class="section-title"><span class="section-icon">📋</span> ${t('transactions')}</div>
-      <div id="block-txs">${skeletonCards(4)}</div>
+      <div id="block-txs">${skeletonTable(6)}</div>
       <div id="block-txs-pagination"></div>
     `;
 
@@ -511,7 +862,7 @@ async function loadBlockTxs(blockHash, totalCount, startIdx) {
   const pagination = document.getElementById('block-txs-pagination');
   if (!container) return;
 
-  container.innerHTML = skeletonCards(4);
+  container.innerHTML = skeletonTable(6);
 
   try {
     const txs = await api(`/block/${blockHash}/txs/${startIdx}`);
@@ -586,19 +937,23 @@ async function renderTx(app, txid) {
       return types[scriptpubkey_type] || scriptpubkey_type || '?';
     }
 
-    // Breadcrumb
     let bcItems = [{ href: '#/', label: t('home') }];
     if (isConfirmed) {
       bcItems.push({ href: '#/block/' + tx.status.block_hash, label: t('block') + ' #' + formatNum(tx.status.block_height) });
     }
     bcItems.push({ href: '#/tx/' + txid, label: 'TX ' + shortHash(txid) });
 
+    const favLabel = 'TX ' + shortHash(txid);
+
     app.innerHTML = `
       ${breadcrumb(bcItems)}
 
-      <div class="page-title">
-        ${isCoinbase ? '⛏️ ' : ''}${t('transaction')}
-        <span class="badge ${isConfirmed ? 'badge-confirmed' : 'badge-unconfirmed'}">${isConfirmed ? t('confirmed') : t('unconfirmed')}</span>
+      <div class="page-actions">
+        <div class="page-title">
+          ${isCoinbase ? '⛏️ ' : ''}${t('transaction')}
+          <span class="badge ${isConfirmed ? 'badge-confirmed' : 'badge-unconfirmed'}">${isConfirmed ? t('confirmed') : t('unconfirmed')}</span>
+        </div>
+        ${favButton('tx', tx.txid, favLabel)}
       </div>
       <div class="page-hash" title="${tx.txid}">${tx.txid}</div>
 
@@ -669,7 +1024,7 @@ async function renderTx(app, txid) {
 // ADDRESS PAGE
 // ═══════════════════════════════════════════
 async function renderAddress(app, address) {
-  app.innerHTML = `<div class="loading">${t('loading')}</div>`;
+  app.innerHTML = skeletonAddrStats(5) + skeletonTable(6);
 
   try {
     const info = await api('/address/' + address);
@@ -688,6 +1043,16 @@ async function renderAddress(app, address) {
       return '?';
     }
 
+    const isMonitored = !!getMonitoredAddrs()[address];
+    const favLabel = shortAddr(address);
+
+    // Update monitor txCount
+    const m = getMonitoredAddrs();
+    if (m[address]) {
+      m[address].txCount = txCount;
+      saveMonitoredAddrs(m);
+    }
+
     app.innerHTML = `
       ${breadcrumb([
         { href: '#/', label: t('home') },
@@ -695,7 +1060,12 @@ async function renderAddress(app, address) {
         { href: '#/address/' + address, label: shortHash(address) }
       ])}
 
-      <div class="page-title">${t('address')}</div>
+      <div class="page-actions">
+        <div class="page-title">${t('address')}</div>
+        ${favButton('address', address, favLabel)}
+        <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" onclick="toggleMonitor('${address}')">🔔 ${t('monitoring')}</button>
+        <button class="monitor-btn" onclick="App.showQR('${address}')">📱 ${t('qrView')}</button>
+      </div>
       <div class="page-hash" title="${address}">${address}</div>
 
       <div class="addr-summary">
@@ -707,7 +1077,7 @@ async function renderAddress(app, address) {
       </div>
 
       <div class="section-title"><span class="section-icon">📋</span> ${t('txHistory')}</div>
-      <div id="addr-txs">${skeletonCards(4)}</div>
+      <div id="addr-txs">${skeletonTable(6)}</div>
       <div id="addr-txs-more"></div>
     `;
 
@@ -722,7 +1092,7 @@ async function loadAddrTxs(address, lastTxid) {
   const moreBtn = document.getElementById('addr-txs-more');
   if (!container) return;
 
-  if (!lastTxid) container.innerHTML = skeletonCards(4);
+  if (!lastTxid) container.innerHTML = skeletonTable(6);
 
   try {
     const url = lastTxid ? `/address/${address}/txs/chain/${lastTxid}` : `/address/${address}/txs`;
@@ -881,7 +1251,7 @@ function renderHashrateChart(data) {
   ctx.scale(dpr, dpr);
   const W = rect.width, H = rect.height;
 
-  const values = hashrates.map(h => h.avgHashrate / 1e18); // EH/s
+  const values = hashrates.map(h => h.avgHashrate / 1e18);
   const maxVal = Math.max(...values) * 1.1;
   const minVal = Math.min(...values) * 0.9;
   const range = maxVal - minVal || 1;
@@ -891,7 +1261,6 @@ function renderHashrateChart(data) {
 
   ctx.clearRect(0, 0, W, H);
 
-  // 그리드
   ctx.strokeStyle = '#21262d';
   ctx.lineWidth = 0.5;
   for (let i = 0; i <= 4; i++) {
@@ -904,7 +1273,6 @@ function renderHashrateChart(data) {
     ctx.fillText(val.toFixed(0) + ' EH/s', padL - 4, y + 3);
   }
 
-  // 라인
   ctx.beginPath();
   ctx.strokeStyle = '#f7931a';
   ctx.lineWidth = 1.5;
@@ -915,7 +1283,6 @@ function renderHashrateChart(data) {
   });
   ctx.stroke();
 
-  // 그라데이션 채우기
   const grad = ctx.createLinearGradient(0, padT, 0, H - padB);
   grad.addColorStop(0, 'rgba(247,147,26,0.15)');
   grad.addColorStop(1, 'rgba(247,147,26,0)');
@@ -924,6 +1291,105 @@ function renderHashrateChart(data) {
   ctx.closePath();
   ctx.fillStyle = grad;
   ctx.fill();
+}
+
+// ═══════════════════════════════════════════
+// FEE CALCULATOR
+// ═══════════════════════════════════════════
+function renderFeeCalcModal() {
+  const fees = statsData.fees || {};
+  const fastFee = fees.fastestFee || 10;
+  const halfFee = fees.halfHourFee || 5;
+  const hourFee = fees.hourFee || 2;
+
+  const txTypes = [
+    { label: 'Simple send (P2WPKH)', vb: 141 },
+    { label: 'Multi-input 2-in-2-out', vb: 208 },
+    { label: lang === 'ko' ? '직접 입력' : 'Custom', vb: 0 },
+  ];
+
+  return `<div class="modal-overlay" id="fee-calc-modal" onclick="if(event.target===this)this.remove()">
+    <div class="modal">
+      <button class="modal-close" onclick="document.getElementById('fee-calc-modal').remove()">✕</button>
+      <h2>🧮 ${t('feeCalc')}</h2>
+      <label>TX ${t('type')}</label>
+      <select id="fc-type" onchange="updateFeeCalc()">
+        ${txTypes.map((tt, i) => `<option value="${i}">${tt.label} ${tt.vb ? '(~' + tt.vb + ' vB)' : ''}</option>`).join('')}
+      </select>
+      <div id="fc-custom-wrap" style="display:none">
+        <label>vBytes</label>
+        <input type="number" id="fc-vbytes" value="200" min="1" onchange="updateFeeCalc()">
+      </div>
+      <table class="fee-table" id="fc-table">
+        <thead><tr><th>${t('speed')}</th><th>${t('feeRate')}</th><th>${t('estFee')} (sat)</th><th>${t('estFee')} (BTC)</th><th>${t('estTime')}</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function updateFeeCalc() {
+  const typeIdx = parseInt(document.getElementById('fc-type').value);
+  const customWrap = document.getElementById('fc-custom-wrap');
+  const txTypes = [141, 208, 0];
+  let vb = txTypes[typeIdx];
+
+  if (typeIdx === 2) {
+    customWrap.style.display = '';
+    vb = parseInt(document.getElementById('fc-vbytes').value) || 200;
+  } else {
+    customWrap.style.display = 'none';
+  }
+
+  const fees = statsData.fees || {};
+  const rows = [
+    { label: t('fast'), rate: fees.fastestFee || 10, time: '~10' + (lang === 'ko' ? '분' : 'min') },
+    { label: t('normal'), rate: fees.halfHourFee || 5, time: '~30' + (lang === 'ko' ? '분' : 'min') },
+    { label: t('slow'), rate: fees.hourFee || 2, time: '~1' + (lang === 'ko' ? '시간+' : 'h+') },
+  ];
+
+  const tbody = document.querySelector('#fc-table tbody');
+  if (!tbody) return;
+  tbody.innerHTML = rows.map(r => {
+    const feeSat = r.rate * vb;
+    return `<tr>
+      <td><strong>${r.label}</strong></td>
+      <td>${coloredFeeRate(r.rate)}</td>
+      <td>${formatNum(feeSat)}</td>
+      <td>${(feeSat / 1e8).toFixed(8)}</td>
+      <td>${r.time}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// QR CODE
+// ═══════════════════════════════════════════
+function showQRModal(address) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'qr-modal';
+  modal.onclick = function(e) { if (e.target === this) this.remove(); };
+  modal.innerHTML = `<div class="modal">
+    <button class="modal-close" onclick="document.getElementById('qr-modal').remove()">✕</button>
+    <div class="qr-modal-content">
+      <h2>📱 ${t('qrView')}</h2>
+      <div id="qr-code"></div>
+      <div class="qr-addr-text">${escHtml(address)}</div>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('${escHtml(address)}').then(()=>{this.textContent='${t('copied')}'});setTimeout(()=>{this.textContent='${t('copy')}'},1500)">${t('copy')}</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+
+  // Generate QR using qrcode-generator
+  if (typeof qrcode !== 'undefined') {
+    const qr = qrcode(0, 'M');
+    qr.addData('bitcoin:' + address);
+    qr.make();
+    document.getElementById('qr-code').innerHTML = qr.createSvgTag(5);
+  } else {
+    document.getElementById('qr-code').innerHTML = '<p style="color:var(--text3);font-size:.75rem">QR library not loaded</p>';
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -984,6 +1450,17 @@ window.App = {
   closeMobileSearch() {
     const overlay = document.getElementById('mobile-search-overlay');
     overlay.classList.remove('open');
+  },
+
+  openFeeCalc() {
+    const existing = document.getElementById('fee-calc-modal');
+    if (existing) { existing.remove(); return; }
+    document.body.insertAdjacentHTML('beforeend', renderFeeCalcModal());
+    updateFeeCalc();
+  },
+
+  showQR(address) {
+    showQRModal(address);
   }
 };
 
@@ -1005,9 +1482,17 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     document.getElementById('search-input').blur();
     App.closeMobileSearch();
+    const feeModal = document.getElementById('fee-calc-modal');
+    if (feeModal) feeModal.remove();
+    const qrModal = document.getElementById('qr-modal');
+    if (qrModal) qrModal.remove();
   }
 });
 
-// loadBlockTxs, loadAddrTxs 글로벌
+// 글로벌 함수
 window.loadBlockTxs = loadBlockTxs;
 window.loadAddrTxs = loadAddrTxs;
+window.toggleFavorite = toggleFavorite;
+window.removeFavorite = removeFavorite;
+window.toggleMonitor = toggleMonitor;
+window.updateFeeCalc = updateFeeCalc;
