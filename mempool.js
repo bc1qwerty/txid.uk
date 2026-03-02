@@ -59,7 +59,7 @@ const MempoolViz = (() => {
     const count = Math.min(txCount, maxTx);
     const txs = [];
     for (let i = 0; i < count; i++) txs.push(feeColor(randomFee(feeRange)));
-    return { index, x, y, w: BLOCK_W, h: BLOCK_H, txs, maxTx, confirmed, mempoolIdx };
+    return { index, x, y, w: BLOCK_W, h: BLOCK_H, txs, maxTx, confirmed, mempoolIdx, meta: null };
   }
 
   function initBlocks() {
@@ -117,16 +117,43 @@ const MempoolViz = (() => {
     // 라벨
     ctx.font = '10px monospace';
     ctx.textAlign = 'center';
+    // 확인된 블록 상세 라벨
+    if (b.confirmed && b.meta) {
+      const m = b.meta;
+      // 블록 높이 (상단)
+      ctx.font = 'bold 10px monospace';
+      ctx.fillStyle = '#f7931a';
+      ctx.textAlign = 'center';
+      ctx.fillText('#' + m.height, b.x + b.w / 2, b.y - 16);
+      // 채굴자 (상단)
+      ctx.font = '9px monospace';
+      ctx.fillStyle = '#8b949e';
+      const minerLabel = m.miner ? (m.miner.length > 10 ? m.miner.slice(0,10)+'…' : m.miner) : '';
+      ctx.fillText(minerLabel, b.x + b.w / 2, b.y - 6);
+      // TX 수 (하단)
+      ctx.font = '9px monospace';
+      ctx.fillStyle = '#6e7681';
+      ctx.fillText(m.txCount + ' TX', b.x + b.w / 2, b.y + b.h + 12);
+      // 수수료율 (하단)
+      if (m.medianFee) {
+        ctx.fillStyle = '#445566';
+        ctx.fillText('~' + Math.round(m.medianFee) + ' sat/vB', b.x + b.w / 2, b.y + b.h + 22);
+      }
+    } else if (b.confirmed) {
+      // 메타 없을 때 fallback
+      ctx.font = '9px monospace';
+      ctx.fillStyle = '#2a3040';
+      ctx.textAlign = 'center';
+      const ago = CONFIRMED_COLS - 1 - b.index;
+      ctx.fillText('~' + ago + '블록 전', b.x + b.w / 2, b.y - 8);
+    }
+
     if (!b.confirmed) {
       ctx.fillStyle = '#f7931a';
       ctx.fillText('MEMPOOL', b.x + b.w / 2, b.y - 8);
       const pct = Math.round((b.txs.length / b.maxTx) * 100);
       ctx.fillStyle = '#6e7681';
       ctx.fillText(pct + '%', b.x + b.w / 2, b.y + b.h + 14);
-    } else {
-      ctx.fillStyle = '#2a3040';
-      const ago = COLS - 1 - b.index;
-      ctx.fillText(`~${ago}`, b.x + b.w / 2, b.y - 8);
     }
   }
 
@@ -293,6 +320,14 @@ const MempoolViz = (() => {
           const bi = CONFIRMED_COLS - 1 - i;
           if (!blocks[bi]) continue;
           const cb = confirmedBlocks[i];
+          // 블록 메타 저장
+          blocks[bi].meta = {
+            height: cb.height,
+            txCount: cb.tx_count,
+            miner: cb.extras && cb.extras.pool ? cb.extras.pool.name : null,
+            medianFee: cb.extras ? (cb.extras.medianFee || cb.extras.avgFeeRate) : null,
+            totalFees: cb.extras ? cb.extras.totalFees : null,
+          };
           blocks[bi].txs = [];
           const maxTx = blocks[bi].maxTx;
           const feeRange = cb.extras && cb.extras.feeRange ? cb.extras.feeRange : null;
