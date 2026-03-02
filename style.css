@@ -272,7 +272,7 @@ header {
   width: 60%;
 }
 /* ── 헤더 버튼 공통 ── */
-#lang-btn, #theme-btn {
+#lang-btn, #theme-btn, #fee-calc-header-btn {
   background: var(--bg2);
   border: 1px solid var(--border);
   color: var(--text2);
@@ -290,10 +290,10 @@ header {
   line-height: 1;
   letter-spacing: .02em;
 }
-#theme-btn { width: 30px; padding: 0; }
-#theme-btn svg { display: block; stroke: currentColor; flex-shrink: 0; }
-#lang-btn:hover, #theme-btn:hover,
-#lang-btn:focus, #theme-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
+#theme-btn, #fee-calc-header-btn { width: 30px; padding: 0; }
+#theme-btn svg, #fee-calc-header-btn svg { display: block; stroke: currentColor; flex-shrink: 0; }
+#lang-btn:hover, #theme-btn:hover, #fee-calc-header-btn:hover,
+#lang-btn:focus, #theme-btn:focus, #fee-calc-header-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
 
 /* ── Stats Bar ── */
 #stats-bar {
