@@ -51,11 +51,13 @@ const MempoolViz = (() => {
   }
 
   function timeAgo(ts) {
-    const isKo = document.documentElement.lang !== 'en';
+    const lang = document.documentElement.lang || 'ko';
+    const sfx = lang === 'ko' ? ['초 전','분 전','시간 전'] :
+                lang === 'ja' ? ['秒前','分前','時間前'] : ['s ago','m ago','h ago'];
     const sec = Math.floor(Date.now() / 1000 - ts);
-    if (sec < 60) return sec + (isKo ? '초 전' : 's ago');
-    if (sec < 3600) return Math.floor(sec / 60) + (isKo ? '분 전' : 'm ago');
-    return Math.floor(sec / 3600) + (isKo ? '시간 전' : 'h ago');
+    if (sec < 60) return sec + sfx[0];
+    if (sec < 3600) return Math.floor(sec / 60) + sfx[1];
+    return Math.floor(sec / 3600) + sfx[2];
   }
 
   // ── 레이아웃 계산 ─────────────────────────
@@ -279,8 +281,9 @@ const MempoolViz = (() => {
       if (mempoolBlockCount > 1) {
         ctx.font = '7.5px "Space Mono", monospace'; ctx.textAlign = 'right';
         ctx.fillStyle = '#556';
-        const isKo2 = document.documentElement.lang !== 'en';
-        ctx.fillText('+' + (mempoolBlockCount - 1) + (isKo2 ? ' 대기' : ' pending'), x + bw - 2, 13);
+        const _lang2 = document.documentElement.lang || 'ko';
+        const _wait = _lang2==='ko'?' 대기':_lang2==='ja'?' 待機':' pending';
+        ctx.fillText('+' + (mempoolBlockCount - 1) + _wait, x + bw - 2, 13);
       }
 
       // 하단: TX수 / vsize / 수수료
@@ -326,8 +329,9 @@ const MempoolViz = (() => {
     const wsOk = ws && ws.readyState === WebSocket.OPEN;
     ctx.font = '7px "Space Mono", monospace'; ctx.textAlign = 'right';
     ctx.fillStyle = wsOk ? '#238636' : themeColor('#6e3030','#cc4444');
-    const isKo3 = document.documentElement.lang !== 'en';
-    ctx.fillText(wsOk ? '● LIVE' : (isKo3 ? '○ 연결 중…' : '○ connecting…'), W - PAD, 13);
+    const _lang3 = document.documentElement.lang || 'ko';
+    const _conn = _lang3==='ko'?'○ 연결 중…':_lang3==='ja'?'○ 接続中…':'○ connecting…';
+    ctx.fillText(wsOk ? '● LIVE' : _conn, W - PAD, 13);
 
     animId = requestAnimationFrame(animate);
   }
@@ -359,7 +363,9 @@ const MempoolViz = (() => {
   }
 
   function showNextBlockInfo() {
-    const isKo = document.documentElement.lang !== 'en';
+    const _modalLang = document.documentElement.lang || 'ko';
+    const isKo = _modalLang === 'ko';
+    const isJa = _modalLang === 'ja';
     const mb = mempoolBlocks[0];
     const nTx = mb && mb.nTx ? mb.nTx.toLocaleString() : '—';
     const vsize = mb && mb.vsize ? Math.round(mb.vsize / 1000) + ' kvB' : '—';
@@ -379,10 +385,10 @@ const MempoolViz = (() => {
           <button onclick="document.getElementById('next-block-modal').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.1rem">✕</button>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-          <div class="ms-card"><div class="ms-val">${nTx}</div><div class="ms-lbl">${isKo ? '대기 TX' : 'Pending TX'}</div></div>
-          <div class="ms-card"><div class="ms-val">${vsize}</div><div class="ms-lbl">${isKo ? '블록 크기' : 'Block Size'}</div></div>
-          <div class="ms-card"><div class="ms-val">${fee}</div><div class="ms-lbl">${isKo ? '중간 수수료' : 'Median Fee'}</div></div>
-          <div class="ms-card"><div class="ms-val">+${waiting}</div><div class="ms-lbl">${isKo ? '대기 블록' : 'Waiting Blocks'}</div></div>
+          <div class="ms-card"><div class="ms-val">${nTx}</div><div class="ms-lbl">${isKo ? '대기 TX' : isJa ? '待機TX' : 'Pending TX'}</div></div>
+          <div class="ms-card"><div class="ms-val">${vsize}</div><div class="ms-lbl">${isKo ? '블록 크기' : isJa ? 'ブロックサイズ' : 'Block Size'}</div></div>
+          <div class="ms-card"><div class="ms-val">${fee}</div><div class="ms-lbl">${isKo ? '중간 수수료' : isJa ? '中央手数料' : 'Median Fee'}</div></div>
+          <div class="ms-card"><div class="ms-val">+${waiting}</div><div class="ms-lbl">${isKo ? '대기 블록' : isJa ? '待機ブロック' : 'Waiting Blocks'}</div></div>
         </div>
         <div style="font-size:.75rem;color:var(--text2);line-height:1.7;font-family:var(--font-ko)">
           <p style="margin:0 0 8px"><strong style="color:var(--text1)">${isKo ? 'NEXT 블록이란?' : 'What is the NEXT block?'}</strong></p>

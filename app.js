@@ -75,6 +75,48 @@ const i18n = {
     mempoolSizeHistory: '멤풀 크기 추이',
     clickBlockHint: '블록을 클릭해 상세 정보를 확인하세요',
   },
+  ja: {
+    home: 'ホーム', mining: 'マイニング', search_ph: 'TXID / ブロック高 / アドレス検索...',
+    blockHeight: 'ブロック高', unconfirmedTx: '未確認TX', mempoolSize: 'メンプールサイズ',
+    fastFee: '速い手数料', tagline: 'ビットコイン、オーストリア経済学、そして自由。',
+    learn: '学習', loading: '読み込み中...', error: 'データを取得できません。',
+    recentBlocks: '最近のブロック', feeDistribution: '手数料分布',
+    blockExplorer: 'ブロックエクスプローラー', transaction: 'トランザクション', address: 'アドレス',
+    miningStats: 'マイニング統計', confirmed: '確認済み', unconfirmed: '未確認',
+    height: '高さ', hash: 'ハッシュ', timestamp: '時刻', size: 'サイズ',
+    weight: '重さ', version: 'バージョン', merkleRoot: 'マークルルート',
+    bits: 'ビット', nonce: 'ノンス', difficulty: '難易度',
+    totalFees: '合計手数料', subsidy: '補助金', totalOutput: '合計出力',
+    miner: 'マイナー', txCount: 'TX数', transactions: 'トランザクション一覧',
+    inputs: '入力', outputs: '出力', fee: '手数料', feeRate: '手数料率',
+    vsize: '仮想サイズ', locktime: 'ロックタイム', rbf: 'RBF',
+    balance: '残高', totalReceived: '受取合計', totalSent: '送付合計',
+    txHistory: '取引履歴', type: 'タイプ', value: '金額',
+    hashrate: 'ハッシュレート', diffAdj: '難易度調整',
+    topMiners: 'トップマイナー', avgBlockTime: '平均ブロック時間',
+    blockReward: 'ブロック報酬', prev: '前', next: '次',
+    page: 'ページ', of: '/',
+    ago_sec: '秒前', ago_min: '分前', ago_hour: '時間前', ago_day: '日前',
+    coinbaseTx: 'コインベースTX', estimatedConf: '推定確認時間',
+    notFound: '検索結果が見つかりません。',
+    blocks144: '最近144ブロック (~1日)',
+    progress: '進捗', estimatedAdj: '推定調整',
+    last2016: '最近2016ブロック',
+    search: '検索', coinbaseReward: 'コインベース - ブロック報酬',
+    block: 'ブロック', favorites: 'お気に入り',
+    monitoring: 'モニタリング', newTx: '新しいTX',
+    newBlock: '新しいブロック！',
+    fast: '速い', normal: '普通', slow: '遅い',
+    feeCalc: '手数料計算機', txType: 'TXタイプ', estFee: '推定手数料',
+    estTime: '推定時間', vbytes: 'vBytes',
+    btcPrice: 'BTC価格', days30: '30日',
+    mempoolSizeHistory: 'メンプール推移',
+    lightning: 'ライトニング統計',
+    clickBlockHint: 'ブロックをクリックして詳細を確認',
+    krwPrice: 'BTC価格', monitoring_active: 'モニタリング中',
+    copy: 'コピー', copied: 'コピー完了',
+    btcKrw: 'BTC/KRW', btcUsd: 'BTC/USD',
+  },
   en: {
     home: 'Home', mining: 'Mining', search_ph: 'Search TXID / Block Height / Address...',
     blockHeight: 'Block Height', unconfirmedTx: 'Unconfirmed TX', mempoolSize: 'Mempool Size',
@@ -135,10 +177,13 @@ function formatBytes(bytes) {
 }
 function timeAgo(ts) {
   const sec = Math.floor(Date.now() / 1000 - ts);
-  if (sec < 60) return sec + (lang === 'ko' ? '초 전' : 's ago');
-  if (sec < 3600) return Math.floor(sec / 60) + (lang === 'ko' ? '분 전' : 'm ago');
-  if (sec < 86400) return Math.floor(sec / 3600) + (lang === 'ko' ? '시간 전' : 'h ago');
-  return Math.floor(sec / 86400) + (lang === 'ko' ? '일 전' : 'd ago');
+  const sfx = lang === 'ko' ? ['초 전','분 전','시간 전','일 전'] :
+               lang === 'ja' ? ['秒前','分前','時間前','日前'] :
+                               ['s ago','m ago','h ago','d ago'];
+  if (sec < 60) return sec + sfx[0];
+  if (sec < 3600) return Math.floor(sec / 60) + sfx[1];
+  if (sec < 86400) return Math.floor(sec / 3600) + sfx[2];
+  return Math.floor(sec / 86400) + sfx[3];
 }
 function fullDate(ts) { return new Date(ts * 1000).toLocaleString(); }
 function shortHash(h) { return h ? h.slice(0, 8) + '...' + h.slice(-8) : '—'; }
@@ -1475,9 +1520,10 @@ window.App = {
   },
 
   toggleLang() {
-    lang = lang === 'ko' ? 'en' : 'ko';
-    document.documentElement.lang = lang;  // mempool.js가 감지
-    document.getElementById('lang-btn').textContent = lang === 'ko' ? 'EN' : 'KO';
+    lang = lang === 'ko' ? 'en' : lang === 'en' ? 'ja' : 'ko';
+    document.documentElement.lang = lang;
+    const labels = { ko: 'EN', en: '日', ja: 'KO' };
+    document.getElementById('lang-btn').textContent = labels[lang];
     document.getElementById('search-input').placeholder = t('search_ph');
     document.getElementById('tagline').textContent = t('tagline');
     document.querySelectorAll('[data-ko]').forEach(el => {
@@ -1549,7 +1595,12 @@ function updateThemeBtn() {
   if (!btn) return;
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
   btn.innerHTML = isDark ? icon('sun') : icon('moon');
-  btn.title = isDark ? (lang==='ko'?'라이트 모드로 전환':'Switch to Light Mode') : (lang==='ko'?'다크 모드로 전환':'Switch to Dark Mode');
+  const themeLabels = {
+    ko: isDark ? '라이트 모드로 전환' : '다크 모드로 전환',
+    en: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+    ja: isDark ? 'ライトモードへ' : 'ダークモードへ',
+  };
+  btn.title = themeLabels[lang] || themeLabels.en;
 }
 (function initTheme() {
   const saved = localStorage.getItem('theme') || 'dark';
