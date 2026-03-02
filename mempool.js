@@ -349,6 +349,50 @@ const MempoolViz = (() => {
     initRetries = 0;
   }
 
+  function showNextBlockInfo() {
+    const lang = document.documentElement.lang || 'ko';
+    const isKo = lang !== 'en';
+    const mb = mempoolBlocks[0];
+    const nTx = mb && mb.nTx ? mb.nTx.toLocaleString() : '—';
+    const vsize = mb && mb.vsize ? Math.round(mb.vsize / 1000) + ' kvB' : '—';
+    const fee = mb && mb.medianFee ? mb.medianFee.toFixed(2) + ' sat/vB' : '—';
+    const waiting = (window._mempoolBlockCount || 1) - 1;
+
+    // 기존 모달 제거
+    document.getElementById('next-block-modal')?.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'next-block-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal" style="max-width:420px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <h2 style="margin:0;font-size:.95rem;color:var(--accent)">NEXT ${isKo ? '블록 (예측)' : 'Block (Projected)'}</h2>
+          <button onclick="document.getElementById('next-block-modal').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.1rem">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+          <div class="ms-card"><div class="ms-val">${nTx}</div><div class="ms-lbl">${isKo ? '대기 TX' : 'Pending TX'}</div></div>
+          <div class="ms-card"><div class="ms-val">${vsize}</div><div class="ms-lbl">${isKo ? '블록 크기' : 'Block Size'}</div></div>
+          <div class="ms-card"><div class="ms-val">${fee}</div><div class="ms-lbl">${isKo ? '중간 수수료' : 'Median Fee'}</div></div>
+          <div class="ms-card"><div class="ms-val">+${waiting}</div><div class="ms-lbl">${isKo ? '대기 블록' : 'Waiting Blocks'}</div></div>
+        </div>
+        <div style="font-size:.75rem;color:var(--text2);line-height:1.7;font-family:var(--font-ko)">
+          <p style="margin:0 0 8px"><strong style="color:var(--text1)">${isKo ? 'NEXT 블록이란?' : 'What is the NEXT block?'}</strong></p>
+          <p style="margin:0 0 10px">${isKo
+            ? '채굴자가 <strong>수수료 높은 순</strong>으로 TX를 선택해 ~1MB 블록을 채웁니다. 이 예측은 실제 채굴 결과와 다를 수 있습니다.'
+            : 'Miners select TXs by <strong>highest fee rate</strong> to fill ~1MB. This projection may differ from the actual mined block.'}</p>
+          <ul style="margin:0;padding-left:16px">
+            <li>${isKo ? '수수료가 낮으면 다음 블록으로 밀릴 수 있음' : 'Low-fee TXs may be deferred to a later block'}</li>
+            <li>${isKo ? '채굴자마다 TX 선택 기준이 다름 (Foundry, MARA 등)' : 'Each miner has its own policy (Foundry, MARA, etc.)'}</li>
+            <li>${isKo ? 'RBF로 수수료를 올리면 우선순위 상승' : 'Use RBF to boost your TX priority'}</li>
+            <li>${isKo ? '예측 일치율: 약 85~95%' : 'Prediction accuracy: ~85–95%'}</li>
+          </ul>
+        </div>
+      </div>`;
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+  }
+
   return {
     init(canvasEl) {
       if (!canvasEl) return;
@@ -390,12 +434,20 @@ const MempoolViz = (() => {
         const mx = e.clientX - rect.left;
         const layout = getLayout();
         if (!layout) return;
+
+        // 확인된 블록 클릭 → 블록 페이지
         for (let i = 0; i < CONFIRMED_COUNT; i++) {
           const x = layout.xs[i];
           if (mx >= x && mx <= x + layout.bw) {
             const d = confirmedData[CONFIRMED_COUNT - 1 - i];
             if (d) { location.hash = '#/block/' + d.height; return; }
           }
+        }
+
+        // NEXT 블록 클릭 → 설명 모달
+        const nx = layout.xs[CONFIRMED_COUNT];
+        if (mx >= nx && mx <= nx + layout.bw) {
+          showNextBlockInfo();
         }
       });
     },
