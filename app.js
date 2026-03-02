@@ -259,13 +259,18 @@ function skeletonAddrStats(n) {
 }
 
 // ── API 호출 ──
-async function api(path) {
-  const res = await fetch(API + path);
-  if (!res.ok) throw new Error(`API ${res.status}`);
-  const ct = res.headers.get('content-type') || '';
-  if (ct.includes('json')) return res.json();
-  const txt = await res.text();
-  try { return JSON.parse(txt); } catch { return txt; }
+async function api(path, _retry = 1) {
+  try {
+    const res = await fetch(API + path);
+    if (!res.ok) throw new Error('API ' + res.status);
+    const ct = res.headers.get('content-type') || '';
+    if (ct.includes('json')) return res.json();
+    const txt = await res.text();
+    try { return JSON.parse(txt); } catch { return txt; }
+  } catch(e) {
+    if (_retry > 0) { await new Promise(r => setTimeout(r, 3000)); return api(path, _retry - 1); }
+    throw e;
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -470,6 +475,12 @@ async function updateStats() {
     flashStat('s-size', (mem.vsize / 1e6).toFixed(1) + ' MB');
     flashStat('s-fee', fees.fastestFee + ' sat/vB');
 
+    // BTC/USD CoinGecko
+    try {
+      const cg = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd').then(r=>r.json());
+      if (cg?.bitcoin?.usd) flashStat('s-usd', '$' + formatNum(cg.bitcoin.usd));
+    } catch {}
+
     // BTC/KRW 업비트
     try {
       const upbit = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC').then(r => r.json());
@@ -482,6 +493,15 @@ async function updateStats() {
         if (krwCh) { krwCh.textContent = (change>=0?'+':'')+change.toFixed(2)+'%'; krwCh.className='stat-change '+(change>=0?'up':'down'); }
       }
     } catch {}
+
+    // 반감기 카운트다운
+    const currentHeight = Number(height);
+    const nextHalving = Math.ceil((currentHeight + 1) / 210000) * 210000;
+    const blocksLeft = nextHalving - currentHeight;
+    const daysLeft = Math.round(blocksLeft * 10 / 60 / 24);
+    flashStat('s-halving', formatNum(blocksLeft) + ' blk');
+    const halvEl = document.getElementById('s-halving-sub');
+    if (halvEl) { halvEl.textContent = '~' + daysLeft + (lang==='ko'?'일':lang==='ja'?'日':' days'); }
 
     // Footer live stats
     const fh = document.getElementById('footer-height');
@@ -966,6 +986,7 @@ async function renderBlock(app, param) {
       <div class="page-actions">
         <div class="page-title">${t('blockExplorer')} #${formatNum(block.height)}</div>
         ${favButton('block', block.id, favLabel)}
+        <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
       </div>
       <div class="page-hash-wrap"><div class="page-hash" title="${block.id}">${block.id}</div><button class="copy-hash-btn" onclick="copyToClip('${block.id}',this)" title="${t('copy')}">⧉</button></div>
 
@@ -992,6 +1013,24 @@ async function renderBlock(app, param) {
       <div id="block-txs">${skeletonTable(6)}</div>
       <div id="block-txs-pagination"></div>
     `;
+
+    // 블록 네비게이션 삽입
+    const prevHash = block.previousblockhash;
+    const heightNum = block.height;
+    const blockNavHtml = `<div class="block-nav">
+      ${prevHash ? `<a href="#/block/${prevHash}" class="block-nav-btn">← #${formatNum(heightNum-1)}</a>` : `<span class="block-nav-btn disabled">← Genesis</span>`}
+      <span class="block-nav-current">#${formatNum(heightNum)}</span>
+      <button class="block-nav-btn" id="next-block-btn">#${formatNum(heightNum+1)} →</button>
+    </div>`;
+    const infoGrid = app.querySelector('.info-grid');
+    if (infoGrid) infoGrid.insertAdjacentHTML('beforebegin', blockNavHtml);
+    api('/block-height/' + (heightNum + 1)).then(nextHash => {
+      const btn = document.getElementById('next-block-btn');
+      if (btn && nextHash) btn.onclick = () => navigate('#/block/' + nextHash);
+    }).catch(() => {
+      const btn = document.getElementById('next-block-btn');
+      if (btn) btn.style.display = 'none';
+    });
 
     loadBlockTxs(block.id, block.tx_count, 0);
   } catch (e) {
@@ -1097,6 +1136,7 @@ async function renderTx(app, txid) {
           <span class="badge ${isConfirmed ? 'badge-confirmed' : 'badge-unconfirmed'}">${isConfirmed ? t('confirmed') : t('unconfirmed')}</span>
         </div>
         ${favButton('tx', tx.txid, favLabel)}
+        <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
       </div>
       <div class="page-hash-wrap"><div class="page-hash" title="${tx.txid}">${tx.txid}</div><button class="copy-hash-btn" onclick="copyToClip('${tx.txid}',this)" title="${t('copy')}">⧉</button></div>
 
@@ -1237,6 +1277,7 @@ async function renderAddress(app, address) {
       <div class="page-actions">
         <div class="page-title">${t('address')}</div>
         ${favButton('address', address, favLabel)}
+        <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
         <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" onclick="toggleMonitor('${address}')">${icon('bell')} ${t('monitoring')}</button>
         <button class="monitor-btn" onclick="App.showQR('${address}')">📱 ${t('qrView')}</button>
       </div>
@@ -1407,6 +1448,13 @@ async function renderMining(app) {
     `;
 
     renderHashrateChart(hashrate);
+    // 파이차트 카드 삽입
+    const poolCard = document.createElement('div');
+    poolCard.className = 'mining-card';
+    poolCard.style.marginBottom = '20px';
+    poolCard.innerHTML = `<h3>${icon('bar-chart')} ${lang==='ko'?'풀 점유율':lang==='ja'?'プールシェア':'Pool Share'} (${t('blocks144')})</h3><canvas id="pool-chart" style="width:100%;height:220px;display:block"></canvas>`;
+    app.appendChild(poolCard);
+    setTimeout(() => renderPoolChart(topMiners, recentBlocks.length), 200);
   } catch (e) {
     app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
@@ -1481,6 +1529,47 @@ function renderHashrateChart(data) {
   ctx.fillStyle = grad;
   ctx.fill();
 }
+
+function renderPoolChart(miners, total) {
+  const canvas = document.getElementById('pool-chart');
+  if (!canvas || !miners.length) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width) return;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const cx = W * 0.3, cy = H / 2, r = Math.min(cx - 10, cy - 10);
+  const colors = ['#f7931a','#4488ff','#3fb950','#f85149','#d29922','#ff8800','#a855f7','#06b6d4','#f43f5e','#84cc16','#8b949e'];
+  const top10 = miners.slice(0, 10);
+  const otherCount = miners.slice(10).reduce((s, [,c]) => s + c, 0);
+  const segs = otherCount > 0 ? [...top10, ['Other', otherCount]] : top10;
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text2').trim();
+  let angle = -Math.PI / 2;
+  segs.forEach(([, count], i) => {
+    const slice = (count / total) * Math.PI * 2;
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, angle, angle + slice);
+    ctx.closePath();
+    ctx.fillStyle = colors[i % colors.length]; ctx.fill();
+    ctx.strokeStyle = bg; ctx.lineWidth = 2; ctx.stroke();
+    angle += slice;
+  });
+  ctx.textAlign = 'left';
+  ctx.font = '11px sans-serif';
+  segs.forEach(([name, count], i) => {
+    const y = 18 + i * 18;
+    if (y > H - 8) return;
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillRect(W * 0.63, y - 11, 12, 12);
+    ctx.fillStyle = textColor;
+    ctx.fillText(name.slice(0, 13) + ' ' + (count/total*100).toFixed(1) + '%', W * 0.63 + 16, y);
+  });
+}
+window.renderPoolChart = renderPoolChart;
 
 // ═══════════════════════════════════════════
 // FEE CALCULATOR
@@ -1629,17 +1718,19 @@ window.App = {
 
     switch (detected.type) {
       case 'height':
+        addSearchHistory(q, 'block');
         navigate('#/block/' + detected.val);
         break;
       case 'address':
+        addSearchHistory(q, 'address');
         navigate('#/address/' + detected.val);
         break;
       case 'hex64':
         const app = document.getElementById('app');
         app.innerHTML = `<div class="loading">${t('loading')}</div>`;
         const resolved = await resolveHex64(detected.val);
-        if (resolved === 'block') navigate('#/block/' + detected.val);
-        else if (resolved === 'tx') navigate('#/tx/' + detected.val);
+        if (resolved === 'block') { addSearchHistory(q, 'block'); navigate('#/block/' + detected.val); }
+        else if (resolved === 'tx') { addSearchHistory(q, 'tx'); navigate('#/tx/' + detected.val); }
         else { app.innerHTML = `<div class="error-box">${t('notFound')}</div>`; }
         break;
     }
@@ -1710,9 +1801,19 @@ function updateThemeBtn() {
 document.getElementById('search-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') App.doSearch(false);
 });
+document.getElementById('search-input').addEventListener('focus', () => {
+  if (!document.getElementById('search-input').value) showSearchHistory();
+});
+document.getElementById('search-input').addEventListener('input', e => {
+  if (!e.target.value) showSearchHistory();
+  else document.getElementById('search-history-drop')?.remove();
+});
 document.addEventListener('click', e => {
   if (!e.target.closest('#lang-wrap')) {
     document.getElementById('lang-menu')?.classList.remove('open');
+  }
+  if (!e.target.closest('#search-wrap')) {
+    document.getElementById('search-history-drop')?.remove();
   }
 });
 document.getElementById('mobile-search-input').addEventListener('keydown', e => {
@@ -1744,3 +1845,19 @@ window.toggleFavorite = toggleFavorite;
 window.removeFavorite = removeFavorite;
 window.toggleMonitor = toggleMonitor;
 window.updateFeeCalc = updateFeeCalc;
+
+// ── 오프라인 감지 ──
+function checkOnline() {
+  const offline = !navigator.onLine;
+  let bar = document.getElementById('offline-bar');
+  if (offline) {
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'offline-bar';
+      bar.textContent = lang==='ko'?'오프라인 — 데이터가 최신이 아닐 수 있습니다':lang==='ja'?'オフライン':'Offline — data may be stale';
+      document.body.appendChild(bar);
+    }
+  } else { bar?.remove(); }
+}
+window.addEventListener('online', checkOnline);
+window.addEventListener('offline', checkOnline);
