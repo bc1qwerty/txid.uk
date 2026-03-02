@@ -270,25 +270,35 @@ const MempoolViz = (() => {
       if (!canvas) return;
 
       if (confirmedBlocks && confirmedBlocks.length) {
+        // confirmedBlocks[0] = 최신 블록 → 멤풀 바로 왼쪽(COLS-2)에 배치
         for (let i = 0; i < Math.min(confirmedBlocks.length, COLS - 1); i++) {
           const bi = COLS - 2 - i;
-          if (blocks[bi]) {
-            const cb = confirmedBlocks[i];
-            blocks[bi].txs = [];
-            const maxTx = blocks[bi].maxTx;
-            const count = Math.min(cb.tx_count || 2000, maxTx);
-            // 실제 블록 수수료 분포 사용 (extras.feeRange)
-            const feeRange = cb.extras && cb.extras.feeRange ? cb.extras.feeRange : null;
+          if (!blocks[bi]) continue;
+          const cb = confirmedBlocks[i];
+          blocks[bi].txs = [];
+          const maxTx = blocks[bi].maxTx;
+          const feeRange = cb.extras && cb.extras.feeRange ? cb.extras.feeRange : null;
+          // 실제 블록 vsize 비율로 채움 (보통 ~95~100%)
+          const vsize = cb.extras && cb.extras.virtualSize ? cb.extras.virtualSize : 900000;
+          const fillRatio = Math.min(vsize / 1_000_000, 1);
+          const count = Math.round(maxTx * fillRatio);
+
+          if (feeRange && feeRange.length >= 2) {
+            // feePercentiles 있으면 더 정확한 분포 사용
+            const percentiles = cb.extras && cb.extras.feePercentiles ? cb.extras.feePercentiles : null;
+            const dist = percentiles || feeRange;
             for (let j = 0; j < count; j++) {
-              if (feeRange && feeRange.length >= 2) {
-                // feeRange 배열의 분포를 반영해서 픽셀 색상 결정
-                const bucketCount = feeRange.length - 1;
-                const bucketIdx = Math.floor(Math.random() * bucketCount);
-                const fee = feeRange[bucketIdx] + Math.random() * (feeRange[bucketIdx + 1] - feeRange[bucketIdx]);
-                blocks[bi].txs.push(feeColor(fee));
-              } else {
-                blocks[bi].txs.push(feeColor(randomFee(null)));
-              }
+              // 분포 배열에서 균등 샘플링
+              const idx = Math.floor(Math.random() * (dist.length - 1));
+              const fee = dist[idx] + Math.random() * (dist[idx + 1] - dist[idx]);
+              blocks[bi].txs.push(feeColor(Math.max(0, fee)));
+            }
+          } else {
+            // fallback: medianFee 기반
+            const median = cb.extras && cb.extras.medianFee ? cb.extras.medianFee : 5;
+            for (let j = 0; j < count; j++) {
+              const fee = median * (0.5 + Math.random());
+              blocks[bi].txs.push(feeColor(fee));
             }
           }
         }
