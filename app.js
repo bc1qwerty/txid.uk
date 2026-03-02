@@ -542,11 +542,13 @@ async function renderHome(app) {
         <div class="leg"><div class="leg-dot" style="background:#4488ff"></div><span>0.5~1</span></div>
         <div class="leg"><div class="leg-dot" style="background:#445566"></div><span>&lt;0.5</span></div>
       </div>
-      <div class="mempool-hint">${t('clickBlockHint')}</div>
+      <div class="mempool-hint" id="mempool-hint-text">${t('clickBlockHint')}</div>
     `;
     app.before(mempoolSection);
   }
   mempoolSection.style.display = '';
+  const hintEl = document.getElementById('mempool-hint-text');
+  if (hintEl) hintEl.textContent = t('clickBlockHint');
 
   if (typeof MempoolViz !== 'undefined') {
     MempoolViz.init(document.getElementById('mempool-canvas'));
