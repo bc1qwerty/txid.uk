@@ -78,10 +78,15 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
 
 <!-- Top Stats Bar -->
 <div id="stats-bar">
-  <div class="stat"><span class="stat-val" id="s-block">—</span><span class="stat-lbl" data-ko="블록 높이" data-en="Block Height" data-ja="ブロック高" data-ja="ブロック高">블록 높이</span></div>
-  <div class="stat"><span class="stat-val" id="s-tx">—</span><span class="stat-lbl" data-ko="미확인 TX" data-en="Unconfirmed TX" data-ja="未確認TX" data-ja="未確認TX">미확인 TX</span></div>
-  <div class="stat"><span class="stat-val" id="s-size">—</span><span class="stat-lbl" data-ko="멤풀 크기" data-en="Mempool Size" data-ja="メンプール" data-ja="メンプール">멤풀 크기</span></div>
-  <div class="stat"><span class="stat-val" id="s-fee">—</span><span class="stat-lbl" data-ko="빠른 수수료" data-en="Fast Fee" data-ja="速い手数料" data-ja="速い手数料">빠른 수수료</span></div>
+  <div class="stat"><span class="stat-val" id="s-block">—</span><span class="stat-lbl" data-ko="블록 높이" data-en="Block Height" data-ja="ブロック高">블록 높이</span></div>
+  <div class="stat"><span class="stat-val" id="s-tx">—</span><span class="stat-lbl" data-ko="미확인 TX" data-en="Unconfirmed TX" data-ja="未確認TX">미확인 TX</span></div>
+  <div class="stat"><span class="stat-val" id="s-size">—</span><span class="stat-lbl" data-ko="멤풀 크기" data-en="Mempool Size" data-ja="メンプール">멤풀 크기</span></div>
+  <div class="stat"><span class="stat-val" id="s-fee">—</span><span class="stat-lbl" data-ko="빠른 수수료" data-en="Fast Fee" data-ja="速い手数料">빠른 수수료</span></div>
+  <div class="stat"><span class="stat-val" id="s-krw">—</span><span class="stat-change" id="s-krw-change"></span><span class="stat-lbl">BTC/KRW</span></div>
+  <div class="stat"><span class="stat-val" id="s-usd">—</span><span class="stat-lbl">BTC/USD</span></div>
+  <div class="stat"><span class="stat-val" id="s-dom">—</span><span class="stat-lbl">BTC 도미</span></div>
+  <div class="stat"><span class="stat-val" id="s-tps">—</span><span class="stat-lbl">TPS</span></div>
+  <div class="stat"><span class="stat-val" id="s-halving">—</span><span class="stat-change" id="s-halving-sub" style="color:var(--text3)"></span><span class="stat-lbl" data-ko="반감기" data-en="Halving" data-ja="半減期">반감기</span></div>
 </div>
 
 <!-- Main Content Area -->

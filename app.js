@@ -1432,7 +1432,15 @@ async function loadAddrTxs(address, lastTxid) {
 
     if (txs.length >= 25) {
       const lastId = txs[txs.length - 1].txid;
-      moreBtn.innerHTML = `<div class="pagination"><button onclick="loadAddrTxs('${address}', '${lastId}')">${t('next')} →</button></div>`;
+      moreBtn.innerHTML = '<div id="addr-txs-sentinel" style="height:8px"></div>';
+      if (typeof IntersectionObserver !== 'undefined') {
+        const obs = new IntersectionObserver(entries => {
+          if (entries[0].isIntersecting) { obs.disconnect(); loadAddrTxs(address, lastId); }
+        }, { threshold: 0.1 });
+        obs.observe(document.getElementById('addr-txs-sentinel'));
+      } else {
+        moreBtn.innerHTML = `<div class="pagination"><button onclick="loadAddrTxs('${address}', '${lastId}')">${t('next')} →</button></div>`;
+      }
     } else {
       moreBtn.innerHTML = '';
     }
