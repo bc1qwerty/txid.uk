@@ -464,9 +464,9 @@ let statsData = {};
 let lastKnownHeight = null;
 
 let _statsLastRun = 0;
-async function updateStats() {
+async function updateStats(force = false) {
   const now = Date.now();
-  if (now - _statsLastRun < 5000) return; // 5초 쿨다운
+  if (!force && now - _statsLastRun < 8000) return;
   _statsLastRun = now;
   try {
     const [mem, fees, height] = await Promise.all([
@@ -487,25 +487,30 @@ async function updateStats() {
     flashStat('s-size', (mem.vsize / 1e6).toFixed(1) + ' MB');
     flashStat('s-fee', fees.fastestFee + ' sat/vB');
 
-    // BTC/USD CoinGecko
-    try {
-      const cg = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd').then(r=>r.json());
-      if (cg?.bitcoin?.usd) { flashStat('s-usd', '$' + formatNum(cg.bitcoin.usd)); window._btcUsd = cg.bitcoin.usd; }
-    } catch {}
+    // BTC/USD + KRW + 도미 병렬 fetch
+    const [cgRes, upbitRes, globalRes] = await Promise.allSettled([
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', {signal: AbortSignal.timeout(8000)}).then(r=>r.json()),
+      fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC', {signal: AbortSignal.timeout(8000)}).then(r=>r.json()),
+      fetch('https://api.coingecko.com/api/v3/global', {signal: AbortSignal.timeout(10000)}).then(r=>r.json())
+    ]);
 
-    // BTC/KRW 업비트
-    try {
-      const upbit = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC').then(r => r.json());
-      if (upbit && upbit[0]) {
-        const price = upbit[0].trade_price;
-        window._btcKrw = price;
-        const change = upbit[0].signed_change_rate * 100;
-        const priceStr = price >= 1e8 ? (price/1e8).toFixed(2)+'억' : Math.round(price/1e4)+'만';
-        flashStat('s-krw', priceStr+'원');
-        const krwCh = document.getElementById('s-krw-change');
-        if (krwCh) { krwCh.textContent = (change>=0?'+':'')+change.toFixed(2)+'%'; krwCh.className='stat-change '+(change>=0?'up':'down'); }
-      }
-    } catch {}
+    if (cgRes.status === 'fulfilled' && cgRes.value?.bitcoin?.usd) {
+      window._btcUsd = cgRes.value.bitcoin.usd;
+      flashStat('s-usd', '$' + formatNum(cgRes.value.bitcoin.usd));
+    }
+    if (upbitRes.status === 'fulfilled' && upbitRes.value?.[0]) {
+      const u = upbitRes.value[0];
+      window._btcKrw = u.trade_price;
+      const change = u.signed_change_rate * 100;
+      const priceStr = u.trade_price >= 1e8 ? (u.trade_price/1e8).toFixed(2)+'억' : Math.round(u.trade_price/1e4)+'만';
+      flashStat('s-krw', priceStr+'원');
+      const krwCh = document.getElementById('s-krw-change');
+      if (krwCh) { krwCh.textContent = (change>=0?'+':'')+change.toFixed(2)+'%'; krwCh.className='stat-change '+(change>=0?'up':'down'); }
+    }
+    if (globalRes.status === 'fulfilled') {
+      const dom = globalRes.value?.data?.market_cap_percentage?.btc;
+      if (dom) flashStat('s-dom', dom.toFixed(1) + '%');
+    }
 
     // 멤풀 TPS (vbytes_per_second 기반)
     try {
@@ -517,13 +522,6 @@ async function updateStats() {
         const tps = vbps / 250;
         flashStat('s-tps', tps.toFixed(1) + ' tx/s');
       }
-    } catch {}
-
-    // BTC 도미넌스
-    try {
-      const gdata = await fetch('https://api.coingecko.com/api/v3/global').then(r=>r.json());
-      const dom = gdata?.data?.market_cap_percentage?.btc;
-      if (dom) flashStat('s-dom', dom.toFixed(1) + '%');
     } catch {}
 
     // 반감기 카운트다운
@@ -555,9 +553,9 @@ function flashStat(id, newVal) {
   }
 }
 
-updateStats();
+updateStats(true);
 updateMonitorBadge();
-setInterval(updateStats, 30000);
+setInterval(() => { if (navigator.onLine) updateStats(); }, 30000);
 setInterval(checkMonitoredAddresses, 60000);
 
 // ── 네비게이션 활성 상태 ──
@@ -2457,7 +2455,7 @@ function checkOnline() {
 }
 window.addEventListener('online', checkOnline);
 // Stats Bar 30초 주기 업데이트
-setInterval(() => { if (navigator.onLine) updateStats(); }, 30000);
+// Stats 폴링은 위의 setInterval(updateStats, 30000)으로 통합
 window.addEventListener('offline', checkOnline);
 
 // 시스템 다크모드 변경 감지
