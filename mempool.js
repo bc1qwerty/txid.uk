@@ -299,7 +299,9 @@ const MempoolViz = (() => {
         const mb = blocks[COLS - 1];
         if (mb) {
           mb.txs = [];
-          const nTx = Math.min(mempoolBlocks[0].nTx || 800, mb.maxTx);
+          // blockVSize / 1_000_000 = 실제 블록 채움 비율 (0~1)
+          const fillRatio = Math.min((mempoolBlocks[0].blockVSize || 0) / 1_000_000, 1);
+          const nTx = Math.round(mb.maxTx * fillRatio);
           for (let i = 0; i < nTx; i++) {
             mb.txs.push(feeColor(randomFee(mempoolBlocks[0].feeRange)));
           }
