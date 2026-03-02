@@ -544,6 +544,18 @@ async function renderHome(app) {
         <div class="leg"><div class="leg-dot" style="background:#4488ff"></div><span>0.5~1</span></div>
         <div class="leg"><div class="leg-dot" style="background:#445566"></div><span>&lt;0.5</span></div>
       </div>
+      <details class="mempool-info">
+        <summary>&#128269; ${lang==='ko'?'NEXT 블록이란?':'What is the NEXT block?'}</summary>
+        <div class="mempool-info-body">
+          <p>${lang==='ko'?'채굴자가 <strong>수수료 높은 순</strong>으로 TX를 선택해 ~1MB 블록을 채웁니다. NEXT는 <em>예측</em>이며 실제 결과와 다를 수 있습니다.':'Miners pick TXs by <strong>highest fee rate</strong> to fill ~1MB. NEXT is a <em>projection</em> and may differ from the actual block.'}</p>
+          <ul>
+            <li>${lang==='ko'?'수수료가 낮으면 다음 블록으로 밀릴 수 있음':'Low-fee TXs may be pushed to a later block'}</li>
+            <li>${lang==='ko'?'채굴자마다 TX 선택 기준이 다름 (Foundry, MARA 등 자체 정책)':'Each miner has its own policy (Foundry, MARA, etc.)'}</li>
+            <li>${lang==='ko'?'RBF로 수수료를 올리면 우선순위 상승':'RBF can boost a TX priority'}</li>
+            <li>${lang==='ko'?'예측 일치율: 약 85~95%':'Prediction accuracy: ~85–95%'}</li>
+          </ul>
+        </div>
+      </details>
     `;
     app.before(mempoolSection);
   }
