@@ -157,14 +157,15 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 <script>
-  (function(){
-    var el = document.getElementById('footer-visitor-count');
-    if (!el) return;
+  document.addEventListener('DOMContentLoaded', function() {
     fetch('https://txid.goatcounter.com/counter//.json')
       .then(r => r.json())
-      .then(d => { if (el) el.textContent = (d.count_unique || d.count || '—').toLocaleString(); })
-      .catch(() => {});
-  })();
+      .then(d => {
+        var el = document.getElementById('footer-visitor-count');
+        if (el) el.textContent = Number(d.count_unique || d.count || 0).toLocaleString();
+      })
+      .catch(function(){});
+  });
 </script>
 <script data-goatcounter="https://txid.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
