@@ -1486,7 +1486,8 @@ async function loadAddrTxs(address, lastTxid) {
 
     const html = txs.map((tx, i) => {
       const totalOut = tx.vout ? tx.vout.reduce((s, o) => s + (o.value || 0), 0) : 0;
-    const isConfirmed = tx.status && tx.status.confirmed;
+      const isConfirmed = tx.status && tx.status.confirmed;
+      const whaleCls = highlightWhaleTx(tx);
       return `<tr class="stagger-item ${whaleCls}" style="--i:${i}">
         <td class="txid-col"><a href="#/tx/${tx.txid}">${tx.txid.slice(0, 16)}...</a></td>
         <td><span class="badge ${isConfirmed ? 'badge-confirmed' : 'badge-unconfirmed'}" style="font-size:.6rem;padding:1px 5px">${isConfirmed ? formatNum(tx.status.block_height) : t('unconfirmed')}</span></td>
