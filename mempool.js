@@ -20,6 +20,10 @@ const MempoolViz = (() => {
   let initRetries = 0;
   let resizeObserver = null;
 
+  // 테마 감지
+  function isLight() { return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function themeColor(dark, light) { return isLight() ? light : dark; }
+
   const CONFIRMED_COUNT = 6;
   const MEMPOOL_COLS = 1;
   const TOTAL_COLS = CONFIRMED_COUNT + MEMPOOL_COLS;
@@ -196,7 +200,7 @@ const MempoolViz = (() => {
 
     // 테두리
     if (!isMempool) {
-      ctx.strokeStyle = '#21262d'; ctx.lineWidth = 1;
+      ctx.strokeStyle = themeColor('#21262d','#d0d7de'); ctx.lineWidth = 1;
     } else if (mempoolIdx === 0) {
       ctx.save(); ctx.shadowColor = '#f7931a'; ctx.shadowBlur = 8;
       ctx.strokeStyle = '#f7931a'; ctx.lineWidth = 1.5;
@@ -214,7 +218,7 @@ const MempoolViz = (() => {
     const { W, H, bw, bh, LABEL_TOP, LABEL_BOT, xs, maxTx } = layout;
 
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#0d1117';
+    ctx.fillStyle = themeColor('#0d1117', '#f6f8fa');
     ctx.fillRect(0, 0, W, H);
 
     // ── 확인된 블록 (오름차순: 왼쪽=오래된, 오른쪽=최신) ──
@@ -234,22 +238,22 @@ const MempoolViz = (() => {
       // 상단: 높이
       ctx.font = 'bold 10px "Space Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillStyle = d ? '#e6943a' : '#333';
+      ctx.fillStyle = d ? '#cf6b00' : themeColor('#333','#ccc');
       ctx.fillText(d ? '#' + d.height.toLocaleString() : '···', x + bw / 2, 13);
 
       // 하단: TX수 / 채굴자 / 경과시간
       if (d) {
         const by = y + bh;
         ctx.font = '8px "Space Mono", monospace';
-        ctx.fillStyle = '#8b949e';
+        ctx.fillStyle = themeColor('#8b949e','#656d76');
         ctx.fillText(d.txCount.toLocaleString() + ' TX', x + bw / 2, by + 10);
         if (d.miner) {
           const mn = d.miner.length > 10 ? d.miner.slice(0,10)+'…' : d.miner;
-          ctx.font = '7.5px "Space Mono", monospace'; ctx.fillStyle = '#4a5568';
+          ctx.font = '7.5px "Space Mono", monospace'; ctx.fillStyle = themeColor('#4a5568','#8c959f');
           ctx.fillText(mn, x + bw / 2, by + 19);
         }
         if (d.timestamp) {
-          ctx.font = '7px "Space Mono", monospace'; ctx.fillStyle = '#3a4555';
+          ctx.font = '7px "Space Mono", monospace'; ctx.fillStyle = themeColor('#3a4555','#aab0b8');
           ctx.fillText(timeAgo(d.timestamp), x + bw / 2, by + 27);
         }
       }
@@ -257,7 +261,7 @@ const MempoolViz = (() => {
 
     // ── 구분선 ──
     const divX = xs[CONFIRMED_COUNT] - GAP - DIVIDER_W;
-    ctx.fillStyle = '#30363d';
+    ctx.fillStyle = themeColor('#30363d','#d0d7de');
     ctx.fillRect(divX, LABEL_TOP - 4, DIVIDER_W, bh + 8);
 
     // ── 멤풀 블록 (NEXT 1개) ──
@@ -321,7 +325,7 @@ const MempoolViz = (() => {
     // WS 상태
     const wsOk = ws && ws.readyState === WebSocket.OPEN;
     ctx.font = '7px "Space Mono", monospace'; ctx.textAlign = 'right';
-    ctx.fillStyle = wsOk ? '#238636' : '#6e3030';
+    ctx.fillStyle = wsOk ? '#238636' : themeColor('#6e3030','#cc4444');
     const isKo3 = document.documentElement.lang !== 'en';
     ctx.fillText(wsOk ? '● LIVE' : (isKo3 ? '○ 연결 중…' : '○ connecting…'), W - PAD, 13);
 
