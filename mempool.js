@@ -277,13 +277,17 @@ const MempoolViz = (() => {
       ctx.fillStyle = '#f7931a';
       ctx.fillText('NEXT', x + bw / 2, 13);
 
-      // 대기 블록 수
+      // 대기 블록 수 (NEXT 바로 우측, 작게)
       if (mempoolBlockCount > 1) {
-        ctx.font = '7.5px "Space Mono", monospace'; ctx.textAlign = 'right';
-        ctx.fillStyle = '#556';
+        ctx.font = '7px "Space Mono", monospace'; ctx.textAlign = 'left';
+        ctx.fillStyle = themeColor('#888','#556');
         const _lang2 = document.documentElement.lang || 'ko';
         const _wait = _lang2==='ko'?' 대기':_lang2==='ja'?' 待機':' pending';
-        ctx.fillText('+' + (mempoolBlockCount - 1) + _wait, x + bw - 2, 13);
+        // NEXT 텍스트 너비 계산 후 그 오른쪽에 배치
+        ctx.font = 'bold 10px "Space Mono", monospace';
+        const nextW = ctx.measureText('NEXT').width;
+        ctx.font = '7px "Space Mono", monospace';
+        ctx.fillText('+' + (mempoolBlockCount - 1) + _wait, x + bw/2 + nextW/2 + 3, 13);
       }
 
       // 하단: TX수 / vsize / 수수료
@@ -327,11 +331,11 @@ const MempoolViz = (() => {
 
     // WS 상태
     const wsOk = ws && ws.readyState === WebSocket.OPEN;
-    ctx.font = '7px "Space Mono", monospace'; ctx.textAlign = 'right';
+    ctx.font = '6.5px "Space Mono", monospace'; ctx.textAlign = 'right';
     ctx.fillStyle = wsOk ? '#238636' : themeColor('#6e3030','#cc4444');
     const _lang3 = document.documentElement.lang || 'ko';
     const _conn = _lang3==='ko'?'○ 연결 중…':_lang3==='ja'?'○ 接続中…':'○ connecting…';
-    ctx.fillText(wsOk ? '● LIVE' : _conn, W - PAD, 13);
+    ctx.fillText(wsOk ? '● LIVE' : _conn, W - PAD, 9);
     const fws = document.getElementById('footer-ws');
     if (fws) { fws.textContent = wsOk ? '● LIVE' : '○'; fws.style.color = wsOk ? 'var(--green)' : 'var(--text3)'; }
 
