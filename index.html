@@ -13,6 +13,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#f7931a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="txid.uk">
+  <link rel="apple-touch-icon" href="/static/icon-192.svg">
 </head>
 <body>
 <!-- SVG 아이콘 스프라이트 -->
@@ -122,5 +129,10 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
 <script src="mempool.js"></script>
 <script src="app.js"></script>
 <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/static/sw.js").catch(()=>{});
+}
+</script>
 </body>
 </html>

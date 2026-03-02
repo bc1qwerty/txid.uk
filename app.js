@@ -478,7 +478,7 @@ async function updateStats() {
     // BTC/USD CoinGecko
     try {
       const cg = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd').then(r=>r.json());
-      if (cg?.bitcoin?.usd) flashStat('s-usd', '$' + formatNum(cg.bitcoin.usd));
+      if (cg?.bitcoin?.usd) { flashStat('s-usd', '$' + formatNum(cg.bitcoin.usd)); window._btcUsd = cg.bitcoin.usd; }
     } catch {}
 
     // BTC/KRW 업비트
@@ -1020,10 +1020,33 @@ async function renderBlock(app, param) {
         ${feeRangeHtml ? `<div class="info-item"><div class="info-label">${t('feeRate')} (min~max)</div><div class="info-value">${feeRangeHtml}</div></div>` : ''}
       </div>
 
+      <div id="coinbase-msg-wrap"></div>
       <div class="section-title">${icon('list')} ${t('transactions')}</div>
       <div id="block-txs">${skeletonTable(6)}</div>
       <div id="block-txs-pagination"></div>
     `;
+
+    // 코인베이스 메시지 디코드
+    (async () => {
+      try {
+        const txs = await api('/block/' + block.id + '/txs/0');
+        if (txs && txs[0] && txs[0].vin && txs[0].vin[0]) {
+          const hex = txs[0].vin[0].scriptsig || '';
+          if (hex.length > 4) {
+            const bytes = hex.match(/.{2}/g) || [];
+            const decoded = bytes.map(b => {
+              const c = parseInt(b, 16);
+              return (c >= 0x20 && c <= 0x7e) ? String.fromCharCode(c) : '';
+            }).join('');
+            const filtered = decoded.replace(/\s+/g, ' ').trim();
+            if (filtered.length > 2) {
+              const wrap = document.getElementById('coinbase-msg-wrap');
+              if (wrap) wrap.innerHTML = '<div class="coinbase-msg"><span class="coinbase-label">Coinbase</span><span class="coinbase-text font-mono">' + escHtml(filtered) + '</span></div>';
+            }
+          }
+        }
+      } catch {}
+    })();
 
     // 블록 네비게이션 삽입
     const prevHash = block.previousblockhash;
