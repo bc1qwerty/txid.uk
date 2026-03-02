@@ -545,7 +545,14 @@ function flashStat(id, newVal) {
   const el = document.getElementById(id);
   if (!el) return;
   const oldVal = el.textContent;
-  el.textContent = newVal;
+  // 숫자+기호는 Space Mono, 한글 단위는 Pretendard로 분리
+  const formatted = String(newVal).replace(
+    /([0-9$.+\-,]+(?:\.[0-9]+)?(?:K|M|B)?)(.*)/,
+    (_, num, unit) => unit
+      ? `<span style="font-family:var(--font)">${num}</span><span style="font-family:var(--font-ko);font-size:.85em">${unit}</span>`
+      : `<span style="font-family:var(--font)">${num}</span>`
+  );
+  el.innerHTML = formatted.includes('<span') ? formatted : newVal;
   if (oldVal !== '—' && oldVal !== newVal) {
     el.classList.remove('flash');
     void el.offsetWidth;
