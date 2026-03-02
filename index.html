@@ -5,8 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>txid.uk — Bitcoin Block Explorer</title>
 <meta name="description" content="Bitcoin Block Explorer & Mempool Viewer. 비트코인 블록 탐색기 & 멤풀 뷰어.">
-<meta name="theme-color" content="#0d1117">
+<meta name="theme-color" content="#f7931a">
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
 </head>
 <body>
 
@@ -24,6 +30,7 @@
         <a href="#/" data-page="" data-ko="홈" data-en="Home">홈</a>
         <a href="#/mining" data-page="mining" data-ko="채굴" data-en="Mining">채굴</a>
       </div>
+      <span id="monitor-badge" class="monitor-badge" style="display:none" title="모니터링 중">0</span>
       <button id="lang-btn" onclick="App.toggleLang()">EN</button>
     </div>
   </nav>
@@ -76,7 +83,15 @@
   </div>
 </div>
 
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- Fee Calculator Floating Button -->
+<button id="fee-calc-btn" onclick="App.openFeeCalc()" title="수수료 계산기">🧮</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="mempool.js"></script>
 <script src="app.js"></script>
+<script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>
 </body>
 </html>

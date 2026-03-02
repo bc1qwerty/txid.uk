@@ -234,6 +234,8 @@ const MempoolViz = (() => {
     initRetries = 0;
   }
 
+  let resizeObserver = null;
+
   return {
     init(canvasEl) {
       if (!canvasEl) return;
@@ -249,6 +251,13 @@ const MempoolViz = (() => {
         });
         initialized = true;
       }
+
+      // ResizeObserver for dynamic resizing
+      if (resizeObserver) resizeObserver.disconnect();
+      resizeObserver = new ResizeObserver(() => {
+        if (canvas && canvas.isConnected) resizeCanvas();
+      });
+      resizeObserver.observe(canvas);
 
       // 애니메이션 시작
       if (animId) cancelAnimationFrame(animId);
