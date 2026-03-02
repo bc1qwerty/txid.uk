@@ -63,9 +63,11 @@ const MempoolViz = (() => {
   function initBlocks() {
     blocks = [];
     for (let i = 0; i < COLS - 1; i++) {
-      blocks.push(makeBlock(i, true, 2000, null));
+      // 실제 API 데이터 오기 전: 확인된 블록은 절반만 채움 (로딩 상태 표시)
+      blocks.push(makeBlock(i, true, 0, null));
     }
-    blocks.push(makeBlock(COLS - 1, false, 800, mempoolFeeRange));
+    // 멤풀 블록은 비워서 시작 → API 데이터로 채움
+    blocks.push(makeBlock(COLS - 1, false, 0, null));
   }
 
   function drawBlock(b) {
