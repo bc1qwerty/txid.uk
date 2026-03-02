@@ -263,7 +263,7 @@ nav {
   width: 60%;
 }
 #lang-btn, #theme-btn {
-  background: none;
+  background: var(--bg2);
   border: 1px solid var(--border);
   color: var(--text2);
   font-family: var(--font-ko);
@@ -273,14 +273,18 @@ nav {
   padding: 0;
   border-radius: 8px;
   cursor: pointer;
-  transition: border-color .2s, color .2s;
-  display: flex;
+  transition: border-color .2s, color .2s, background .2s;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  line-height: 1;
+  vertical-align: middle;
 }
-#lang-btn { width: auto; min-width: 32px; padding: 0 8px; }
-#lang-btn:hover, #theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+#theme-btn svg { display: block; width: 15px; height: 15px; stroke: currentColor; }
+#lang-btn { width: auto; min-width: 32px; padding: 0 10px; }
+#lang-btn:hover, #theme-btn:hover,
+#lang-btn:focus, #theme-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
 
 /* ── Stats Bar ── */
 #stats-bar {
@@ -1503,6 +1507,10 @@ h1, h2, h3, h4, button, select,
   -webkit-appearance: none;
   outline: none;
   text-align: center;
+  background: var(--bg2);
+  color: var(--text2);
 }
-#lang-btn:focus { border-color: var(--accent); color: var(--accent); }
-[data-theme="light"] #lang-btn { background: var(--bg2); }
+#lang-btn option {
+  background: var(--bg2);
+  color: var(--text1);
+}
