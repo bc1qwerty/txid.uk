@@ -512,6 +512,13 @@ async function renderHome(app) {
     mempoolSection.id = 'mempool-section';
     mempoolSection.innerHTML = `
       <canvas id="mempool-canvas"></canvas>
+      <div class="block-nav-bar">
+        <span class="block-nav-hint">블록 클릭 시 상세 보기</span>
+        <div class="block-nav-input-wrap">
+          <input type="number" id="block-height-input" placeholder="블록 높이 입력..." min="0">
+          <button onclick="App.goToBlock()">이동 →</button>
+        </div>
+      </div>
       <div id="mempool-legend">
         <div class="leg"><div class="leg-dot" style="background:#ff4444"></div><span>100+ sat/vB</span></div>
         <div class="leg"><div class="leg-dot" style="background:#ff8800"></div><span>20~100</span></div>
@@ -1450,6 +1457,15 @@ window.App = {
     route();
   },
 
+  goToBlock() {
+    const input = document.getElementById('block-height-input');
+    if (!input) return;
+    const val = input.value.trim();
+    if (!val || isNaN(val)) return;
+    navigate('#/block/' + parseInt(val));
+    input.value = '';
+  },
+
   async doSearch(fromMobile) {
     const inputId = fromMobile ? 'mobile-search-input' : 'search-input';
     const input = document.getElementById(inputId);
@@ -1508,6 +1524,10 @@ window.App = {
 };
 
 // Enter 키 검색
+document.addEventListener('keydown', e => {
+  const bi = document.getElementById('block-height-input');
+  if (bi && document.activeElement === bi && e.key === 'Enter') App.goToBlock();
+});
 document.getElementById('search-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') App.doSearch(false);
 });

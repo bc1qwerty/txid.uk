@@ -354,6 +354,40 @@ const MempoolViz = (() => {
       if (animId) cancelAnimationFrame(animId);
       animate();
       connectWS();
+
+      // 캔버스 클릭 → 블록 이동
+      canvas.style.cursor = 'default';
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const layout = getLayout();
+        if (!layout) return;
+        let hit = false;
+        for (let i = 0; i < CONFIRMED_COUNT; i++) {
+          const x = layout.xs[i];
+          if (mx >= x && mx <= x + layout.bw && confirmedData[CONFIRMED_COUNT - 1 - i]) {
+            hit = true; break;
+          }
+        }
+        // NEXT 블록도 클릭 가능
+        const nx = layout.xs[CONFIRMED_COUNT];
+        if (mx >= nx && mx <= nx + layout.bw) hit = true;
+        canvas.style.cursor = hit ? 'pointer' : 'default';
+      });
+
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const layout = getLayout();
+        if (!layout) return;
+        for (let i = 0; i < CONFIRMED_COUNT; i++) {
+          const x = layout.xs[i];
+          if (mx >= x && mx <= x + layout.bw) {
+            const d = confirmedData[CONFIRMED_COUNT - 1 - i];
+            if (d) { location.hash = '#/block/' + d.height; return; }
+          }
+        }
+      });
     },
 
     updateData(confirmed, mempool) {
