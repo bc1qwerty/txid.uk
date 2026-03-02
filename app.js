@@ -1166,7 +1166,7 @@ async function loadBlockTxs(blockHash, totalCount, startIdx) {
               const isCoinbase = tx.vin && tx.vin[0] && tx.vin[0].is_coinbase;
               const totalOut = tx.vout ? tx.vout.reduce((s, o) => s + (o.value || 0), 0) : 0;
               const feeRate = !isCoinbase && tx.weight ? (tx.fee / (tx.weight / 4)).toFixed(1) : null;
-              return `<tr class="stagger-item" style="--i:${i}">
+              return `<tr class="stagger-item ${whaleCls}" style="--i:${i}">
                 <td class="txid-col"><a href="#/tx/${tx.txid}">${isCoinbase ? '<span class="coinbase">[CB]</span> ' : ''}${tx.txid.slice(0, 16)}...</a></td>
                 <td>${tx.vin ? tx.vin.length : 0}</td>
                 <td>${tx.vout ? tx.vout.length : 0}</td>
@@ -1386,6 +1386,8 @@ async function renderAddress(app, address) {
         <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
         <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" onclick="toggleMonitor('${address}')">${icon('bell')} ${t('monitoring')}</button>
         <button class="monitor-btn" onclick="App.showQR('${address}')">📱 ${t('qrView')}</button>
+        <button class="icon-btn" onclick="showAddressCluster('${address}')" title="${lang==='ko'?'연관 주소 분석':'Cluster'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg></button>
+        <button class="icon-btn" onclick="openAddressNotes('${address}')" title="${lang==='ko'?'메모':'Notes'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></button>
       </div>
       ${getAddrLabel(address) ? `<div class="addr-label-display" id="addr-label-display">${escHtml(getAddrLabel(address))}</div>` : '<div class="addr-label-display" id="addr-label-display" style="display:none"></div>'}
       <div class="page-hash-wrap"><div class="page-hash" title="${address}">${address}</div><button class="copy-hash-btn" onclick="copyToClip('${address}',this)" title="${t('copy')}">⧉</button></div>
@@ -1444,7 +1446,7 @@ async function loadAddrTxs(address, lastTxid) {
     const html = txs.map((tx, i) => {
       const totalOut = tx.vout ? tx.vout.reduce((s, o) => s + (o.value || 0), 0) : 0;
     const isConfirmed = tx.status && tx.status.confirmed;
-      return `<tr class="stagger-item" style="--i:${i}">
+      return `<tr class="stagger-item ${whaleCls}" style="--i:${i}">
         <td class="txid-col"><a href="#/tx/${tx.txid}">${tx.txid.slice(0, 16)}...</a></td>
         <td><span class="badge ${isConfirmed ? 'badge-confirmed' : 'badge-unconfirmed'}" style="font-size:.6rem;padding:1px 5px">${isConfirmed ? formatNum(tx.status.block_height) : t('unconfirmed')}</span></td>
         <td>${satToBtc(totalOut)}</td>
@@ -2404,6 +2406,140 @@ function promptAddrLabel(addr) {
 window.getAddrLabel = getAddrLabel;
 window.promptAddrLabel = promptAddrLabel;
 
+
+// ── 8. 난이도 조정 타이머 ──
+async function loadDifficultyTimer() {
+  try {
+    const adj = await api('/v1/difficulty-adjustment');
+    const blocksLeft = adj.remainingBlocks;
+    const estTime = adj.estimatedRetargetDate;
+    const pct = ((adj.difficultyChange || 0) * 100).toFixed(2);
+    const sign = adj.difficultyChange >= 0 ? '+' : '';
+    const el = document.getElementById('diff-timer');
+    if (!el) return;
+    const days = Math.floor(blocksLeft * 10 / 60 / 24);
+    const hrs = Math.floor((blocksLeft * 10 / 60) % 24);
+    el.innerHTML = `<span class="diff-blocks">${formatNum(blocksLeft)} 블록</span> <span class="diff-days">(~${days}일 ${hrs}시간)</span> <span class="diff-pct ${adj.difficultyChange>=0?'up':'down'}">${sign}${pct}% 예상</span>`;
+  } catch {}
+}
+window.loadDifficultyTimer = loadDifficultyTimer;
+
+// ── 11. 멤풀 확인 시간 예측 ──
+async function estimateConfirmTime(feeRate) {
+  try {
+    const blocks = await api('/v1/fees/mempool-blocks');
+    if (!blocks?.length) return null;
+    for (let i = 0; i < blocks.length; i++) {
+      const minFee = blocks[i].feeRange?.[0] || 0;
+      if (feeRate >= minFee) {
+        const mins = (i + 1) * 10;
+        return { blocks: i + 1, mins };
+      }
+    }
+    return { blocks: blocks.length + 1, mins: (blocks.length + 1) * 10 };
+  } catch { return null; }
+}
+window.estimateConfirmTime = estimateConfirmTime;
+
+// ── 13. BTC 구매력 계산기 ──
+function openBtcCalculator() {
+  document.getElementById('btc-calc-modal')?.remove();
+  const historicPrices = [
+    { year: 2010, usd: 0.08 }, { year: 2012, usd: 5 }, { year: 2014, usd: 800 },
+    { year: 2016, usd: 600 }, { year: 2017, usd: 20000 }, { year: 2019, usd: 7000 },
+    { year: 2021, usd: 69000 }, { year: 2023, usd: 45000 }, { year: 2024, usd: 100000 },
+  ];
+  const curUsd = window._btcUsd || 66000;
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'btc-calc-modal';
+  modal.innerHTML = `<div class="modal-box" style="max-width:440px">
+    <div class="modal-header">
+      <span>${lang==='ko'?'BTC 구매력 계산기':lang==='ja'?'BTC購買力':'BTC Purchasing Power'}</span>
+      <button class="modal-close" onclick="document.getElementById('btc-calc-modal')?.remove()">✕</button>
+    </div>
+    <div style="margin-bottom:12px;font-size:.78rem;color:var(--text2);font-family:var(--font-ko)">
+      ${lang==='ko'?'당시 BTC를 얼마에 샀다면 지금 얼마일까?':'If you had bought BTC back then...'}
+    </div>
+    <div class="btc-calc-grid">
+      ${historicPrices.map(({year,usd}) => {
+        const mult = (curUsd / usd).toFixed(0);
+        const multStr = mult >= 1000 ? (mult/1000).toFixed(1)+'K' : mult;
+        return `<div class="btc-calc-row">
+          <span class="btc-calc-year">${year}</span>
+          <span class="btc-calc-price">$${usd.toLocaleString()}</span>
+          <span class="btc-calc-arrow">→</span>
+          <span class="btc-calc-mult">×${multStr}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="font-size:.65rem;color:var(--text3);margin-top:10px;font-family:var(--font-ko)">현재 BTC: $${formatNum(Math.round(curUsd))}</div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+window.openBtcCalculator = openBtcCalculator;
+
+// ── 4. 즐겨찾기 대시보드 ──
+async function openFavDashboard() {
+  document.getElementById('fav-dashboard-modal')?.remove();
+  const favs = getFavorites().filter(f => f.type === 'address');
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'fav-dashboard-modal';
+  modal.innerHTML = `<div class="modal-box" style="max-width:500px">
+    <div class="modal-header">
+      <span>${lang==='ko'?'즐겨찾기 대시보드':lang==='ja'?'お気に入りダッシュボード':'Favorites Dashboard'}</span>
+      <button class="modal-close" onclick="document.getElementById('fav-dashboard-modal')?.remove()">✕</button>
+    </div>
+    <div id="fav-dash-list">
+      ${favs.length ? favs.map(f => `<div class="fav-dash-row" id="fav-dash-${f.value.slice(0,8)}">
+        <a href="#/address/${f.value}" onclick="document.getElementById('fav-dashboard-modal')?.remove()" class="fav-dash-addr">${f.label||shortHash(f.value)}</a>
+        <span class="fav-dash-bal" id="fdbal-${f.value.slice(0,8)}">…</span>
+      </div>`).join('') : `<div class="empty-state">${lang==='ko'?'즐겨찾기한 주소가 없습니다.':'No favorite addresses.'}</div>`}
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+  // 잔액 병렬 로드
+  favs.forEach(async f => {
+    try {
+      const info = await api('/address/' + f.value);
+      const chain = info.chain_stats || {};
+      const mem = info.mempool_stats || {};
+      const bal = (chain.funded_txo_sum - chain.spent_txo_sum + mem.funded_txo_sum - mem.spent_txo_sum) / 1e8;
+      const el = document.getElementById('fdbal-' + f.value.slice(0,8));
+      if (el) el.textContent = bal.toFixed(8) + ' BTC';
+    } catch {}
+  });
+}
+window.openFavDashboard = openFavDashboard;
+
+// ── 15. 주소 공개 메모장 (로컬) ──
+function openAddressNotes(address) {
+  document.getElementById('addr-notes-modal')?.remove();
+  const key = 'addr_notes_' + address;
+  const saved = localStorage.getItem(key) || '';
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'addr-notes-modal';
+  modal.innerHTML = `<div class="modal-box" style="max-width:400px">
+    <div class="modal-header">
+      <span>${lang==='ko'?'주소 메모':lang==='ja'?'アドレスメモ':'Address Notes'}</span>
+      <button class="modal-close" onclick="document.getElementById('addr-notes-modal')?.remove()">✕</button>
+    </div>
+    <div style="font-size:.68rem;color:var(--text3);margin-bottom:8px;font-family:var(--font)">${address.slice(0,20)}…</div>
+    <textarea id="addr-notes-text" style="width:100%;height:120px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text1);padding:10px;font-family:var(--font-ko);font-size:.82rem;resize:vertical;outline:none;box-sizing:border-box">${escHtml(saved)}</textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+      <button onclick="document.getElementById('addr-notes-modal')?.remove()" style="background:none;border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:5px;cursor:pointer;font-family:var(--font-ko)">${lang==='ko'?'취소':'Cancel'}</button>
+      <button onclick="(()=>{localStorage.setItem('addr_notes_${address}',document.getElementById('addr-notes-text').value);document.getElementById('addr-notes-modal')?.remove();showToast('📝','${lang==='ko'?'메모 저장됨':'Saved'}',null,2000);})()" style="background:var(--accent);border:none;color:#000;padding:6px 14px;border-radius:5px;cursor:pointer;font-family:var(--font-ko);font-weight:600">${lang==='ko'?'저장':'Save'}</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+window.openAddressNotes = openAddressNotes;
+
 // ── 검색 히스토리 ──
 function getSearchHistory() {
   try { return JSON.parse(localStorage.getItem('search_history') || '[]'); } catch { return []; }
@@ -2429,6 +2565,106 @@ function showSearchHistory() {
 }
 window.showSearchHistory = showSearchHistory;
 window.addSearchHistory = addSearchHistory;
+
+
+// ── 6. 고래 TX 감지 ──
+function highlightWhaleTx(tx) {
+  const totalOut = (tx.vout||[]).reduce((s,o) => s+(o.value||0), 0);
+  const btc = totalOut / 1e8;
+  if (btc >= 10) return 'whale-tx-mega';
+  if (btc >= 1) return 'whale-tx';
+  return '';
+}
+window.highlightWhaleTx = highlightWhaleTx;
+
+// ── 9. 주소 클러스터 분석 ──
+async function showAddressCluster(address) {
+  document.getElementById('cluster-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'cluster-modal';
+  modal.innerHTML = `<div class="modal-box" style="max-width:520px">
+    <div class="modal-header">
+      <span>${lang==='ko'?'연관 주소 분석':'Address Cluster'}</span>
+      <button class="modal-close" onclick="document.getElementById('cluster-modal')?.remove()">✕</button>
+    </div>
+    <div id="cluster-content" style="font-size:.78rem;color:var(--text2)">
+      <div class="loading">${t('loading')}</div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+  try {
+    const txs = await api('/address/' + address + '/txs');
+    const related = {};
+    txs.slice(0, 10).forEach(tx => {
+      (tx.vin||[]).forEach(v => {
+        const a = v.prevout?.scriptpubkey_address;
+        if (a && a !== address) related[a] = (related[a]||0) + 1;
+      });
+      (tx.vout||[]).forEach(v => {
+        const a = v.scriptpubkey_address;
+        if (a && a !== address) related[a] = (related[a]||0) + 1;
+      });
+    });
+    const sorted = Object.entries(related).sort((a,b)=>b[1]-a[1]).slice(0,15);
+    const el = document.getElementById('cluster-content');
+    if (!el) return;
+    if (!sorted.length) { el.innerHTML = `<div class="empty-state">${lang==='ko'?'연관 주소 없음':'No related addresses'}</div>`; return; }
+    el.innerHTML = `<div style="margin-bottom:8px;color:var(--text3);font-size:.7rem">${lang==='ko'?'최근 10개 TX 기반 연관 주소':'Related addresses from last 10 TXs'}</div>
+      <div class="cluster-list">
+        ${sorted.map(([addr, cnt]) => `
+          <div class="cluster-row">
+            <a href="#/address/${addr}" onclick="document.getElementById('cluster-modal')?.remove()" class="cluster-addr">${addr.slice(0,20)}…</a>
+            <span class="cluster-cnt">${cnt}회</span>
+          </div>`).join('')}
+      </div>`;
+  } catch { document.getElementById('cluster-content').innerHTML = `<div class="empty-state">데이터 로드 실패</div>`; }
+}
+window.showAddressCluster = showAddressCluster;
+
+// ── 12. 라이트닝 노드 지도 (국가별) ──
+async function openLightningMap() {
+  document.getElementById('ln-map-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'ln-map-modal';
+  modal.innerHTML = `<div class="modal-box" style="max-width:560px">
+    <div class="modal-header">
+      <span>${lang==='ko'?'라이트닝 노드 분포':'Lightning Node Distribution'}</span>
+      <button class="modal-close" onclick="document.getElementById('ln-map-modal')?.remove()">✕</button>
+    </div>
+    <div id="ln-map-content"><div class="loading">${t('loading')}</div></div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+  try {
+    const stats = await api('/v1/lightning/statistics/latest');
+    const nodes = await fetch('https://mempool.space/api/v1/lightning/nodes/countries').then(r=>r.json());
+    const el = document.getElementById('ln-map-content');
+    if (!el) return;
+    const total = Object.values(nodes).reduce((s,n)=>s+(n.count||0),0);
+    const sorted = Object.entries(nodes).sort((a,b)=>b[1].count-a[1].count).slice(0,20);
+    const flags = {US:'🇺🇸',DE:'🇩🇪',GB:'🇬🇧',FR:'🇫🇷',NL:'🇳🇱',CA:'🇨🇦',SG:'🇸🇬',JP:'🇯🇵',AU:'🇦🇺',CH:'🇨🇭',
+                   FI:'🇫🇮',SE:'🇸🇪',NO:'🇳🇴',BR:'🇧🇷',KR:'🇰🇷',IN:'🇮🇳',RU:'🇷🇺',IT:'🇮🇹',ES:'🇪🇸',PL:'🇵🇱'};
+    el.innerHTML = `
+      <div style="font-size:.72rem;color:var(--text3);margin-bottom:10px">${lang==='ko'?'상위 20개국':'Top 20 countries'} · 전체 ${formatNum(total)}개 노드</div>
+      <div class="ln-country-list">
+        ${sorted.map(([cc, data]) => {
+          const pct = ((data.count/total)*100).toFixed(1);
+          const w = Math.max((data.count/sorted[0][1].count)*100, 2);
+          return `<div class="ln-country-row">
+            <span class="ln-flag">${flags[cc]||'🌐'}</span>
+            <span class="ln-cc">${cc}</span>
+            <div class="ln-bar-wrap"><div class="ln-bar" style="width:${w}%"></div></div>
+            <span class="ln-count">${formatNum(data.count)}</span>
+            <span class="ln-pct">${pct}%</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+  } catch(e) { document.getElementById('ln-map-content').innerHTML = '<div class="empty-state">데이터 로드 실패</div>'; }
+}
+window.openLightningMap = openLightningMap;
 
 // ── 검색 입력 검증 ──
 function validateSearchInput(q) {

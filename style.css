@@ -1761,3 +1761,49 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   .page-hash { font-size:.7rem; word-break:break-all; }
   .info-grid { grid-template-columns:1fr 1fr; }
 }
+
+/* ── 난이도 타이머 / 체인 상태 ── */
+.chain-status-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.cs-card { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:14px; }
+.cs-label { font-size:.65rem; color:var(--text3); font-family:var(--font-ko); text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px; }
+.cs-val { font-size:.78rem; color:var(--text2); font-family:var(--font-ko); line-height:1.7; }
+.diff-blocks { color:var(--accent); font-family:var(--font); font-weight:700; }
+.diff-days { color:var(--text3); font-size:.72em; }
+.diff-pct.up { color:#3fb950; } .diff-pct.down { color:#f85149; }
+@media (max-width:480px) { .chain-status-grid { grid-template-columns:1fr; } }
+
+/* ── 즐겨찾기 대시보드 ── */
+.fav-dash-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
+.fav-dash-row:last-child { border-bottom:none; }
+.fav-dash-addr { color:var(--accent); font-family:var(--font); font-size:.78rem; text-decoration:none; }
+.fav-dash-bal { color:var(--text2); font-family:var(--font); font-size:.78rem; }
+
+/* ── 주소 클러스터 ── */
+.cluster-list { display:flex; flex-direction:column; gap:4px; max-height:320px; overflow-y:auto; }
+.cluster-row { display:flex; align-items:center; gap:10px; padding:5px 0; border-bottom:1px solid var(--border); }
+.cluster-addr { font-family:var(--font); font-size:.72rem; color:var(--accent); text-decoration:none; flex:1; }
+.cluster-cnt { font-size:.68rem; color:var(--text3); font-family:var(--font); flex-shrink:0; }
+
+/* ── 라이트닝 노드 지도 ── */
+.ln-country-list { display:flex; flex-direction:column; gap:4px; max-height:360px; overflow-y:auto; }
+.ln-country-row { display:grid; grid-template-columns:24px 36px 1fr 48px 40px; align-items:center; gap:8px; font-size:.72rem; }
+.ln-flag { font-size:.9rem; }
+.ln-cc { color:var(--text3); font-family:var(--font); }
+.ln-bar-wrap { background:var(--bg3); border-radius:3px; height:6px; overflow:hidden; }
+.ln-bar { background:var(--accent); height:100%; border-radius:3px; transition:width .3s; }
+.ln-count { color:var(--text2); font-family:var(--font); text-align:right; }
+.ln-pct { color:var(--text3); font-family:var(--font); text-align:right; }
+
+/* ── BTC 구매력 계산기 ── */
+.btc-calc-grid { display:flex; flex-direction:column; gap:6px; }
+.btc-calc-row { display:grid; grid-template-columns:52px 90px 20px 1fr; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); font-size:.78rem; }
+.btc-calc-year { color:var(--text3); font-family:var(--font); }
+.btc-calc-price { color:var(--text2); font-family:var(--font); }
+.btc-calc-arrow { color:var(--text3); text-align:center; }
+.btc-calc-mult { color:var(--accent); font-family:var(--font); font-weight:700; }
+
+/* ── 고래 TX ── */
+.whale-tx { background:rgba(247,147,26,.05); }
+.whale-tx td:first-child::before { content:'🐋 '; }
+.whale-tx-mega { background:rgba(247,147,26,.12); }
+.whale-tx-mega td:first-child::before { content:'🔥 '; }
