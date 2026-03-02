@@ -701,6 +701,17 @@ async function renderHome(app) {
   </div>`;
   app.appendChild(chartsDiv);
 
+  // Chain status + 멤풀 예측 섹션
+  const chainDiv = document.createElement('div');
+  chainDiv.className = 'section';
+  chainDiv.innerHTML = `
+    <div class="section-header"><span class="section-title">${lang==='ko'?'블록체인 상태':'Chain Status'}</span></div>
+    <div class="chain-status-grid">
+      <div class="cs-card"><div class="cs-label">${lang==='ko'?'난이도 조정':'Difficulty Adj.'}</div><div class="cs-val" id="diff-timer">—</div></div>
+      <div class="cs-card"><div class="cs-label">${lang==='ko'?'수수료별 예상 대기':'Estimated Wait'}</div><div class="cs-val" id="mempool-predict" style="font-size:.72rem">—</div></div>
+    </div>`;
+  app.appendChild(chainDiv);
+
   // Lightning
   const lnDiv = document.createElement('div');
   lnDiv.id = 'lightning-section';
@@ -735,6 +746,17 @@ async function renderHome(app) {
   loadBtcPriceChart();
   loadMempoolHistoryChart();
   loadLightningStats();
+  try { loadMempoolHeatmap(); } catch {}
+  try { loadDifficultyTimer(); } catch {}
+  try { renderPoolChart(document.getElementById('pool-chart')); } catch {}
+  try {
+    Promise.all([estimateConfirmTime(1), estimateConfirmTime(5), estimateConfirmTime(10)]).then(([r1,r5,r10]) => {
+      const el = document.getElementById('mempool-predict');
+      if (!el) return;
+      const fmt = r => r ? `\${r.blocks}블록 (~\${r.mins}분)` : '—';
+      el.innerHTML = `<small style="color:var(--text3)">1 sat/vB:</small> \${fmt(r1)}<br><small style="color:var(--text3)">5 sat/vB:</small> \${fmt(r5)}<br><small style="color:var(--text3)">10 sat/vB:</small> \${fmt(r10)}`;
+    });
+  } catch {}
 }
 
 let _lastBlockHeights = null;
@@ -1060,6 +1082,7 @@ async function renderBlock(app, param) {
         <div class="page-title">${t('blockExplorer')} #${formatNum(block.height)}</div>
         ${favButton('block', block.id, favLabel)}
         <button class="icon-btn" onclick="openBlockTreemap('${block.id}', ${block.height})" title="Treemap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
+        <button class="icon-btn" onclick="showQR('${txid}','TXID QR')" title="QR"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="7" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7"/><rect x="18" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="7" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg></button>
         <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
       </div>
       <div class="page-hash-wrap"><div class="page-hash" title="${block.id}">${block.id}</div><button class="copy-hash-btn" onclick="copyToClip('${block.id}',this)" title="${t('copy')}">⧉</button></div>
@@ -1241,6 +1264,7 @@ async function renderTx(app, txid) {
           ${hasCpfp ? '<span class="tx-badge cpfp">CPFP</span>' : ''}
         </div>
         ${favButton('tx', tx.txid, favLabel)}
+        <button class="icon-btn" onclick="showQR('' + txid + '','TXID QR')" title="QR Code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="7" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7"/><rect x="18" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="7" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg></button>
         <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
       </div>
       <div class="page-hash-wrap"><div class="page-hash" title="${tx.txid}">${tx.txid}</div><button class="copy-hash-btn" onclick="copyToClip('${tx.txid}',this)" title="${t('copy')}">⧉</button></div>
