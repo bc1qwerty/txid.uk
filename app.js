@@ -861,25 +861,61 @@ function renderFeeHistogram(mempoolBlocks, canvasEl) {
 // ═══════════════════════════════════════════
 async function loadBtcPriceChart() {
   try {
-    const data = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30').then(r => r.json());
-    const prices = data.prices || [];
-    if (!prices.length) return;
+    // OHLCV 데이터 (CoinGecko - 30일 일봉)
+    const data = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=30').then(r => r.json());
+    if (!data?.length) return;
 
-    const current = prices[prices.length - 1][1];
-    const dayAgo = prices.find(p => p[0] >= prices[prices.length - 1][0] - 86400000);
-    const change24h = dayAgo ? ((current - dayAgo[1]) / dayAgo[1] * 100) : 0;
-
+    const current = data[data.length - 1][4];
+    const prev = data[data.length - 2]?.[4] || current;
+    const change24h = ((current - prev) / prev * 100);
     const infoEl = document.getElementById('price-info');
     if (infoEl) {
       const changeClass = change24h >= 0 ? 'up' : 'down';
       infoEl.innerHTML = `<span class="price-current">$${formatNum(Math.round(current))}</span><span class="price-change ${changeClass}">${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}% (24h)</span>`;
     }
 
-    const canvas = document.getElementById('price-chart');
-    if (!canvas) return;
-    const priceColor = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#f7931a";
-    drawLineChart(canvas, prices.map(p => p[1]), priceColor);
-  } catch {}
+    const container = document.getElementById('price-chart');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const bg = isDark ? '#0d1117' : '#ffffff';
+    const textColor = isDark ? '#8b949e' : '#555';
+    const borderColor = isDark ? '#21262d' : '#e0e0e0';
+
+    // Lightweight Charts 사용 가능 여부 확인
+    if (typeof LightweightCharts !== 'undefined') {
+      const chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: 200,
+        layout: { background: { color: bg }, textColor },
+        grid: { vertLines: { color: borderColor }, horzLines: { color: borderColor } },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        rightPriceScale: { borderColor },
+        timeScale: { borderColor, timeVisible: true },
+      });
+      const series = chart.addCandlestickSeries({
+        upColor: '#3fb950', downColor: '#f85149',
+        borderUpColor: '#3fb950', borderDownColor: '#f85149',
+        wickUpColor: '#3fb950', wickDownColor: '#f85149',
+      });
+      const candles = data.map(([t, o, h, l, cl]) => ({
+        time: Math.floor(t / 1000), open: o, high: h, low: l, close: cl
+      }));
+      series.setData(candles);
+      chart.timeScale().fitContent();
+      window._priceChart = chart;
+      // 테마 변경 시 차트 재생성
+      window._priceChartData = data;
+      new ResizeObserver(() => chart.applyOptions({ width: container.clientWidth })).observe(container);
+    } else {
+      // 폴백: 기존 라인 차트
+      const canvas = document.createElement('canvas');
+      container.appendChild(canvas);
+      const priceColor = '#f7931a';
+      drawLineChart(canvas, data.map(d => d[4]), priceColor);
+    }
+  } catch(e) { console.warn('price chart:', e); }
 }
 
 async function loadMempoolHistoryChart() {
@@ -2201,23 +2237,96 @@ window.openBlockTreemap = openBlockTreemap;
 function renderTxFlowDiagram(tx) {
   const container = document.getElementById('tx-flow-diagram');
   if (!container) return;
+  container.innerHTML = '';
+
+  if (typeof d3 !== 'undefined') {
+    renderTxFlowD3(tx, container);
+  } else {
+    renderTxFlowFallback(tx, container);
+  }
+}
+
+function renderTxFlowD3(tx, container) {
+  const W = container.clientWidth || 600;
+  const ins = (tx.vin || []).slice(0, 8);
+  const outs = (tx.vout || []).slice(0, 8);
+  const H = Math.max(ins.length, outs.length) * 44 + 40;
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const textCol = isDark ? '#8b949e' : '#555';
+  const accentCol = '#f7931a';
+  const nodeCol = isDark ? '#161b22' : '#f5f5f5';
+  const borderCol = isDark ? '#30363d' : '#ddd';
+  const lineCol = isDark ? '#30363d' : '#ccc';
+
+  const svg = d3.select(container).append('svg')
+    .attr('width', '100%').attr('height', H)
+    .attr('viewBox', `0 0 ${W} ${H}`);
+
+  const colIn = 10, colMid = W / 2, colOut = W - 10;
+  const nodeW = Math.min(W * 0.32, 180), nodeH = 36;
+
+  // 입력 노드
+  ins.forEach((v, i) => {
+    const y = 20 + i * 44;
+    const val = v.prevout?.value != null ? formatBtc(v.prevout.value) + ' BTC' : 'coinbase';
+    const addr = v.prevout?.scriptpubkey_address ? v.prevout.scriptpubkey_address.slice(0,12)+'…' : '—';
+    const g = svg.append('g').style('cursor', v.prevout?.scriptpubkey_address ? 'pointer' : 'default')
+      .on('click', () => { if (v.prevout?.scriptpubkey_address) navigate('#/address/'+v.prevout.scriptpubkey_address); });
+    g.append('rect').attr('x', colIn).attr('y', y).attr('width', nodeW).attr('height', nodeH)
+      .attr('rx', 5).attr('fill', nodeCol).attr('stroke', '#4488ff').attr('stroke-width', 1.5);
+    g.append('text').attr('x', colIn+8).attr('y', y+13).attr('fill', textCol).attr('font-size', 10).attr('font-family','monospace').text(addr);
+    g.append('text').attr('x', colIn+8).attr('y', y+27).attr('fill', accentCol).attr('font-size', 9).attr('font-family','monospace').text(val);
+    // 연결선
+    svg.append('path').attr('d', `M${colIn+nodeW},${y+nodeH/2} C${colMid-40},${y+nodeH/2} ${colMid-40},${H/2} ${colMid},${H/2}`)
+      .attr('fill','none').attr('stroke',lineCol).attr('stroke-width',1).attr('opacity',0.5);
+  });
+
+  // 중앙 TX 노드
+  const txG = svg.append('g');
+  txG.append('rect').attr('x', colMid-30).attr('y', H/2-16).attr('width', 60).attr('height', 32)
+    .attr('rx', 6).attr('fill', accentCol).attr('opacity', 0.15).attr('stroke', accentCol).attr('stroke-width', 1.5);
+  txG.append('text').attr('x', colMid).attr('y', H/2+4).attr('text-anchor','middle')
+    .attr('fill', accentCol).attr('font-size', 10).attr('font-weight','bold').attr('font-family','monospace').text('TX');
+
+  // 출력 노드
+  outs.forEach((v, i) => {
+    const y = 20 + i * 44;
+    const val = formatBtc(v.value) + ' BTC';
+    const addr = v.scriptpubkey_address ? v.scriptpubkey_address.slice(0,12)+'…' : (v.scriptpubkey_type||'—');
+    const g = svg.append('g').style('cursor', v.scriptpubkey_address ? 'pointer' : 'default')
+      .on('click', () => { if (v.scriptpubkey_address) navigate('#/address/'+v.scriptpubkey_address); });
+    g.append('rect').attr('x', colOut-nodeW).attr('y', y).attr('width', nodeW).attr('height', nodeH)
+      .attr('rx', 5).attr('fill', nodeCol).attr('stroke', accentCol).attr('stroke-width', 1.5);
+    g.append('text').attr('x', colOut-nodeW+8).attr('y', y+13).attr('fill', textCol).attr('font-size', 10).attr('font-family','monospace').text(addr);
+    g.append('text').attr('x', colOut-nodeW+8).attr('y', y+27).attr('fill', accentCol).attr('font-size', 9).attr('font-family','monospace').text(val);
+    // 연결선
+    svg.append('path').attr('d', `M${colMid},${H/2} C${colMid+40},${H/2} ${colMid+40},${y+nodeH/2} ${colOut-nodeW},${y+nodeH/2}`)
+      .attr('fill','none').attr('stroke',lineCol).attr('stroke-width',1).attr('opacity',0.5);
+  });
+
+  if ((tx.vin||[]).length > 8) {
+    svg.append('text').attr('x', colIn+8).attr('y', H-8).attr('fill', textCol).attr('font-size', 9)
+      .text(`+${tx.vin.length-8}개 입력 더`);
+  }
+  if ((tx.vout||[]).length > 8) {
+    svg.append('text').attr('x', colOut-nodeW+8).attr('y', H-8).attr('fill', textCol).attr('font-size', 9)
+      .text(`+${tx.vout.length-8}개 출력 더`);
+  }
+}
+
+function renderTxFlowFallback(tx, container) {
   const ins = (tx.vin || []).slice(0, 5);
   const outs = (tx.vout || []).slice(0, 5);
-  const moreIn = (tx.vin||[]).length > 5 ? `<div class="tfd-more">+${tx.vin.length-5}개 더</div>` : '';
-  const moreOut = (tx.vout||[]).length > 5 ? `<div class="tfd-more">+${tx.vout.length-5}개 더</div>` : '';
-
   const inItems = ins.map((v,i) => {
     const val = v.prevout?.value != null ? formatBtc(v.prevout.value)+' BTC' : 'coinbase';
     const addr = v.prevout?.scriptpubkey_address ? v.prevout.scriptpubkey_address.slice(0,14)+'…' : '—';
-    return `<div class="tfd-node tfd-in" style="--i:${i}">${escHtml(addr)}<span>${val}</span></div>`;
-  }).join('') + moreIn;
-
+    return `<div class="tfd-node tfd-in">${escHtml(addr)}<span>${val}</span></div>`;
+  }).join('');
   const outItems = outs.map((v,i) => {
     const val = formatBtc(v.value)+' BTC';
     const addr = v.scriptpubkey_address ? v.scriptpubkey_address.slice(0,14)+'…' : (v.scriptpubkey_type||'—');
-    return `<div class="tfd-node tfd-out" style="--i:${i}">${escHtml(addr)}<span>${val}</span></div>`;
-  }).join('') + moreOut;
-
+    return `<div class="tfd-node tfd-out">${escHtml(addr)}<span>${val}</span></div>`;
+  }).join('');
   container.innerHTML = `<div class="tfd-col">${inItems}</div><div class="tfd-arrow">→</div><div class="tfd-col">${outItems}</div>`;
 }
 window.renderTxFlowDiagram = renderTxFlowDiagram;
