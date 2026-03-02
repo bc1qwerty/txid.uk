@@ -1017,6 +1017,7 @@ async function renderBlock(app, param) {
       <div class="page-actions">
         <div class="page-title">${t('blockExplorer')} #${formatNum(block.height)}</div>
         ${favButton('block', block.id, favLabel)}
+        <button class="icon-btn" onclick="openBlockTreemap('${block.id}', ${block.height})" title="Treemap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
         <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
       </div>
       <div class="page-hash-wrap"><div class="page-hash" title="${block.id}">${block.id}</div><button class="copy-hash-btn" onclick="copyToClip('${block.id}',this)" title="${t('copy')}">⧉</button></div>
@@ -1381,6 +1382,7 @@ async function renderAddress(app, address) {
     });
 
     loadAddrTxs(address, null);
+    loadAddressBalanceChart(address);
   } catch (e) {
     app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
@@ -2003,6 +2005,176 @@ window.removeFavorite = removeFavorite;
 window.toggleMonitor = toggleMonitor;
 window.updateFeeCalc = updateFeeCalc;
 
+
+
+
+
+// ── 주소 잔액 히스토리 ──
+async function loadAddressBalanceChart(address) {
+  const canvas = document.getElementById('addr-balance-chart');
+  if (!canvas) return;
+  try {
+    const txs = await api('/address/' + address + '/txs');
+    if (!txs?.length) return;
+    // 누적 잔액 계산
+    let balance = 0;
+    const points = [];
+    [...txs].reverse().forEach(tx => {
+      const recv = (tx.vout||[]).filter(v => v.scriptpubkey_address === address).reduce((s,v) => s+v.value,0);
+      const sent = (tx.vin||[]).filter(v => v.prevout?.scriptpubkey_address === address).reduce((s,v) => s+(v.prevout?.value||0),0);
+      balance += recv - sent;
+      points.push({ t: tx.status?.block_time || Date.now()/1000, v: balance / 1e8 });
+    });
+    if (points.length < 2) return;
+    drawLineChart(canvas, points, 'BTC', '#f7931a');
+  } catch {}
+}
+window.loadAddressBalanceChart = loadAddressBalanceChart;
+
+// ── 멤풀 수수료 히트맵 ──
+async function loadMempoolHeatmap() {
+  const canvas = document.getElementById('mempool-heatmap');
+  if (!canvas) return;
+  try {
+    // mempool-blocks 데이터 활용
+    const blocks = await api('/v1/fees/mempool-blocks');
+    if (!blocks?.length) return;
+    drawFeeHeatmap(canvas, blocks);
+  } catch {}
+}
+
+function drawFeeHeatmap(canvas, blocks) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width) return;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+
+  const feeBands = [1,2,3,4,5,6,8,10,15,20,30,50,100,200];
+  const bandH = H / feeBands.length;
+  const blockW = Math.min((W - 40) / blocks.length, 60);
+
+  // Y축 라벨
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text3').trim() || '#666';
+  ctx.font = `${10 * dpr / dpr}px monospace`;
+  ctx.textAlign = 'right';
+  feeBands.forEach((fee, i) => {
+    const y = H - (i + 1) * bandH;
+    ctx.fillText(fee + '+', 34, y + bandH / 2 + 4);
+  });
+
+  blocks.forEach((block, bi) => {
+    const feeRange = block.feeRange || [];
+    const x = 40 + bi * blockW;
+    feeBands.forEach((fee, fi) => {
+      const y = H - (fi + 1) * bandH;
+      // 이 수수료 범위에 tx가 얼마나 있는지
+      const inRange = feeRange.filter(f => f >= fee).length / Math.max(feeRange.length, 1);
+      const alpha = Math.min(inRange * 2, 1);
+      ctx.fillStyle = `rgba(247,147,26,${alpha.toFixed(2)})`;
+      ctx.fillRect(x + 1, y + 1, blockW - 2, bandH - 2);
+    });
+    // 블록 번호
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text3').trim() || '#666';
+    ctx.textAlign = 'center';
+    ctx.font = `9px sans-serif`;
+    ctx.fillText(bi === 0 ? 'Next' : '+' + bi, x + blockW / 2, H - 2);
+  });
+}
+window.loadMempoolHeatmap = loadMempoolHeatmap;
+
+// ── 블록 Treemap ──
+async function openBlockTreemap(blockId, height) {
+  document.getElementById('treemap-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'treemap-modal';
+  modal.innerHTML = `<div class="modal-box" style="max-width:620px;width:95vw">
+    <div class="modal-header">
+      <span>Block #${height} Treemap</span>
+      <button class="modal-close" onclick="document.getElementById('treemap-modal')?.remove()">✕</button>
+    </div>
+    <div style="font-size:.68rem;color:var(--text3);margin-bottom:8px">${lang==='ko'?'크기 = 가상 크기 (vsize), 색 = 수수료율':'Size = vsize, Color = fee rate'}</div>
+    <canvas id="treemap-canvas" style="width:100%;height:300px;display:block;border-radius:6px"></canvas>
+    <div class="treemap-legend">
+      ${[['#ff4444','≥100'],['#ff8800','≥20'],['#f7931a','≥10'],['#ffcc00','≥5'],['#44bb44','≥2'],['#4488ff','<2']].map(([c,l])=>`<span><i style="background:${c}"></i>${l} sat/vB</span>`).join('')}
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+
+  try {
+    const txs = await api('/block/' + blockId + '/txs/0');
+    setTimeout(() => drawBlockTreemap(txs), 80);
+  } catch {}
+}
+
+function drawBlockTreemap(txs) {
+  const canvas = document.getElementById('treemap-canvas');
+  if (!canvas || !txs?.length) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+
+  function feeCol(rate) {
+    if (rate >= 100) return '#ff4444';
+    if (rate >= 20) return '#ff8800';
+    if (rate >= 10) return '#f7931a';
+    if (rate >= 5) return '#ffcc00';
+    if (rate >= 2) return '#44bb44';
+    return '#4488ff';
+  }
+
+  // coinbase 제외, vsize 기준 정렬
+  const items = txs.slice(1).map(t => ({
+    v: t.vsize || 250,
+    rate: t.fee && t.vsize ? t.fee / t.vsize : 1
+  })).sort((a,b) => b.v - a.v);
+
+  const total = items.reduce((s,t) => s + t.v, 0);
+  if (!total) return;
+
+  // 단순 strip treemap
+  function layoutStrip(items, x, y, w, h) {
+    if (!items.length || w < 1 || h < 1) return;
+    const stripTotal = items.reduce((s,t) => s + t.v, 0);
+    const horizontal = w >= h;
+    let offset = 0;
+    items.forEach(item => {
+      const ratio = item.v / stripTotal;
+      if (horizontal) {
+        const tw = w * ratio;
+        ctx.fillStyle = feeCol(item.rate);
+        ctx.fillRect(x + offset + 0.5, y + 0.5, tw - 1, h - 1);
+        offset += tw;
+      } else {
+        const th = h * ratio;
+        ctx.fillStyle = feeCol(item.rate);
+        ctx.fillRect(x + 0.5, y + offset + 0.5, w - 1, th - 1);
+        offset += th;
+      }
+    });
+  }
+
+  // 행 단위로 나눠서 배치
+  const ROW_SIZE = Math.ceil(items.length / Math.ceil(Math.sqrt(items.length)));
+  let y = 0;
+  for (let i = 0; i < items.length; i += ROW_SIZE) {
+    const row = items.slice(i, i + ROW_SIZE);
+    const rowTotal = row.reduce((s,t) => s + t.v, 0);
+    const rh = (rowTotal / total) * H;
+    layoutStrip(row, 0, y, W, rh);
+    y += rh;
+  }
+}
+window.openBlockTreemap = openBlockTreemap;
 
 // ── TX 플로우 다이어그램 ──
 function renderTxFlowDiagram(tx) {
