@@ -1,8 +1,7 @@
 /* ═══════════════════════════════════════════
    txid.uk — Mempool Canvas Visualization
+   한 줄: [확인6개] | [NEXT][+2][+3]
    실시간 WebSocket (mempool.space/api/v1/ws)
-   상단: 확인된 블록 6개 (실제 데이터)
-   하단: 멤풀 대기 블록 + 실시간 TX 파티클
    ═══════════════════════════════════════════ */
 
 const MempoolViz = (() => {
@@ -11,10 +10,9 @@ const MempoolViz = (() => {
   let ws = null;
   let wsReconnectTimer = null;
 
-  // 실제 데이터
-  let confirmedData = [];   // 확인된 블록
-  let mempoolProjected = []; // 프로젝티드 멤풀 블록
-  let mempoolBlocks = [];   // 하단 애니메이션 상태
+  let confirmedData = [];
+  let mempoolProjected = [];
+  let mempoolBlocks = [];
   let particles = [];
 
   let initialized = false;
@@ -23,9 +21,12 @@ const MempoolViz = (() => {
 
   const CONFIRMED_COUNT = 6;
   const MEMPOOL_COLS = 3;
+  const TOTAL_COLS = CONFIRMED_COUNT + MEMPOOL_COLS;
   const PX = 3;
+  const GAP = 6;
+  const PAD = 10;
+  const DIVIDER_W = 2;
 
-  // ── 수수료 → 색상 (mempool.space 기준) ──
   function feeColor(sat) {
     if (sat >= 100) return '#ff4444';
     if (sat >= 20)  return '#ff8800';
@@ -36,113 +37,6 @@ const MempoolViz = (() => {
     return '#445566';
   }
 
-  function timeAgo(ts) {
-    const sec = Math.floor(Date.now() / 1000 - ts);
-    if (sec < 60) return sec + '초 전';
-    if (sec < 3600) return Math.floor(sec / 60) + '분 전';
-    return Math.floor(sec / 3600) + '시간 전';
-  }
-
-  // ── WebSocket 연결 ────────────────────────
-  function connectWS() {
-    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
-    clearTimeout(wsReconnectTimer);
-
-    try {
-      ws = new WebSocket('wss://mempool.space/api/v1/ws');
-    } catch(e) {
-      scheduleReconnect();
-      return;
-    }
-
-    ws.onopen = () => {
-      // 초기화 + 구독
-      ws.send(JSON.stringify({ action: 'init' }));
-      ws.send(JSON.stringify({
-        action: 'want',
-        data: ['blocks', 'mempool-blocks', 'stats', 'live-2h-chart']
-      }));
-    };
-
-    ws.onmessage = (event) => {
-      let msg;
-      try { msg = JSON.parse(event.data); } catch { return; }
-
-      // 새 블록 확인
-      if (msg.block) {
-        handleNewBlock(msg.block);
-      }
-
-      // 멤풀 프로젝티드 블록 업데이트
-      if (msg['mempool-blocks']) {
-        handleMempoolBlocks(msg['mempool-blocks']);
-      }
-
-      // 새 unconfirmed TX (실시간 파티클)
-      if (msg.transactions && Array.isArray(msg.transactions)) {
-        msg.transactions.forEach(tx => {
-          spawnTxParticle(tx);
-        });
-      }
-
-      // 초기 블록 데이터
-      if (msg.blocks && Array.isArray(msg.blocks)) {
-        msg.blocks.slice(0, CONFIRMED_COUNT).forEach((b, i) => {
-          if (!confirmedData[i]) updateConfirmedBlock(b, i);
-        });
-      }
-    };
-
-    ws.onclose = () => { scheduleReconnect(); };
-    ws.onerror = () => { ws.close(); };
-  }
-
-  function scheduleReconnect() {
-    clearTimeout(wsReconnectTimer);
-    wsReconnectTimer = setTimeout(connectWS, 5000);
-  }
-
-  // ── 새 블록 처리 ─────────────────────────
-  function handleNewBlock(block) {
-    // 확인된 블록 맨 앞에 삽입, 6개 유지
-    const cd = blockToConfirmedData(block);
-    confirmedData.unshift(cd);
-    if (confirmedData.length > CONFIRMED_COUNT) confirmedData.pop();
-
-    // NEXT 멤풀 블록 비우기 (채굴됨)
-    if (mempoolBlocks[0]) mempoolBlocks[0].txs = [];
-
-    // app.js에 새 블록 이벤트 전달 (stats bar, toast, 홈 화면 갱신)
-    window.dispatchEvent(new CustomEvent('mempool:newblock', { detail: block }));
-  }
-
-  // ── 멤풀 프로젝티드 블록 처리 ────────────
-  function handleMempoolBlocks(projected) {
-    mempoolProjected = projected;
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas ? canvas.width / dpr : 0;
-    const H = canvas ? canvas.height / dpr : 0;
-    const dims = getMempoolDims(W, H);
-
-    for (let i = 0; i < Math.min(projected.length, MEMPOOL_COLS); i++) {
-      const pd = projected[i];
-      if (!mempoolBlocks[i]) continue;
-      mempoolBlocks[i].medianFee = pd.medianFee;
-      mempoolBlocks[i].feeRange = pd.feeRange;
-      // 채움률만 업데이트 (기존 파티클로 채운 TX는 유지)
-      const fillRatio = Math.min((pd.blockVSize || 0) / 1_000_000, 1);
-      const targetTx = Math.round(mempoolBlocks[i].maxTx * fillRatio);
-      // 현재보다 적으면 자름, 많으면 채우기
-      if (mempoolBlocks[i].txs.length > targetTx) {
-        mempoolBlocks[i].txs = mempoolBlocks[i].txs.slice(0, targetTx);
-      } else {
-        while (mempoolBlocks[i].txs.length < targetTx) {
-          mempoolBlocks[i].txs.push(feeColor(randomFeeFromRange(pd.feeRange)));
-        }
-      }
-    }
-  }
-
   function randomFeeFromRange(feeRange) {
     if (feeRange && feeRange.length >= 2) {
       const idx = Math.floor(Math.random() * (feeRange.length - 1));
@@ -151,305 +45,276 @@ const MempoolViz = (() => {
     return 1 + Math.random() * 4;
   }
 
-  // ── 실시간 TX 파티클 생성 ─────────────────
-  function spawnTxParticle(tx) {
-    if (!canvas || !mempoolBlocks[0]) return;
-    // fee rate 계산
-    const feeRate = tx.fee && tx.weight ? (tx.fee / (tx.weight / 4)) : null;
-    const color = feeColor(feeRate || randomFeeFromRange(mempoolProjected[0] ? mempoolProjected[0].feeRange : null));
+  function timeAgo(ts) {
+    const sec = Math.floor(Date.now() / 1000 - ts);
+    if (sec < 60) return sec + '초 전';
+    if (sec < 3600) return Math.floor(sec / 60) + '분 전';
+    return Math.floor(sec / 3600) + '시간 전';
+  }
 
+  // ── 레이아웃 계산 ─────────────────────────
+  function getLayout() {
+    if (!canvas) return null;
     const dpr = window.devicePixelRatio || 1;
     const W = canvas.width / dpr;
     const H = canvas.height / dpr;
-    const dims = getMempoolDims(W, H);
 
+    const totalGap = GAP * (TOTAL_COLS - 1) + DIVIDER_W + PAD * 2;
+    const bw = Math.floor((W - totalGap) / TOTAL_COLS);
+    const LABEL_TOP = 18;   // 상단 라벨 높이
+    const LABEL_BOT = 28;   // 하단 라벨 높이
+    const bh = H - LABEL_TOP - LABEL_BOT;
+
+    // 각 블록 x 좌표 계산
+    const xs = [];
+    for (let i = 0; i < TOTAL_COLS; i++) {
+      let x = PAD + i * (bw + GAP);
+      if (i >= CONFIRMED_COUNT) x += DIVIDER_W + GAP; // 구분선 이후
+      xs.push(x);
+    }
+
+    return { W, H, bw, bh, LABEL_TOP, LABEL_BOT, xs, maxTx: Math.floor(bw / PX) * Math.floor(bh / PX) };
+  }
+
+  // ── WebSocket ─────────────────────────────
+  function connectWS() {
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+    clearTimeout(wsReconnectTimer);
+    try { ws = new WebSocket('wss://mempool.space/api/v1/ws'); } catch { scheduleReconnect(); return; }
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ action: 'init' }));
+      ws.send(JSON.stringify({ action: 'want', data: ['blocks', 'mempool-blocks', 'stats'] }));
+    };
+    ws.onmessage = (event) => {
+      let msg; try { msg = JSON.parse(event.data); } catch { return; }
+      if (msg.block) handleNewBlock(msg.block);
+      if (msg['mempool-blocks']) handleMempoolBlocks(msg['mempool-blocks']);
+      if (msg.transactions) msg.transactions.forEach(tx => spawnTxParticle(tx));
+      if (msg.blocks) msg.blocks.slice(0, CONFIRMED_COUNT).forEach((b, i) => {
+        if (!confirmedData[i]) confirmedData[i] = blockToConfirmedData(b);
+      });
+    };
+    ws.onclose = () => scheduleReconnect();
+    ws.onerror = () => ws.close();
+  }
+  function scheduleReconnect() {
+    clearTimeout(wsReconnectTimer);
+    wsReconnectTimer = setTimeout(connectWS, 5000);
+  }
+
+  function handleNewBlock(block) {
+    confirmedData.unshift(blockToConfirmedData(block));
+    if (confirmedData.length > CONFIRMED_COUNT) confirmedData.pop();
+    if (mempoolBlocks[0]) mempoolBlocks[0].txs = [];
+    window.dispatchEvent(new CustomEvent('mempool:newblock', { detail: block }));
+  }
+
+  function handleMempoolBlocks(projected) {
+    mempoolProjected = projected;
+    const layout = getLayout();
+    if (!layout) return;
+    for (let i = 0; i < Math.min(projected.length, MEMPOOL_COLS); i++) {
+      const pd = projected[i];
+      if (!mempoolBlocks[i]) continue;
+      mempoolBlocks[i].medianFee = pd.medianFee;
+      mempoolBlocks[i].feeRange = pd.feeRange;
+      const fillRatio = Math.min((pd.blockVSize || 0) / 1_000_000, 1);
+      const target = Math.round(layout.maxTx * fillRatio);
+      if (mempoolBlocks[i].txs.length > target) {
+        mempoolBlocks[i].txs = mempoolBlocks[i].txs.slice(0, target);
+      } else {
+        while (mempoolBlocks[i].txs.length < target)
+          mempoolBlocks[i].txs.push(feeColor(randomFeeFromRange(pd.feeRange)));
+      }
+    }
+  }
+
+  function spawnTxParticle(tx) {
+    const layout = getLayout();
+    if (!layout || !mempoolBlocks[0]) return;
+    const feeRate = tx.fee && tx.weight ? tx.fee / (tx.weight / 4) : randomFeeFromRange(mempoolProjected[0]?.feeRange);
+    const color = feeColor(feeRate);
+    // NEXT 블록 위치
+    const nx = layout.xs[CONFIRMED_COUNT];
+    const ny = layout.LABEL_TOP;
+    // 오른쪽 바깥에서 날아옴
     const p = {
-      // 왼쪽 바깥 또는 위에서 시작
-      x: Math.random() < 0.7 ? -10 - Math.random() * 60 : dims.x0 + Math.random() * dims.bw,
-      y: Math.random() < 0.7 ? dims.y + Math.random() * dims.bh : dims.topH + 2,
-      // NEXT 블록 내 랜덤 위치로
-      tx: dims.x0 + Math.random() * dims.bw,
-      ty: dims.y + Math.random() * dims.bh,
-      color,
-      feeRate,
-      speed: 1.5 + Math.random() * 2,
-      alive: true,
-      size: 2.5,
+      x: layout.W + 20 + Math.random() * 60,
+      y: ny + Math.random() * layout.bh,
+      tx: nx + Math.random() * layout.bw,
+      ty: ny + Math.random() * layout.bh,
+      color, speed: 1.8 + Math.random() * 2, alive: true, size: 2.5,
     };
     if (particles.length < 80) particles.push(p);
   }
 
-  // ── 레이아웃 계산 헬퍼 ────────────────────
-  function getTopH(H) { return Math.floor(H * 0.52); }
-
-  function getMempoolDims(W, H) {
-    const topH = getTopH(H);
-    const PAD = 10, GAP = 12;
-    const bw = Math.floor((W - PAD * 2 - GAP * (MEMPOOL_COLS - 1)) / MEMPOOL_COLS);
-    const LABEL_TOP = topH + 16;
-    const LABEL_BOT = 18;
-    const bh = (H - topH) - (LABEL_TOP - topH) - LABEL_BOT - 4;
-    return { topH, bw, bh, y: LABEL_TOP, x0: PAD, PAD, GAP };
-  }
-
-  // ── 블록 데이터 변환 ──────────────────────
   function blockToConfirmedData(block) {
     const extras = block.extras || {};
     const feeRange = extras.feeRange || null;
     const vsize = extras.virtualSize || block.size || 900000;
     const fillRatio = Math.min(vsize / 1_000_000, 1);
-
-    // 픽셀 배열 계산
-    const pixels = buildPixels(fillRatio, extras.feePercentiles || feeRange);
-
     return {
       height: block.height,
       txCount: block.tx_count || 0,
-      miner: extras.pool ? extras.pool.name : null,
+      miner: extras.pool?.name || null,
       medianFee: extras.medianFee || extras.avgFeeRate || null,
       timestamp: block.timestamp || null,
       fillRatio,
-      pixels,
+      feeRange: extras.feePercentiles || feeRange,
+      pixels: null, // 그릴 때 생성
     };
   }
 
-  function buildPixels(fillRatio, feeRange) {
-    if (!canvas) return [];
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.width / dpr;
-    const H = canvas.height / dpr;
-    const topH = getTopH(H);
-    const PAD = 10, GAP = 8;
-    const bw = Math.floor((W - PAD * 2 - GAP * (CONFIRMED_COUNT - 1)) / CONFIRMED_COUNT);
-    const bh = topH - 14 - 20 - 4;
-    const maxPx = Math.floor(bw / PX) * Math.floor(bh / PX);
-    const count = Math.round(maxPx * Math.min(fillRatio, 1));
-    const pixels = [];
-    for (let j = 0; j < count; j++) {
-      pixels.push(feeColor(randomFeeFromRange(feeRange)));
-    }
-    return pixels;
-  }
+  // ── 렌더 ──────────────────────────────────
+  function drawBlock(x, y, bw, bh, pixels, maxPx, isMempool, mempoolIdx) {
+    ctx.fillStyle = isMempool ? '#080c12' : '#0d1117';
+    ctx.fillRect(x, y, bw, bh);
 
-  function updateConfirmedBlock(block, idx) {
-    confirmedData[idx] = blockToConfirmedData(block);
-  }
-
-  // ── 상단: 확인된 블록 렌더 ───────────────
-  function drawConfirmedSection(W, topH) {
-    const PAD = 10, GAP = 8;
-    const bw = Math.floor((W - PAD * 2 - GAP * (CONFIRMED_COUNT - 1)) / CONFIRMED_COUNT);
-    const LABEL_TOP = 14;
-    const LABEL_BOT = 20;
-    const bh = topH - LABEL_TOP - LABEL_BOT - 4;
-
-    for (let i = 0; i < CONFIRMED_COUNT; i++) {
-      const x = PAD + i * (bw + GAP);
-      const y = LABEL_TOP;
-      const d = confirmedData[i] || null;
-
-      // 배경
-      ctx.fillStyle = '#0d1117';
-      ctx.fillRect(x, y, bw, bh);
-
-      // 픽셀
-      if (d && d.pixels && d.pixels.length) {
-        const cols = Math.floor(bw / PX);
-        const rows = Math.floor(bh / PX);
-        let pi = 0;
-        for (let r = rows - 1; r >= 0 && pi < d.pixels.length; r--) {
-          for (let c = 0; c < cols && pi < d.pixels.length; c++, pi++) {
-            ctx.fillStyle = d.pixels[pi];
-            ctx.globalAlpha = 0.65;
-            ctx.fillRect(x + c * PX, y + r * PX, PX - 1, PX - 1);
-          }
-        }
-        ctx.globalAlpha = 1;
-      } else {
-        // 로딩
-        ctx.fillStyle = '#1a2030';
-        ctx.globalAlpha = 0.4;
-        ctx.fillRect(x, y, bw, bh);
-        ctx.globalAlpha = 1;
-      }
-
-      // 테두리
-      ctx.strokeStyle = '#21262d';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x, y, bw, bh);
-
-      // 높이
-      ctx.font = 'bold 9px "Space Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = d ? '#f7931a' : '#333';
-      ctx.fillText(d ? '#' + d.height.toLocaleString() : '···', x + bw / 2, 10);
-
-      // 하단: TX수, 채굴자, 경과시간
-      if (d) {
-        const botY = y + bh + 11;
-        ctx.font = '7.5px "Space Mono", monospace';
-        ctx.fillStyle = '#6e7681';
-        ctx.fillText(d.txCount.toLocaleString() + ' TX', x + bw / 2, botY);
-        if (d.miner) {
-          ctx.fillStyle = '#3a4455';
-          ctx.font = '7px "Space Mono", monospace';
-          const mn = d.miner.length > 9 ? d.miner.slice(0, 9) + '…' : d.miner;
-          ctx.fillText(mn, x + bw / 2, botY + 8);
-        }
-        if (d.timestamp) {
-          ctx.fillStyle = '#2a3040';
-          ctx.font = '6.5px "Space Mono", monospace';
-          ctx.fillText(timeAgo(d.timestamp), x + bw / 2, botY + 16);
+    if (pixels && pixels.length) {
+      const cols = Math.floor(bw / PX);
+      const rows = Math.floor(bh / PX);
+      let pi = 0;
+      for (let r = rows - 1; r >= 0 && pi < pixels.length; r--) {
+        for (let c = 0; c < cols && pi < pixels.length; c++, pi++) {
+          ctx.fillStyle = pixels[pi];
+          ctx.globalAlpha = isMempool ? Math.max(0.3, 0.85 - (mempoolIdx||0) * 0.2) : 0.65;
+          ctx.fillRect(x + c * PX, y + r * PX, PX - 1, PX - 1);
         }
       }
+      ctx.globalAlpha = 1;
+    } else if (!isMempool) {
+      // 로딩
+      ctx.fillStyle = '#1a2030'; ctx.globalAlpha = 0.3;
+      ctx.fillRect(x, y, bw, bh); ctx.globalAlpha = 1;
     }
 
-    // 섹션 구분선 + 레이블
-    ctx.strokeStyle = '#1e2530';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, topH); ctx.lineTo(W, topH); ctx.stroke();
-
-    ctx.font = '7px "Space Mono", monospace';
-    ctx.fillStyle = '#2a3545';
-    ctx.textAlign = 'left';
-    ctx.fillText('CONFIRMED BLOCKS', 10, topH - 3);
-
-    // WS 연결 상태
-    const wsOk = ws && ws.readyState === WebSocket.OPEN;
-    ctx.textAlign = 'right';
-    ctx.fillStyle = wsOk ? '#1a4a2a' : '#4a1a1a';
-    ctx.fillText(wsOk ? '● LIVE' : '○ CONNECTING…', W - 10, topH - 3);
-  }
-
-  // ── 하단: 멤풀 애니메이션 ─────────────────
-  function drawMempoolSection(W, topH, H) {
-    const dims = getMempoolDims(W, H);
-    const { bw, bh, y, x0, GAP } = dims;
-
-    ctx.font = '7px "Space Mono", monospace';
-    ctx.fillStyle = '#2a3545';
-    ctx.textAlign = 'left';
-    ctx.fillText('MEMPOOL (UNCONFIRMED)', 10, topH + 10);
-
-    for (let i = 0; i < MEMPOOL_COLS; i++) {
-      const x = x0 + i * (bw + GAP);
-      const mb = mempoolBlocks[i];
-
-      // 배경
-      ctx.fillStyle = '#080c12';
-      ctx.fillRect(x, y, bw, bh);
-
-      // 픽셀
-      if (mb && mb.txs.length) {
-        const cols = Math.floor(bw / PX);
-        const rows = Math.floor(bh / PX);
-        let pi = 0;
-        for (let r = rows - 1; r >= 0 && pi < mb.txs.length; r--) {
-          for (let c = 0; c < cols && pi < mb.txs.length; c++, pi++) {
-            ctx.fillStyle = mb.txs[pi];
-            ctx.globalAlpha = i === 0 ? 0.85 : Math.max(0.25, 0.65 - i * 0.2);
-            ctx.fillRect(x + c * PX, y + r * PX, PX - 1, PX - 1);
-          }
-        }
-        ctx.globalAlpha = 1;
-      }
-
-      // 테두리
-      if (i === 0) {
-        ctx.save();
-        ctx.shadowColor = '#f7931a';
-        ctx.shadowBlur = 8;
-        ctx.strokeStyle = '#f7931a';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(x, y, bw, bh);
-        ctx.restore();
-      } else {
-        ctx.strokeStyle = `rgba(247,147,26,${0.35 - i * 0.08})`;
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x, y, bw, bh);
-      }
-
-      // 상단 라벨
-      ctx.font = 'bold 9px "Space Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = i === 0 ? '#f7931a' : '#445';
-      ctx.fillText(i === 0 ? 'NEXT' : '+' + (i + 1), x + bw / 2, y - 4);
-
-      // 하단: 채움률 + 수수료
-      if (mb) {
-        const pct = Math.round((mb.txs.length / mb.maxTx) * 100);
-        const botY = y + bh + 11;
-        ctx.font = '8px "Space Mono", monospace';
-        ctx.fillStyle = i === 0 ? (pct >= 99 ? '#ff8800' : '#f7931a') : '#334';
-        ctx.fillText(pct >= 99 ? 'FULL' : pct + '%', x + bw / 2, botY);
-        if (mb.medianFee) {
-          ctx.font = '7px "Space Mono", monospace';
-          ctx.fillStyle = '#2a3040';
-          ctx.fillText('~' + Math.round(mb.medianFee) + ' sat/vB', x + bw / 2, botY + 9);
-        }
-      }
+    // 테두리
+    if (!isMempool) {
+      ctx.strokeStyle = '#21262d'; ctx.lineWidth = 1;
+    } else if (mempoolIdx === 0) {
+      ctx.save(); ctx.shadowColor = '#f7931a'; ctx.shadowBlur = 8;
+      ctx.strokeStyle = '#f7931a'; ctx.lineWidth = 1.5;
+      ctx.strokeRect(x, y, bw, bh); ctx.restore(); return;
+    } else {
+      ctx.strokeStyle = `rgba(247,147,26,${0.35 - (mempoolIdx||0) * 0.08})`; ctx.lineWidth = 1;
     }
-
-    // 파티클
-    particles.forEach(p => {
-      ctx.save();
-      ctx.globalAlpha = 0.9;
-      ctx.fillStyle = p.color;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 8;
-      ctx.fillRect(p.x - 1, p.y - 1, p.size, p.size);
-      ctx.restore();
-    });
+    ctx.strokeRect(x, y, bw, bh);
   }
 
-  // ── 메인 루프 ────────────────────────────
   function animate() {
     if (!canvas || !ctx) return;
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.width / dpr;
-    const H = canvas.height / dpr;
-    const topH = getTopH(H);
+    const layout = getLayout();
+    if (!layout) { animId = requestAnimationFrame(animate); return; }
+    const { W, H, bw, bh, LABEL_TOP, LABEL_BOT, xs, maxTx } = layout;
 
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = '#0d1117';
     ctx.fillRect(0, 0, W, H);
 
-    drawConfirmedSection(W, topH);
-    drawMempoolSection(W, topH, H);
+    // ── 확인된 블록 ──
+    for (let i = 0; i < CONFIRMED_COUNT; i++) {
+      const x = xs[i], y = LABEL_TOP;
+      const d = confirmedData[i];
 
-    // 파티클 업데이트
-    const dims = getMempoolDims(W, H);
+      // 픽셀 배열 lazy 생성
+      if (d && !d.pixels) {
+        d.pixels = [];
+        const count = Math.round(maxTx * d.fillRatio);
+        for (let j = 0; j < count; j++) d.pixels.push(feeColor(randomFeeFromRange(d.feeRange)));
+      }
+
+      drawBlock(x, y, bw, bh, d?.pixels, maxTx, false);
+
+      // 상단: 높이
+      ctx.font = 'bold 9px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = d ? '#f7931a' : '#333';
+      ctx.fillText(d ? '#' + d.height.toLocaleString() : '···', x + bw / 2, 12);
+
+      // 하단: TX수 / 채굴자 / 경과시간
+      if (d) {
+        const by = y + bh;
+        ctx.font = '7.5px "Space Mono", monospace';
+        ctx.fillStyle = '#6e7681';
+        ctx.fillText(d.txCount.toLocaleString() + ' TX', x + bw / 2, by + 10);
+        if (d.miner) {
+          const mn = d.miner.length > 9 ? d.miner.slice(0,9)+'…' : d.miner;
+          ctx.font = '7px "Space Mono", monospace'; ctx.fillStyle = '#3a4455';
+          ctx.fillText(mn, x + bw / 2, by + 18);
+        }
+        if (d.timestamp) {
+          ctx.font = '6.5px "Space Mono", monospace'; ctx.fillStyle = '#2a3040';
+          ctx.fillText(timeAgo(d.timestamp), x + bw / 2, by + 26);
+        }
+      }
+    }
+
+    // ── 구분선 ──
+    const divX = xs[CONFIRMED_COUNT] - GAP - DIVIDER_W;
+    ctx.fillStyle = '#21262d';
+    ctx.fillRect(divX, LABEL_TOP - 4, DIVIDER_W, bh + 8);
+
+    // ── 멤풀 블록 ──
+    for (let i = 0; i < MEMPOOL_COLS; i++) {
+      const x = xs[CONFIRMED_COUNT + i], y = LABEL_TOP;
+      const mb = mempoolBlocks[i];
+      drawBlock(x, y, bw, bh, mb?.txs, maxTx, true, i);
+
+      // 상단 라벨
+      ctx.font = 'bold 9px "Space Mono", monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = i === 0 ? '#f7931a' : '#445';
+      ctx.fillText(i === 0 ? 'NEXT' : '+' + (i+1), x + bw / 2, 12);
+
+      // 하단: 채움률 / 수수료
+      if (mb) {
+        const pct = Math.round((mb.txs.length / mb.maxTx) * 100);
+        const by = y + bh;
+        ctx.font = '8px "Space Mono", monospace';
+        ctx.fillStyle = i === 0 ? (pct >= 99 ? '#ff8800' : '#f7931a') : '#334';
+        ctx.fillText(pct >= 99 ? 'FULL' : pct + '%', x + bw / 2, by + 10);
+        if (mb.medianFee) {
+          ctx.font = '7px "Space Mono", monospace'; ctx.fillStyle = '#2a3040';
+          ctx.fillText('~' + Math.round(mb.medianFee) + ' s/vB', x + bw / 2, by + 19);
+        }
+      }
+    }
+
+    // ── 파티클 ──
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       const dx = p.tx - p.x, dy = p.ty - p.y;
-      const d = Math.sqrt(dx * dx + dy * dy);
+      const d = Math.sqrt(dx*dx + dy*dy);
       if (d < 3) {
-        // 도착 → NEXT 블록에 추가
-        const mb = mempoolBlocks[0];
-        if (mb && mb.txs.length < mb.maxTx) mb.txs.push(p.color);
+        if (mempoolBlocks[0] && mempoolBlocks[0].txs.length < mempoolBlocks[0].maxTx)
+          mempoolBlocks[0].txs.push(p.color);
         particles.splice(i, 1);
       } else {
-        p.x += (dx / d) * p.speed;
-        p.y += (dy / d) * p.speed;
+        p.x += (dx/d)*p.speed; p.y += (dy/d)*p.speed;
+        ctx.save(); ctx.globalAlpha = 0.9;
+        ctx.fillStyle = p.color; ctx.shadowColor = p.color; ctx.shadowBlur = 8;
+        ctx.fillRect(p.x-1, p.y-1, p.size, p.size); ctx.restore();
       }
     }
+
+    // WS 상태
+    const wsOk = ws && ws.readyState === WebSocket.OPEN;
+    ctx.font = '7px "Space Mono", monospace'; ctx.textAlign = 'right';
+    ctx.fillStyle = wsOk ? '#1a4a2a' : '#4a1a1a';
+    ctx.fillText(wsOk ? '● LIVE' : '○ …', W - PAD, 12);
 
     animId = requestAnimationFrame(animate);
   }
 
-  // ── 캔버스 리사이즈 ──────────────────────
   function initMempoolBlocks() {
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.width / dpr;
-    const H = canvas.height / dpr;
-    const dims = getMempoolDims(W, H);
-    const maxTx = Math.floor(dims.bw / PX) * Math.floor(dims.bh / PX);
-    mempoolBlocks = [];
-    for (let i = 0; i < MEMPOOL_COLS; i++) {
-      mempoolBlocks.push({ txs: [], maxTx, medianFee: null, feeRange: null });
-    }
-    // 기존 projected 데이터 재적용
+    const layout = getLayout();
+    if (!layout) return;
+    mempoolBlocks = Array.from({length: MEMPOOL_COLS}, () => ({
+      txs: [], maxTx: layout.maxTx, medianFee: null, feeRange: null
+    }));
     if (mempoolProjected.length) handleMempoolBlocks(mempoolProjected);
+    // 픽셀 재빌드
+    confirmedData.forEach(d => { if (d) d.pixels = null; });
   }
 
   function resizeCanvas() {
@@ -464,54 +329,30 @@ const MempoolViz = (() => {
     canvas.height = rect.height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     initMempoolBlocks();
-    // 픽셀 재빌드
-    confirmedData = confirmedData.map(d => d ? {
-      ...d,
-      pixels: buildPixels(d.fillRatio, d.feeRange)
-    } : null);
     initRetries = 0;
   }
 
-  // ── PUBLIC ───────────────────────────────
   return {
     init(canvasEl) {
       if (!canvasEl) return;
-      canvas = canvasEl;
-      ctx = canvas.getContext('2d');
-      initRetries = 0;
-      resizeCanvas();
-
+      canvas = canvasEl; ctx = canvas.getContext('2d');
+      initRetries = 0; resizeCanvas();
       if (!initialized) {
-        window.addEventListener('resize', () => {
-          if (canvas && canvas.isConnected) resizeCanvas();
-        });
+        window.addEventListener('resize', () => { if (canvas?.isConnected) resizeCanvas(); });
         initialized = true;
       }
-
       if (resizeObserver) resizeObserver.disconnect();
-      resizeObserver = new ResizeObserver(() => {
-        if (canvas && canvas.isConnected) resizeCanvas();
-      });
+      resizeObserver = new ResizeObserver(() => { if (canvas?.isConnected) resizeCanvas(); });
       resizeObserver.observe(canvas);
-
       if (animId) cancelAnimationFrame(animId);
       animate();
-
-      // WebSocket 연결
       connectWS();
     },
 
-    // REST API로 초기 데이터 주입 (app.js에서 호출)
     updateData(confirmed, mempool) {
       if (!canvas) return;
-      if (confirmed && confirmed.length) {
-        confirmedData = confirmed.slice(0, CONFIRMED_COUNT).map(b => blockToConfirmedData(b));
-      }
-      if (mempool && mempool.length) {
-        mempoolProjected = mempool;
-        handleMempoolBlocks(mempool);
-      }
-      // WS 연결도 시작
+      if (confirmed?.length) confirmedData = confirmed.slice(0, CONFIRMED_COUNT).map(blockToConfirmedData);
+      if (mempool?.length) { mempoolProjected = mempool; handleMempoolBlocks(mempool); }
       connectWS();
     },
 
