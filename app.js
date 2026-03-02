@@ -1166,6 +1166,7 @@ async function loadBlockTxs(blockHash, totalCount, startIdx) {
               const isCoinbase = tx.vin && tx.vin[0] && tx.vin[0].is_coinbase;
               const totalOut = tx.vout ? tx.vout.reduce((s, o) => s + (o.value || 0), 0) : 0;
               const feeRate = !isCoinbase && tx.weight ? (tx.fee / (tx.weight / 4)).toFixed(1) : null;
+              const whaleCls = highlightWhaleTx(tx);
               return `<tr class="stagger-item ${whaleCls}" style="--i:${i}">
                 <td class="txid-col"><a href="#/tx/${tx.txid}">${isCoinbase ? '<span class="coinbase">[CB]</span> ' : ''}${tx.txid.slice(0, 16)}...</a></td>
                 <td>${tx.vin ? tx.vin.length : 0}</td>
