@@ -46,6 +46,18 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
         <a href="#/" data-page="" data-ko="홈" data-en="Home" data-ja="ホーム" data-ja="ホーム">홈</a>
         <a href="#/mining" data-page="mining" data-ko="채굴" data-en="Mining" data-ja="マイニング">채굴</a>
         <a href="https://learn.txid.uk" target="_blank" data-ko="공부방" data-en="The Study" data-ja="学習室">공부방</a>
+        <div class="tools-dropdown">
+          <button class="tools-dropdown-btn">도구 ▾</button>
+          <div class="tools-dropdown-menu">
+            <a href="https://tools.txid.uk" target="_blank">🔧 Tools — 주소검증·변환기</a>
+            <a href="https://viz.txid.uk" target="_blank">⚡ Viz — TX 시각화</a>
+            <a href="https://stats.txid.uk" target="_blank">📊 Stats — 온체인 통계</a>
+            <a href="https://nodes.txid.uk" target="_blank">🌐 Nodes — 라이트닝</a>
+            <a href="https://map.txid.uk" target="_blank">🗺 Map — 세계 분포</a>
+            <a href="https://portfolio.txid.uk" target="_blank">💼 Portfolio — 잔액 추적</a>
+            <a href="https://tx.txid.uk" target="_blank">📤 TX — 브로드캐스트</a>
+          </div>
+        </div>
       </div>
       <span id="monitor-badge" class="monitor-badge" style="display:none" title="모니터링 중">0</span>
       <button class="icon-btn" onclick="showShortcuts()" title="단축키 도움말 (?)" aria-label="단축키"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
