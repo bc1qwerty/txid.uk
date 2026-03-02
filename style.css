@@ -153,8 +153,7 @@ header {
   height: 44px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  justify-content: space-between;
+  gap: 12px;
 }
 .nav-search {
   max-width: var(--max-w);
@@ -236,8 +235,9 @@ header {
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
   flex-shrink: 0;
+  margin-left: auto;
 }
 #nav-links {
   display: flex;
