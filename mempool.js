@@ -109,10 +109,11 @@ const MempoolViz = (() => {
     confirmedData.unshift(cd);
     if (confirmedData.length > CONFIRMED_COUNT) confirmedData.pop();
 
-    // 멤풀 첫 블록 → 확인됨으로 전환 시 파티클 플래시
-    if (mempoolBlocks[0]) {
-      mempoolBlocks[0].txs = [];
-    }
+    // NEXT 멤풀 블록 비우기 (채굴됨)
+    if (mempoolBlocks[0]) mempoolBlocks[0].txs = [];
+
+    // app.js에 새 블록 이벤트 전달 (stats bar, toast, 홈 화면 갱신)
+    window.dispatchEvent(new CustomEvent('mempool:newblock', { detail: block }));
   }
 
   // ── 멤풀 프로젝티드 블록 처리 ────────────

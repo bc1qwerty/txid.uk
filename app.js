@@ -317,6 +317,59 @@ async function checkMonitoredAddresses() {
   saveMonitoredAddrs(m);
 }
 
+// ── 새 블록 이벤트 처리 ──────────────────────
+let _lastNotifiedHeight = null;
+
+async function onNewBlock(block) {
+  try {
+    // 블록 상세 정보 가져오기 (WS 데이터가 extras 없을 수 있음)
+    const blocks = await api('/v1/blocks');
+    const nb = blocks[0];
+    if (!nb) return;
+
+    // 중복 알림 방지
+    if (_lastNotifiedHeight === nb.height) return;
+    _lastNotifiedHeight = nb.height;
+
+    const pool = nb.extras?.pool?.name || 'Unknown';
+    const fees = nb.extras?.totalFees || 0;
+    const reward = nb.extras?.reward || 0;
+
+    // 토스트 알림
+    showToast(
+      `⛏️ 새 블록 #${formatNum(nb.height)}`,
+      `${pool} | ${formatNum(nb.tx_count)} TX | ${(fees / 1e8).toFixed(4)} BTC 수수료`,
+      () => navigate('#/block/' + nb.id)
+    );
+
+    // Stats bar 즉시 업데이트
+    flashStat('s-block', formatNum(nb.height));
+    lastKnownHeight = nb.height;
+
+    // 홈 화면이면 블록 목록 갱신
+    const hash = location.hash || '#/';
+    if (hash === '#/' || hash === '') {
+      try {
+        const [newBlocks, mempoolBlocks] = await Promise.all([
+          api('/v1/blocks'),
+          api('/v1/fees/mempool-blocks')
+        ]);
+        renderRecentBlocks(newBlocks.slice(0, 8));
+        renderFeeHistogram(mempoolBlocks);
+        if (typeof MempoolViz !== 'undefined') {
+          window._mempoolBlockCount = mempoolBlocks.length;
+          MempoolViz.updateData(newBlocks.slice(0, 6), mempoolBlocks);
+        }
+      } catch {}
+    }
+  } catch(e) { console.warn('onNewBlock error:', e); }
+}
+
+// WS에서 새 블록 이벤트 수신
+window.addEventListener('mempool:newblock', (e) => {
+  onNewBlock(e.detail);
+});
+
 // ── 상단 통계 업데이트 ──
 let statsData = {};
 let lastKnownHeight = null;
@@ -328,21 +381,10 @@ async function updateStats() {
     ]);
     statsData = { mem, fees, height };
 
-    // New block detection
+    // 새 블록 감지 (WS에서도 감지하지만 polling fallback)
     const h = Number(height);
     if (lastKnownHeight !== null && h > lastKnownHeight) {
-      // Fetch new block info for toast
-      try {
-        const blocks = await api('/v1/blocks');
-        const newBlock = blocks[0];
-        const pool = newBlock.extras?.pool?.name || 'Unknown';
-        const totalFees = newBlock.extras?.totalFees || 0;
-        showToast(
-          `⛏️ ${t('newBlock')}`,
-          `#${formatNum(newBlock.height)} | ${pool} | ${formatNum(newBlock.tx_count)} TX | ${(totalFees / 1e8).toFixed(4)} BTC`,
-          () => { location.hash = '#/block/' + newBlock.id; }
-        );
-      } catch {}
+      onNewBlock(null); // WS가 이미 처리했을 수 있으나 fallback
     }
     lastKnownHeight = h;
 
