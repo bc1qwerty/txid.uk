@@ -1443,7 +1443,6 @@ async function loadAddrTxs(address, lastTxid) {
 
     const html = txs.map((tx, i) => {
       const totalOut = tx.vout ? tx.vout.reduce((s, o) => s + (o.value || 0), 0) : 0;
-      document.title = `TX ${txid.slice(0,8)}… | txid.uk`;
     const isConfirmed = tx.status && tx.status.confirmed;
       return `<tr class="stagger-item" style="--i:${i}">
         <td class="txid-col"><a href="#/tx/${tx.txid}">${tx.txid.slice(0, 16)}...</a></td>
