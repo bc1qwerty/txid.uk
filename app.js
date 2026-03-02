@@ -756,14 +756,12 @@ async function renderHome(app) {
   try { loadMempoolHeatmap(); } catch {}
   try { loadDifficultyTimer(); } catch {}
   try { renderPoolChart(document.getElementById('pool-chart')); } catch {}
-  try {
-    Promise.all([estimateConfirmTime(1), estimateConfirmTime(5), estimateConfirmTime(10)]).then(([r1,r5,r10]) => {
-      const el = document.getElementById('mempool-predict');
-      if (!el) return;
-      const fmt = r => r ? `\${r.blocks}블록 (~\${r.mins}분)` : '—';
-      el.innerHTML = `<small style="color:var(--text3)">1 sat/vB:</small> \${fmt(r1)}<br><small style="color:var(--text3)">5 sat/vB:</small> \${fmt(r5)}<br><small style="color:var(--text3)">10 sat/vB:</small> \${fmt(r10)}`;
-    });
-  } catch {}
+  getMempoolFeeEstimates().then(est => {
+    const el = document.getElementById('mempool-predict');
+    if (!el || !est) return;
+    const fmt = (e) => `<span style="font-family:var(--font);color:var(--accent)">${e.fee}</span><small style="font-family:var(--font-ko);color:var(--text3)"> sat/vB → ~${e.mins}분</small>`;
+    el.innerHTML = fmt(est.fastest) + '<br>' + fmt(est.halfHour) + '<br>' + fmt(est.economy);
+  }).catch(function(){});
 }
 
 let _lastBlockHeights = null;
