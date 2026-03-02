@@ -1349,3 +1349,20 @@ h1, h2, h3, h4, button:not(#search-btn),
   .lightning-stats-grid { grid-template-columns: 1fr 1fr; }
 }
 
+
+/* ── SVG 아이콘 ── */
+.icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  margin-right: 5px;
+  color: var(--accent);
+  stroke: currentColor;
+  position: relative;
+  top: -1px;
+}
+.icon svg { width: 100%; height: 100%; }
+.section-title .icon, h3 .icon { width: 13px; height: 13px; }
+.page-title .icon { width: 16px; height: 16px; }
+.monitor-btn .icon { color: inherit; margin-right: 4px; }

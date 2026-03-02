@@ -14,6 +14,14 @@
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
 </head>
 <body>
+<!-- SVG 아이콘 스프라이트 -->
+<div id="svg-sprites" style="display:none"></div>
+<script>
+fetch("static/icons.svg").then(r=>r.text()).then(t=>{
+  document.getElementById("svg-sprites").innerHTML=t;
+  document.getElementById("svg-sprites").style.display="";
+});
+</script>
 
 <!-- Header -->
 <header id="header">

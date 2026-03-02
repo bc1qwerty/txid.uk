@@ -248,12 +248,12 @@ function renderFavoritesSection() {
   const chips = favs.slice(0, 6).map(f => {
     const href = f.type === 'block' ? `#/block/${f.value}` : f.type === 'tx' ? `#/tx/${f.value}` : `#/address/${f.value}`;
     return `<a href="${href}" class="fav-chip">
-      <span>${f.type === 'block' ? '⛏' : f.type === 'tx' ? '📋' : '📍'} ${escHtml(f.label)}</span>
+      <span>${f.type === 'block' ? '▣' : f.type === 'tx' ? '↔' : '◎'} ${escHtml(f.label)}</span>
       <span class="fav-remove" onclick="event.preventDefault();event.stopPropagation();removeFavorite('${f.type}','${escHtml(f.value)}');document.getElementById('fav-section')?.remove();route();">✕</span>
     </a>`;
   }).join('');
   return `<div class="fav-section" id="fav-section">
-    <div class="section-title"><span class="section-icon">⭐</span> ${t('favorites')}</div>
+    <div class="section-title"><svg class="icon"><use href="static/icons.svg#star"/></svg> ${t('favorites')}</div>
     <div class="fav-chips">${chips}</div>
   </div>`;
 }
@@ -337,7 +337,7 @@ async function onNewBlock(block) {
 
     // 토스트 알림
     showToast(
-      `⛏️ 새 블록 #${formatNum(nb.height)}`,
+      `새 블록 #${formatNum(nb.height)}`,
       `${pool} | ${formatNum(nb.tx_count)} TX | ${(fees / 1e8).toFixed(4)} BTC 수수료`,
       () => navigate('#/block/' + nb.id)
     );
@@ -541,20 +541,20 @@ async function renderHome(app) {
   // 수수료 히스토그램
   const feeSection = document.createElement('div');
   feeSection.id = 'fee-histogram';
-  feeSection.innerHTML = `<h3><span class="section-icon">📊</span> ${t('feeDistribution')}</h3><canvas id="fee-chart"></canvas>`;
+  feeSection.innerHTML = `<h3><svg class="icon"><use href="static/icons.svg#bar-chart"/></svg> ${t('feeDistribution')} <span style="font-size:.65rem;color:var(--text3);font-family:var(--font-ko)">현재 멤풀 기준</span></h3><canvas id="fee-chart"></canvas>`;
   app.appendChild(feeSection);
 
   // 최근 블록
   const blocksSection = document.createElement('div');
-  blocksSection.innerHTML = `<div class="section-title"><span class="section-icon">⛏️</span> ${t('recentBlocks')}</div><div class="blocks-grid" id="recent-blocks">${skeletonCards(8)}</div>`;
+  blocksSection.innerHTML = `<div class="section-title"><svg class="icon"><use href="static/icons.svg#pickaxe"/></svg> ${t('recentBlocks')}</div><div class="blocks-grid" id="recent-blocks">${skeletonCards(8)}</div>`;
   app.appendChild(blocksSection);
 
   // Charts placeholder
   const chartsDiv = document.createElement('div');
   chartsDiv.id = 'home-charts';
   chartsDiv.innerHTML = `<div class="charts-grid">
-    <div class="chart-card"><h3><span class="section-icon">📈</span> ${t('btcPrice')} (${t('days30')})</h3><div id="price-info" class="chart-subtitle">${t('loading')}</div><canvas id="price-chart"></canvas></div>
-    <div class="chart-card"><h3><span class="section-icon">📦</span> ${t('mempoolSizeHistory')}</h3><div class="chart-subtitle">&nbsp;</div><canvas id="mempool-history-chart"></canvas></div>
+    <div class="chart-card"><h3><svg class="icon"><use href="static/icons.svg#trending-up"/></svg> ${t('btcPrice')} (${t('days30')})</h3><div id="price-info" class="chart-subtitle">${t('loading')}</div><canvas id="price-chart"></canvas></div>
+    <div class="chart-card"><h3><svg class="icon"><use href="static/icons.svg#package"/></svg> ${t('mempoolSizeHistory')}</h3><div class="chart-subtitle">&nbsp;</div><canvas id="mempool-history-chart"></canvas></div>
   </div>`;
   app.appendChild(chartsDiv);
 
@@ -563,7 +563,7 @@ async function renderHome(app) {
   lnDiv.id = 'lightning-section';
   lnDiv.className = 'lightning-section';
   lnDiv.innerHTML = `<div class="lightning-header" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
-    <h3><span class="section-icon">⚡</span> ${t('lightning')}</h3>
+    <h3><svg class="icon"><use href="static/icons.svg#zap"/></svg> ${t('lightning')}</h3>
     <span class="toggle-icon">▼</span>
   </div>
   <div class="lightning-body">
@@ -889,7 +889,7 @@ async function renderBlock(app, param) {
         ${feeRangeHtml ? `<div class="info-item"><div class="info-label">${t('feeRate')} (min~max)</div><div class="info-value">${feeRangeHtml}</div></div>` : ''}
       </div>
 
-      <div class="section-title"><span class="section-icon">📋</span> ${t('transactions')}</div>
+      <div class="section-title"><svg class="icon"><use href="static/icons.svg#list"/></svg> ${t('transactions')}</div>
       <div id="block-txs">${skeletonTable(6)}</div>
       <div id="block-txs-pagination"></div>
     `;
@@ -931,7 +931,7 @@ async function loadBlockTxs(blockHash, totalCount, startIdx) {
               const totalOut = tx.vout ? tx.vout.reduce((s, o) => s + (o.value || 0), 0) : 0;
               const feeRate = !isCoinbase && tx.weight ? (tx.fee / (tx.weight / 4)).toFixed(1) : null;
               return `<tr class="stagger-item" style="--i:${i}">
-                <td class="txid-col"><a href="#/tx/${tx.txid}">${isCoinbase ? '<span class="coinbase">⛏ [CB]</span> ' : ''}${tx.txid.slice(0, 16)}...</a></td>
+                <td class="txid-col"><a href="#/tx/${tx.txid}">${isCoinbase ? '<span class="coinbase">[CB]</span> ' : ''}${tx.txid.slice(0, 16)}...</a></td>
                 <td>${tx.vin ? tx.vin.length : 0}</td>
                 <td>${tx.vout ? tx.vout.length : 0}</td>
                 <td>${satToBtc(totalOut)}</td>
@@ -993,7 +993,7 @@ async function renderTx(app, txid) {
 
       <div class="page-actions">
         <div class="page-title">
-          ${isCoinbase ? '⛏️ ' : ''}${t('transaction')}
+          ${isCoinbase ? '' : ''}${t('transaction')}
           <span class="badge ${isConfirmed ? 'badge-confirmed' : 'badge-unconfirmed'}">${isConfirmed ? t('confirmed') : t('unconfirmed')}</span>
         </div>
         ${favButton('tx', tx.txid, favLabel)}
@@ -1017,7 +1017,7 @@ async function renderTx(app, txid) {
       ${!isConfirmed ? `<div class="info-grid" style="margin-bottom:20px"><div class="info-item"><div class="info-label">${t('estimatedConf')}</div><div class="info-value accent">${t('unconfirmed')}</div></div></div>` : ''}
 
       <div class="tx-flow-summary">
-        <div class="fs-item"><div class="fs-label">${t('inputs')}</div><div class="fs-val">${isCoinbase ? '⛏️ ' + t('coinbaseReward') : formatBtc(totalIn)}</div></div>
+        <div class="fs-item"><div class="fs-label">${t('inputs')}</div><div class="fs-val">${isCoinbase ? '' + t('coinbaseReward') : formatBtc(totalIn)}</div></div>
         <div class="fs-item"><div class="fs-label">→</div><div class="fs-val"></div></div>
         <div class="fs-item"><div class="fs-label">${t('outputs')}</div><div class="fs-val green">${formatBtc(totalOut)}</div></div>
         ${!isCoinbase ? `<div class="fs-item"><div class="fs-label">${t('fee')}</div><div class="fs-val red">${formatBtc(tx.fee)}</div></div>` : ''}
@@ -1027,7 +1027,7 @@ async function renderTx(app, txid) {
         <div class="tx-flow-col">
           <h4>${t('inputs')} (${tx.vin ? tx.vin.length : 0})</h4>
           ${(tx.vin || []).map((v, i) => {
-            if (v.is_coinbase) return `<div class="tx-io-item coinbase-item stagger-item" style="--i:${i}"><div class="io-addr" style="color:var(--accent)">⛏️ ${t('coinbaseReward')}</div><div class="io-val">${formatBtc(totalOut)}</div></div>`;
+            if (v.is_coinbase) return `<div class="tx-io-item coinbase-item stagger-item" style="--i:${i}"><div class="io-addr" style="color:var(--accent)">${t('coinbaseReward')}</div><div class="io-val">${formatBtc(totalOut)}</div></div>`;
             const addr = v.prevout ? (v.prevout.scriptpubkey_address || 'Unknown') : 'Unknown';
             const val = v.prevout ? v.prevout.value || 0 : 0;
             const addrType = v.prevout ? getAddrType(v.prevout.scriptpubkey_type) : '?';
@@ -1106,7 +1106,7 @@ async function renderAddress(app, address) {
       <div class="page-actions">
         <div class="page-title">${t('address')}</div>
         ${favButton('address', address, favLabel)}
-        <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" onclick="toggleMonitor('${address}')">🔔 ${t('monitoring')}</button>
+        <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" onclick="toggleMonitor('${address}')"><svg class="icon"><use href="static/icons.svg#bell"/></svg> ${t('monitoring')}</button>
         <button class="monitor-btn" onclick="App.showQR('${address}')">📱 ${t('qrView')}</button>
       </div>
       <div class="page-hash" title="${address}">${address}</div>
@@ -1119,7 +1119,7 @@ async function renderAddress(app, address) {
         <div class="addr-stat stagger-item" style="--i:4"><div class="as-val">${formatNum(txCount)}</div><div class="as-lbl">${t('txCount')}</div></div>
       </div>
 
-      <div class="section-title"><span class="section-icon">📋</span> ${t('txHistory')}</div>
+      <div class="section-title"><svg class="icon"><use href="static/icons.svg#list"/></svg> ${t('txHistory')}</div>
       <div id="addr-txs">${skeletonTable(6)}</div>
       <div id="addr-txs-more"></div>
     `;
@@ -1222,7 +1222,7 @@ async function renderMining(app) {
         { href: '#/mining', label: t('miningStats') }
       ])}
 
-      <div class="page-title"><span class="section-icon">⛏️</span> ${t('miningStats')}</div>
+      <div class="page-title"><svg class="icon"><use href="static/icons.svg#pickaxe"/></svg> ${t('miningStats')}</div>
 
       <div class="mining-stats-row">
         <div class="ms-card stagger-item" style="--i:0"><div class="ms-val">${formatNum(recentBlocks[0]?.height)}</div><div class="ms-lbl">${t('blockHeight')}</div></div>
@@ -1233,11 +1233,11 @@ async function renderMining(app) {
 
       <div class="mining-grid">
         <div class="mining-card stagger-item" style="--i:4">
-          <h3><span class="section-icon">📈</span> ${t('hashrate')} (30${lang === 'ko' ? '일' : ' days'})</h3>
+          <h3><svg class="icon"><use href="static/icons.svg#trending-up"/></svg> ${t('hashrate')} (30${lang === 'ko' ? '일' : ' days'})</h3>
           <canvas id="hashrate-chart"></canvas>
         </div>
         <div class="mining-card stagger-item" style="--i:5">
-          <h3><span class="section-icon">🎯</span> ${t('diffAdj')}</h3>
+          <h3><svg class="icon"><use href="static/icons.svg#target"/></svg> ${t('diffAdj')}</h3>
           <div style="margin-bottom:8px;font-size:.75rem;color:var(--text2)">
             ${t('progress')}: ${diffProgress.toFixed(1)}% (${diffAdj.remainingBlocks || '?'} ${lang === 'ko' ? '블록 남음' : 'blocks left'})
           </div>
@@ -1255,14 +1255,14 @@ async function renderMining(app) {
       </div>
 
       <div class="mining-card stagger-item" style="--i:6;margin-bottom:20px">
-        <h3><span class="section-icon">🏆</span> ${t('topMiners')} (${t('blocks144')})</h3>
+        <h3><svg class="icon"><use href="static/icons.svg#trophy"/></svg> ${t('topMiners')} (${t('blocks144')})</h3>
         <table class="miners-table">
           <thead><tr><th>${t('miner')}</th><th>${lang === 'ko' ? '블록' : 'Blocks'}</th><th>%</th><th></th></tr></thead>
           <tbody>
             ${topMiners.slice(0, 15).map(([name, count], i) => {
               const pct = (count / recentBlocks.length * 100).toFixed(1);
               return `<tr class="stagger-item" style="--i:${i + 7}">
-                <td>⛏ ${escHtml(name)}</td>
+                <td>${escHtml(name)}</td>
                 <td>${count}</td>
                 <td>${pct}%</td>
                 <td><div class="miner-bar" style="width:${pct}%"></div></td>
@@ -1354,7 +1354,7 @@ function renderFeeCalcModal() {
   return `<div class="modal-overlay" id="fee-calc-modal" onclick="if(event.target===this)this.remove()">
     <div class="modal">
       <button class="modal-close" onclick="document.getElementById('fee-calc-modal').remove()">✕</button>
-      <h2>🧮 ${t('feeCalc')}</h2>
+      <h2>${t('feeCalc')}</h2>
       <label>TX ${t('type')}</label>
       <select id="fc-type" onchange="updateFeeCalc()">
         ${txTypes.map((tt, i) => `<option value="${i}">${tt.label} ${tt.vb ? '(~' + tt.vb + ' vB)' : ''}</option>`).join('')}
