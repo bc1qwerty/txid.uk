@@ -2403,6 +2403,33 @@ function renderNotFound(app, msg) {
 window.renderNotFound = renderNotFound;
 
 
+
+// ── 클립보드 복사 ──
+function copyToClip(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = '✓';
+      btn.style.color = 'var(--green)';
+      setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+    }
+    showToast('📋', lang==='ko'?'복사됨!':lang==='ja'?'コピー済み':'Copied!', null, 1500);
+  }).catch(() => {
+    // 폴백
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    if (btn) { const o=btn.textContent; btn.textContent='✓'; setTimeout(()=>btn.textContent=o, 1500); }
+  });
+}
+window.copyToClip = copyToClip;
+
+// ── QR 코드 표시 (전역 alias) ──
+function showQR(text, title) {
+  showQRModal(text, title);
+}
+window.showQR = showQR;
+
 // ── 공유 ──
 function shareUrl(url) {
   if (navigator.share) {
