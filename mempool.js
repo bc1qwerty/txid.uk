@@ -47,10 +47,11 @@ const MempoolViz = (() => {
   }
 
   function timeAgo(ts) {
+    const isKo = document.documentElement.lang !== 'en';
     const sec = Math.floor(Date.now() / 1000 - ts);
-    if (sec < 60) return sec + '초 전';
-    if (sec < 3600) return Math.floor(sec / 60) + '분 전';
-    return Math.floor(sec / 3600) + '시간 전';
+    if (sec < 60) return sec + (isKo ? '초 전' : 's ago');
+    if (sec < 3600) return Math.floor(sec / 60) + (isKo ? '분 전' : 'm ago');
+    return Math.floor(sec / 3600) + (isKo ? '시간 전' : 'h ago');
   }
 
   // ── 레이아웃 계산 ─────────────────────────
@@ -274,7 +275,8 @@ const MempoolViz = (() => {
       if (mempoolBlockCount > 1) {
         ctx.font = '7.5px "Space Mono", monospace'; ctx.textAlign = 'right';
         ctx.fillStyle = '#556';
-        ctx.fillText('+' + (mempoolBlockCount - 1) + ' 대기', x + bw - 2, 13);
+        const isKo2 = document.documentElement.lang !== 'en';
+        ctx.fillText('+' + (mempoolBlockCount - 1) + (isKo2 ? ' 대기' : ' pending'), x + bw - 2, 13);
       }
 
       // 하단: TX수 / vsize / 수수료
@@ -320,7 +322,8 @@ const MempoolViz = (() => {
     const wsOk = ws && ws.readyState === WebSocket.OPEN;
     ctx.font = '7px "Space Mono", monospace'; ctx.textAlign = 'right';
     ctx.fillStyle = wsOk ? '#238636' : '#6e3030';
-    ctx.fillText(wsOk ? '● LIVE' : '○ 연결 중…', W - PAD, 13);
+    const isKo3 = document.documentElement.lang !== 'en';
+    ctx.fillText(wsOk ? '● LIVE' : (isKo3 ? '○ 연결 중…' : '○ connecting…'), W - PAD, 13);
 
     animId = requestAnimationFrame(animate);
   }
@@ -352,8 +355,7 @@ const MempoolViz = (() => {
   }
 
   function showNextBlockInfo() {
-    const lang = document.documentElement.lang || 'ko';
-    const isKo = lang !== 'en';
+    const isKo = document.documentElement.lang !== 'en';
     const mb = mempoolBlocks[0];
     const nTx = mb && mb.nTx ? mb.nTx.toLocaleString() : '—';
     const vsize = mb && mb.vsize ? Math.round(mb.vsize / 1000) + ' kvB' : '—';
@@ -391,7 +393,7 @@ const MempoolViz = (() => {
           </ul>
         </div>
         <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
-          <div style="font-size:.75rem;color:var(--text2);margin-bottom:6px;font-family:var(--font-ko)">${isKo ? '수수료 분포 (현재 멤풀)' : 'Fee Distribution (Current Mempool)'}</div>
+          <div style="font-size:.75rem;color:var(--text2);margin-bottom:6px;font-family:var(--font-ko)">${isKo ? '수수료 분포 (현재 멤풀)' : 'Fee Distribution (Mempool)'}</div>
           <canvas id="modal-fee-chart" style="width:100%;height:100px;display:block"></canvas>
         </div>
       </div>`;

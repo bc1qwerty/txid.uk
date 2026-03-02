@@ -363,8 +363,8 @@ async function onNewBlock(block) {
 
     // 토스트 알림
     showToast(
-      `새 블록 #${formatNum(nb.height)}`,
-      `${pool} | ${formatNum(nb.tx_count)} TX | ${(fees / 1e8).toFixed(4)} BTC 수수료`,
+      lang === 'ko' ? `새 블록 #${formatNum(nb.height)}` : `New Block #${formatNum(nb.height)}`,
+      `${pool} | ${formatNum(nb.tx_count)} TX | ${(fees / 1e8).toFixed(4)} BTC ${lang==='ko'?'수수료':'fees'}`,
       () => navigate('#/block/' + nb.id)
     );
 
@@ -1473,6 +1473,7 @@ window.App = {
 
   toggleLang() {
     lang = lang === 'ko' ? 'en' : 'ko';
+    document.documentElement.lang = lang;  // mempool.js가 감지
     document.getElementById('lang-btn').textContent = lang === 'ko' ? 'EN' : 'KO';
     document.getElementById('search-input').placeholder = t('search_ph');
     document.getElementById('tagline').textContent = t('tagline');
@@ -1545,7 +1546,7 @@ function updateThemeBtn() {
   if (!btn) return;
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
   btn.innerHTML = isDark ? icon('sun') : icon('moon');
-  btn.title = isDark ? '라이트 모드로 전환' : '다크 모드로 전환';
+  btn.title = isDark ? (lang==='ko'?'라이트 모드로 전환':'Switch to Light Mode') : (lang==='ko'?'다크 모드로 전환':'Switch to Dark Mode');
 }
 (function initTheme() {
   const saved = localStorage.getItem('theme') || 'dark';
