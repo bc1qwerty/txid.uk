@@ -179,7 +179,7 @@ function btcWithKrw(sat) {
   const btc = sat / 1e8;
   const krw = btc * window._btcKrw;
   const krwStr = krw >= 1e8 ? (krw/1e8).toFixed(2)+'억' : krw >= 1e4 ? Math.round(krw/1e4)+'만' : Math.round(krw).toLocaleString();
-  return formatBtc(sat) + ` BTC <small style="color:var(--text3);font-size:.72em">≈ ₩${krwStr}</small>`;
+  return formatBtc(sat) + ` BTC <small style="color:var(--text3);font-size:.72em;font-family:var(--font-ko)">≈ ${krwStr}원</small>`;
 }
 
 function formatBtc(sat) { return satToBtc(sat) + ' BTC'; }
@@ -497,7 +497,7 @@ async function updateStats() {
         window._btcKrw = price;
         const change = upbit[0].signed_change_rate * 100;
         const priceStr = price >= 1e8 ? (price/1e8).toFixed(2)+'억' : Math.round(price/1e4)+'만';
-        flashStat('s-krw', '₩'+priceStr);
+        flashStat('s-krw', priceStr+'원');
         const krwCh = document.getElementById('s-krw-change');
         if (krwCh) { krwCh.textContent = (change>=0?'+':'')+change.toFixed(2)+'%'; krwCh.className='stat-change '+(change>=0?'up':'down'); }
       }
