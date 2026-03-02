@@ -877,6 +877,8 @@ async function loadBtcPriceChart() {
     const container = document.getElementById('price-chart');
     if (!container) return;
     container.innerHTML = '';
+    // DOM 렌더링 후 width 읽기
+    await new Promise(r => setTimeout(r, 50));
 
     const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
     const bg = isDark ? '#0d1117' : '#ffffff';
@@ -886,7 +888,7 @@ async function loadBtcPriceChart() {
     // Lightweight Charts 사용 가능 여부 확인
     if (typeof LightweightCharts !== 'undefined') {
       const chart = LightweightCharts.createChart(container, {
-        width: container.clientWidth,
+        width: container.clientWidth || container.parentElement?.clientWidth || 400,
         height: 200,
         layout: { background: { color: bg }, textColor },
         grid: { vertLines: { color: borderColor }, horzLines: { color: borderColor } },
