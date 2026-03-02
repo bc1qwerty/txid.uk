@@ -119,6 +119,8 @@ const MempoolViz = (() => {
       if (!mempoolBlocks[i]) continue;
       mempoolBlocks[i].medianFee = pd.medianFee;
       mempoolBlocks[i].feeRange = pd.feeRange;
+      mempoolBlocks[i].nTx = pd.nTx || 0;
+      mempoolBlocks[i].vsize = pd.blockVSize || 0;
       const fillRatio = Math.min((pd.blockVSize || 0) / 1_000_000, 1);
       const target = Math.round(layout.maxTx * fillRatio);
       if (mempoolBlocks[i].txs.length > target) {
@@ -227,32 +229,32 @@ const MempoolViz = (() => {
       drawBlock(x, y, bw, bh, d?.pixels, maxTx, false);
 
       // 상단: 높이
-      ctx.font = 'bold 9px "Space Mono", monospace';
+      ctx.font = 'bold 10px "Space Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillStyle = d ? '#f7931a' : '#333';
-      ctx.fillText(d ? '#' + d.height.toLocaleString() : '···', x + bw / 2, 12);
+      ctx.fillStyle = d ? '#e6943a' : '#333';
+      ctx.fillText(d ? '#' + d.height.toLocaleString() : '···', x + bw / 2, 13);
 
       // 하단: TX수 / 채굴자 / 경과시간
       if (d) {
         const by = y + bh;
-        ctx.font = '7.5px "Space Mono", monospace';
-        ctx.fillStyle = '#6e7681';
+        ctx.font = '8px "Space Mono", monospace';
+        ctx.fillStyle = '#8b949e';
         ctx.fillText(d.txCount.toLocaleString() + ' TX', x + bw / 2, by + 10);
         if (d.miner) {
-          const mn = d.miner.length > 9 ? d.miner.slice(0,9)+'…' : d.miner;
-          ctx.font = '7px "Space Mono", monospace'; ctx.fillStyle = '#3a4455';
-          ctx.fillText(mn, x + bw / 2, by + 18);
+          const mn = d.miner.length > 10 ? d.miner.slice(0,10)+'…' : d.miner;
+          ctx.font = '7.5px "Space Mono", monospace'; ctx.fillStyle = '#4a5568';
+          ctx.fillText(mn, x + bw / 2, by + 19);
         }
         if (d.timestamp) {
-          ctx.font = '6.5px "Space Mono", monospace'; ctx.fillStyle = '#2a3040';
-          ctx.fillText(timeAgo(d.timestamp), x + bw / 2, by + 26);
+          ctx.font = '7px "Space Mono", monospace'; ctx.fillStyle = '#3a4555';
+          ctx.fillText(timeAgo(d.timestamp), x + bw / 2, by + 27);
         }
       }
     }
 
     // ── 구분선 ──
     const divX = xs[CONFIRMED_COUNT] - GAP - DIVIDER_W;
-    ctx.fillStyle = '#21262d';
+    ctx.fillStyle = '#30363d';
     ctx.fillRect(divX, LABEL_TOP - 4, DIVIDER_W, bh + 8);
 
     // ── 멤풀 블록 (NEXT 1개) ──
@@ -262,27 +264,35 @@ const MempoolViz = (() => {
       drawBlock(x, y, bw, bh, mb?.txs, maxTx, true, 0);
 
       // 상단: NEXT + 대기 블록 수
-      ctx.font = 'bold 9px "Space Mono", monospace'; ctx.textAlign = 'center';
+      ctx.font = 'bold 10px "Space Mono", monospace'; ctx.textAlign = 'center';
       ctx.fillStyle = '#f7931a';
-      ctx.fillText('NEXT', x + bw / 2, 12);
+      ctx.fillText('NEXT', x + bw / 2, 13);
 
-      // 대기 블록 수 (오른쪽 상단)
+      // 대기 블록 수
       if (window._mempoolBlockCount > 1) {
-        ctx.font = '7px "Space Mono", monospace'; ctx.textAlign = 'right';
-        ctx.fillStyle = '#445';
-        ctx.fillText('+' + (window._mempoolBlockCount - 1) + ' 대기', x + bw - 2, 12);
+        ctx.font = '7.5px "Space Mono", monospace'; ctx.textAlign = 'right';
+        ctx.fillStyle = '#556';
+        ctx.fillText('+' + (window._mempoolBlockCount - 1) + ' 대기', x + bw - 2, 13);
       }
 
-      // 하단: 채움률 / 수수료
+      // 하단: TX수 / vsize / 수수료
       if (mb) {
-        const pct = Math.round((mb.txs.length / mb.maxTx) * 100);
         const by = y + bh;
+        // TX 수 (실제 API nTx)
         ctx.font = '8px "Space Mono", monospace'; ctx.textAlign = 'center';
-        ctx.fillStyle = pct >= 99 ? '#ff8800' : '#f7931a';
-        ctx.fillText(pct >= 99 ? 'FULL' : pct + '%', x + bw / 2, by + 10);
+        ctx.fillStyle = '#f7931a';
+        const txLabel = mb.nTx ? mb.nTx.toLocaleString() + ' TX' : (mb.txs.length > 0 ? mb.txs.length + ' TX' : '—');
+        ctx.fillText(txLabel, x + bw / 2, by + 10);
+        // vsize (블록 크기)
+        if (mb.vsize) {
+          ctx.font = '7px "Space Mono", monospace'; ctx.fillStyle = '#445';
+          const vs = mb.vsize >= 1000 ? Math.round(mb.vsize / 1000) + ' kvB' : mb.vsize + ' vB';
+          ctx.fillText(vs, x + bw / 2, by + 19);
+        }
+        // 수수료율 (중간값)
         if (mb.medianFee) {
-          ctx.font = '7px "Space Mono", monospace'; ctx.fillStyle = '#2a3040';
-          ctx.fillText('~' + Math.round(mb.medianFee) + ' s/vB', x + bw / 2, by + 19);
+          ctx.font = '7px "Space Mono", monospace'; ctx.fillStyle = '#2a3545';
+          ctx.fillText('~' + mb.medianFee.toFixed(1) + ' sat/vB', x + bw / 2, by + 27);
         }
       }
     }
@@ -307,8 +317,8 @@ const MempoolViz = (() => {
     // WS 상태
     const wsOk = ws && ws.readyState === WebSocket.OPEN;
     ctx.font = '7px "Space Mono", monospace'; ctx.textAlign = 'right';
-    ctx.fillStyle = wsOk ? '#1a4a2a' : '#4a1a1a';
-    ctx.fillText(wsOk ? '● LIVE' : '○ …', W - PAD, 12);
+    ctx.fillStyle = wsOk ? '#238636' : '#6e3030';
+    ctx.fillText(wsOk ? '● LIVE' : '○ 연결 중…', W - PAD, 13);
 
     animId = requestAnimationFrame(animate);
   }
