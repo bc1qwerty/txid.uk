@@ -265,15 +265,21 @@ nav {
 #lang-btn, #theme-btn {
   background: none;
   border: 1px solid var(--border);
-  color: var(--text3);
+  color: var(--text2);
   font-family: var(--font-ko);
   font-size: .72rem;
-  padding: 4px 10px;
-  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all .2s;
-  line-height: 1.4;
+  transition: border-color .2s, color .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
+#lang-btn { width: auto; min-width: 32px; padding: 0 8px; }
 #lang-btn:hover, #theme-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ── Stats Bar ── */
@@ -1071,11 +1077,11 @@ footer {
 /* Pretendard: 한글 UI, 레이블, 버튼, 본문 */
 .stat-lbl, .section-title, .info-label,
 .block-card .bc-row, .bc-miner, .bc-time,
-#nav-links a, #lang-btn, .page-title,
+#nav-links a, #lang-btn, #theme-btn, .page-title,
 .badge, footer, .loading, .error-box,
-h1, h2, h3, h4, button:not(#search-btn),
+h1, h2, h3, h4, button, select,
 .mining-card h3, .addr-stat .as-lbl,
-.ms-card .ms-lbl {
+.ms-card .ms-lbl, .mempool-hint, .search-hint {
   font-family: var(--font-ko);
 }
 
@@ -1493,20 +1499,10 @@ h1, h2, h3, h4, button:not(#search-btn),
 
 /* ── 언어 선택 ── */
 #lang-btn {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text2);
-  font-family: var(--font);
-  font-size: .75rem;
-  padding: 3px 6px;
-  cursor: pointer;
-  outline: none;
-  transition: border-color .2s, color .2s;
   appearance: none;
   -webkit-appearance: none;
+  outline: none;
   text-align: center;
-  min-width: 38px;
 }
-#lang-btn:hover, #lang-btn:focus { border-color: var(--accent); color: var(--accent); }
+#lang-btn:focus { border-color: var(--accent); color: var(--accent); }
 [data-theme="light"] #lang-btn { background: var(--bg2); }
