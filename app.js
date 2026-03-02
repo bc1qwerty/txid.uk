@@ -507,13 +507,15 @@ async function updateStats() {
       }
     } catch {}
 
-    // 멤풀 TPS
+    // 멤풀 TPS (vbytes_per_second 기반)
     try {
-      const recent = await api('/mempool/recent');
-      if (Array.isArray(recent) && recent.length) {
-        const now = Math.floor(Date.now()/1000);
-        const oneMin = recent.filter(tx => now - (tx.firstSeen||0) < 60).length;
-        flashStat('s-tps', (oneMin/60).toFixed(1) + ' tx/s');
+      const stats = await fetch('https://mempool.space/api/v1/statistics/2h').then(r=>r.json());
+      if (Array.isArray(stats) && stats.length) {
+        const latest = stats[stats.length - 1];
+        const vbps = latest.vbytes_per_second || 0;
+        // 평균 트랜잭션 vsize ~250vB
+        const tps = vbps / 250;
+        flashStat('s-tps', tps.toFixed(1) + ' tx/s');
       }
     } catch {}
 
