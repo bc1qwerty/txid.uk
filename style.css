@@ -1828,9 +1828,10 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   background: none; border: none; color: var(--text2);
   font-family: var(--font-ko); font-size: .8rem; padding: 6px 12px;
   border-radius: 4px; cursor: pointer; transition: all .2s;
-  white-space: nowrap;
+  white-space: nowrap; display: flex; align-items: center; gap: 3px;
 }
 .tools-dropdown-btn:hover { background: var(--bg3); color: var(--text1); }
+.tools-dropdown:hover .tools-dropdown-btn { background: var(--bg3); color: var(--text1); }
 .tools-dropdown-menu {
   display: none; position: absolute; top: calc(100% + 6px); right: 0;
   background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
