@@ -282,7 +282,7 @@ nav {
   letter-spacing: .02em;
 }
 #theme-btn { width: 30px; padding: 0; }
-#theme-btn svg { display: block; width: 14px; height: 14px; stroke: currentColor; flex-shrink: 0; }
+#theme-btn svg { display: block; stroke: currentColor; flex-shrink: 0; }
 #lang-btn:hover, #theme-btn:hover,
 #lang-btn:focus, #theme-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
 
