@@ -592,6 +592,7 @@ function breadcrumb(items) {
 // HOME PAGE
 // ═══════════════════════════════════════════
 async function renderHome(app) {
+  document.title = 'txid.uk | Bitcoin Block Explorer';
   app.innerHTML = '';
 
   // 멤풀 섹션
@@ -939,6 +940,7 @@ async function renderBlock(app, param) {
       block = await api('/block/' + param);
     }
 
+    document.title = `블록 #${formatNum(block.height)} | txid.uk`;
     const pool = block.extras?.pool?.name || 'Unknown';
     const totalFees = block.extras?.totalFees || 0;
     const reward = block.extras?.reward || 0;
@@ -1062,6 +1064,7 @@ async function renderTx(app, txid) {
 
   try {
     const tx = await api('/tx/' + txid);
+    document.title = `TX ${txid.slice(0,8)}… | txid.uk`;
     const isConfirmed = tx.status && tx.status.confirmed;
     const totalIn = tx.vin ? tx.vin.reduce((s, v) => s + (v.prevout ? v.prevout.value || 0 : 0), 0) : 0;
     const totalOut = tx.vout ? tx.vout.reduce((s, o) => s + (o.value || 0), 0) : 0;
@@ -1198,6 +1201,7 @@ async function renderAddress(app, address) {
 
   try {
     const info = await api('/address/' + address);
+    document.title = `${address.slice(0,12)}… | txid.uk`;
     const chain = info.chain_stats || {};
     const mempool = info.mempool_stats || {};
     const balance = (chain.funded_txo_sum - chain.spent_txo_sum) + (mempool.funded_txo_sum - mempool.spent_txo_sum);
@@ -1270,7 +1274,8 @@ async function loadAddrTxs(address, lastTxid) {
 
     const html = txs.map((tx, i) => {
       const totalOut = tx.vout ? tx.vout.reduce((s, o) => s + (o.value || 0), 0) : 0;
-      const isConfirmed = tx.status && tx.status.confirmed;
+      document.title = `TX ${txid.slice(0,8)}… | txid.uk`;
+    const isConfirmed = tx.status && tx.status.confirmed;
       return `<tr class="stagger-item" style="--i:${i}">
         <td class="txid-col"><a href="#/tx/${tx.txid}">${tx.txid.slice(0, 16)}...</a></td>
         <td><span class="badge ${isConfirmed ? 'badge-confirmed' : 'badge-unconfirmed'}" style="font-size:.6rem;padding:1px 5px">${isConfirmed ? formatNum(tx.status.block_height) : t('unconfirmed')}</span></td>
@@ -1316,6 +1321,7 @@ async function renderMining(app) {
   app.innerHTML = skeletonCards(6);
 
   try {
+    document.title = (lang==='ko'?'채굴 통계':lang==='ja'?'マイニング統計':'Mining Stats') + ' | txid.uk';
     const [hashrate, diffAdj, blocks] = await Promise.all([
       api('/v1/mining/hashrate/1m'),
       api('/v1/difficulty-adjustment'),
