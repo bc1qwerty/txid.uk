@@ -1,3 +1,26 @@
+
+// ── SVG 아이콘 인라인 헬퍼 ──────────────────
+const ICONS = {
+  'pickaxe': 'M14 10-8.5 8.5c-.83.83-.83 2.17 0 3 .83.83 2.17.83 3 0L17 13M15 11 9 5m1-3-4 4m11 2-4-4m1 0 1.5-1.5M11 13l-1.5 1.5',
+  'bar-chart': 'M18 20V10M12 20V4M6 20v-6',
+  'blocks': 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',
+  'trending-up': 'M22 7 13.5 15.5 8.5 10.5 2 17M16 7h6v6',
+  'target': 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12zM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z',
+  'trophy': 'M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2Z',
+  'star': 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
+  'zap': 'M13 2 3 14h9l-1 8 10-12h-9l1-8z',
+  'calculator': 'M4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM8 6h8M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01',
+  'list': 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
+  'bell': 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0',
+  'package': 'M16.5 9.4 7.5 4.2M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16zM3.3 7l8.7 5 8.7-5M12 22V12',
+  'sun': 'M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41M12 6a6 6 0 1 0 0 12A6 6 0 0 0 12 6z',
+  'moon': 'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z',
+};
+function icon(name, cls='') {
+  const d = ICONS[name];
+  if (!d) return '';
+  return `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}')}`;
+}
 /* ═══════════════════════════════════════════
    txid.uk — Bitcoin Block Explorer
    SPA Router + API + Page Rendering
@@ -253,7 +276,7 @@ function renderFavoritesSection() {
     </a>`;
   }).join('');
   return `<div class="fav-section" id="fav-section">
-    <div class="section-title"><svg class="icon"><use href="static/icons.svg#star"/></svg> ${t('favorites')}</div>
+    <div class="section-title">${icon('star')} ${t('favorites')}</div>
     <div class="fav-chips">${chips}</div>
   </div>`;
 }
@@ -541,20 +564,20 @@ async function renderHome(app) {
   // 수수료 히스토그램
   const feeSection = document.createElement('div');
   feeSection.id = 'fee-histogram';
-  feeSection.innerHTML = `<h3><svg class="icon"><use href="static/icons.svg#bar-chart"/></svg> ${t('feeDistribution')} <span style="font-size:.65rem;color:var(--text3);font-family:var(--font-ko)">현재 멤풀 기준</span></h3><canvas id="fee-chart"></canvas>`;
+  feeSection.innerHTML = `<h3>${icon('bar-chart')} ${t('feeDistribution')} <span style="font-size:.65rem;color:var(--text3);font-family:var(--font-ko)">현재 멤풀 기준</span></h3><canvas id="fee-chart"></canvas>`;
   app.appendChild(feeSection);
 
   // 최근 블록
   const blocksSection = document.createElement('div');
-  blocksSection.innerHTML = `<div class="section-title"><svg class="icon"><use href="static/icons.svg#pickaxe"/></svg> ${t('recentBlocks')}</div><div class="blocks-grid" id="recent-blocks">${skeletonCards(8)}</div>`;
+  blocksSection.innerHTML = `<div class="section-title">${icon('pickaxe')} ${t('recentBlocks')}</div><div class="blocks-grid" id="recent-blocks">${skeletonCards(8)}</div>`;
   app.appendChild(blocksSection);
 
   // Charts placeholder
   const chartsDiv = document.createElement('div');
   chartsDiv.id = 'home-charts';
   chartsDiv.innerHTML = `<div class="charts-grid">
-    <div class="chart-card"><h3><svg class="icon"><use href="static/icons.svg#trending-up"/></svg> ${t('btcPrice')} (${t('days30')})</h3><div id="price-info" class="chart-subtitle">${t('loading')}</div><canvas id="price-chart"></canvas></div>
-    <div class="chart-card"><h3><svg class="icon"><use href="static/icons.svg#package"/></svg> ${t('mempoolSizeHistory')}</h3><div class="chart-subtitle">&nbsp;</div><canvas id="mempool-history-chart"></canvas></div>
+    <div class="chart-card"><h3>${icon('trending-up')} ${t('btcPrice')} (${t('days30')})</h3><div id="price-info" class="chart-subtitle">${t('loading')}</div><canvas id="price-chart"></canvas></div>
+    <div class="chart-card"><h3>${icon('package')} ${t('mempoolSizeHistory')}</h3><div class="chart-subtitle">&nbsp;</div><canvas id="mempool-history-chart"></canvas></div>
   </div>`;
   app.appendChild(chartsDiv);
 
@@ -563,7 +586,7 @@ async function renderHome(app) {
   lnDiv.id = 'lightning-section';
   lnDiv.className = 'lightning-section';
   lnDiv.innerHTML = `<div class="lightning-header" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
-    <h3><svg class="icon"><use href="static/icons.svg#zap"/></svg> ${t('lightning')}</h3>
+    <h3>${icon('zap')} ${t('lightning')}</h3>
     <span class="toggle-icon">▼</span>
   </div>
   <div class="lightning-body">
@@ -889,7 +912,7 @@ async function renderBlock(app, param) {
         ${feeRangeHtml ? `<div class="info-item"><div class="info-label">${t('feeRate')} (min~max)</div><div class="info-value">${feeRangeHtml}</div></div>` : ''}
       </div>
 
-      <div class="section-title"><svg class="icon"><use href="static/icons.svg#list"/></svg> ${t('transactions')}</div>
+      <div class="section-title">${icon('list')} ${t('transactions')}</div>
       <div id="block-txs">${skeletonTable(6)}</div>
       <div id="block-txs-pagination"></div>
     `;
@@ -1106,7 +1129,7 @@ async function renderAddress(app, address) {
       <div class="page-actions">
         <div class="page-title">${t('address')}</div>
         ${favButton('address', address, favLabel)}
-        <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" onclick="toggleMonitor('${address}')"><svg class="icon"><use href="static/icons.svg#bell"/></svg> ${t('monitoring')}</button>
+        <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" onclick="toggleMonitor('${address}')">${icon('bell')} ${t('monitoring')}</button>
         <button class="monitor-btn" onclick="App.showQR('${address}')">📱 ${t('qrView')}</button>
       </div>
       <div class="page-hash" title="${address}">${address}</div>
@@ -1119,7 +1142,7 @@ async function renderAddress(app, address) {
         <div class="addr-stat stagger-item" style="--i:4"><div class="as-val">${formatNum(txCount)}</div><div class="as-lbl">${t('txCount')}</div></div>
       </div>
 
-      <div class="section-title"><svg class="icon"><use href="static/icons.svg#list"/></svg> ${t('txHistory')}</div>
+      <div class="section-title">${icon('list')} ${t('txHistory')}</div>
       <div id="addr-txs">${skeletonTable(6)}</div>
       <div id="addr-txs-more"></div>
     `;
@@ -1222,7 +1245,7 @@ async function renderMining(app) {
         { href: '#/mining', label: t('miningStats') }
       ])}
 
-      <div class="page-title"><svg class="icon"><use href="static/icons.svg#pickaxe"/></svg> ${t('miningStats')}</div>
+      <div class="page-title">${icon('pickaxe')} ${t('miningStats')}</div>
 
       <div class="mining-stats-row">
         <div class="ms-card stagger-item" style="--i:0"><div class="ms-val">${formatNum(recentBlocks[0]?.height)}</div><div class="ms-lbl">${t('blockHeight')}</div></div>
@@ -1233,11 +1256,11 @@ async function renderMining(app) {
 
       <div class="mining-grid">
         <div class="mining-card stagger-item" style="--i:4">
-          <h3><svg class="icon"><use href="static/icons.svg#trending-up"/></svg> ${t('hashrate')} (30${lang === 'ko' ? '일' : ' days'})</h3>
+          <h3>${icon('trending-up')} ${t('hashrate')} (30${lang === 'ko' ? '일' : ' days'})</h3>
           <canvas id="hashrate-chart"></canvas>
         </div>
         <div class="mining-card stagger-item" style="--i:5">
-          <h3><svg class="icon"><use href="static/icons.svg#target"/></svg> ${t('diffAdj')}</h3>
+          <h3>${icon('target')} ${t('diffAdj')}</h3>
           <div style="margin-bottom:8px;font-size:.75rem;color:var(--text2)">
             ${t('progress')}: ${diffProgress.toFixed(1)}% (${diffAdj.remainingBlocks || '?'} ${lang === 'ko' ? '블록 남음' : 'blocks left'})
           </div>
@@ -1255,7 +1278,7 @@ async function renderMining(app) {
       </div>
 
       <div class="mining-card stagger-item" style="--i:6;margin-bottom:20px">
-        <h3><svg class="icon"><use href="static/icons.svg#trophy"/></svg> ${t('topMiners')} (${t('blocks144')})</h3>
+        <h3>${icon('trophy')} ${t('topMiners')} (${t('blocks144')})</h3>
         <table class="miners-table">
           <thead><tr><th>${t('miner')}</th><th>${lang === 'ko' ? '블록' : 'Blocks'}</th><th>%</th><th></th></tr></thead>
           <tbody>
@@ -1439,6 +1462,15 @@ function showQRModal(address) {
 // APP (글로벌)
 // ═══════════════════════════════════════════
 window.App = {
+  toggleTheme() {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateThemeBtn();
+  },
+
   toggleLang() {
     lang = lang === 'ko' ? 'en' : 'ko';
     document.getElementById('lang-btn').textContent = lang === 'ko' ? 'EN' : 'KO';
@@ -1506,6 +1538,20 @@ window.App = {
     showQRModal(address);
   }
 };
+
+// 테마 초기화
+function updateThemeBtn() {
+  const btn = document.getElementById('theme-btn');
+  if (!btn) return;
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  btn.innerHTML = isDark ? icon('sun') : icon('moon');
+  btn.title = isDark ? '라이트 모드로 전환' : '다크 모드로 전환';
+}
+(function initTheme() {
+  const saved = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateThemeBtn();
+})();
 
 // Enter 키 검색
 document.getElementById('search-input').addEventListener('keydown', e => {

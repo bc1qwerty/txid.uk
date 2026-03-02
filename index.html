@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +38,8 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
         <a href="#/mining" data-page="mining" data-ko="채굴" data-en="Mining">채굴</a>
       </div>
       <span id="monitor-badge" class="monitor-badge" style="display:none" title="모니터링 중">0</span>
-      <button id="lang-btn" onclick="App.toggleLang()">EN</button>
+      <button id="theme-btn" onclick="App.toggleTheme()" title="테마 전환" style="background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--text2);font-size:14px;line-height:1"></button>
+    <button id="lang-btn" onclick="App.toggleLang()">EN</button>
     </div>
   </nav>
 </header>

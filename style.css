@@ -3,7 +3,7 @@
    Dark theme, responsive, monospace
    ═══════════════════════════════════════════ */
 
-:root {
+:root, [data-theme="dark"] {
   --bg: #0d1117;
   --bg2: #161b22;
   --bg3: #1c2128;
@@ -24,6 +24,25 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+
+[data-theme="light"] {
+  --bg: #f6f8fa;
+  --bg2: #ffffff;
+  --bg3: #eaeef2;
+  --border: #d0d7de;
+  --text1: #1f2328;
+  --text2: #656d76;
+  --text3: #8c959f;
+  --accent: #cf6b00;
+}
+[data-theme="light"] header { background: rgba(246,248,250,0.95); border-bottom-color: #d0d7de; }
+[data-theme="light"] #stats-bar { background: #ffffff; border-color: #d0d7de; }
+[data-theme="light"] .block-card { background: #ffffff; border-color: #d0d7de; }
+[data-theme="light"] .info-table tr:hover { background: #f0f3f6; }
+[data-theme="light"] .modal { background: #ffffff; }
+[data-theme="light"] .toast { background: #ffffff; border-color: #d0d7de; }
+[data-theme="light"] #mempool-canvas { filter: invert(0); }
 
 body {
   background: var(--bg);
