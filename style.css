@@ -1683,7 +1683,9 @@ body { transition: background .2s, color .2s; }
 
 /* ── 모바일 블록카드: 번호 강조, 덜 중요한 요소 축소 ── */
 @media (max-width: 600px) {
-  .block-card .bc-height { font-size: 1.4rem; }
+  .block-card .bc-top { flex-direction: column; gap: 2px; align-items: flex-start; }
+  .block-card .bc-height { font-size: 1.25rem; }
+  .block-card .bc-time { font-size: .68rem; }
   .block-card .bc-fee-range { display: none; }
   .block-card .bc-fee-bar { display: none; }
   .block-card { padding: 12px; }
