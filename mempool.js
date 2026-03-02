@@ -1,23 +1,23 @@
 /* ═══════════════════════════════════════════
    txid.uk — Mempool Canvas Visualization
-   7 blocks: 6 confirmed + 1 mempool
-   Colored pixels per TX, particles flying in
+   상단: 확인된 블록 6개
+   하단: 멤풀 대기 블록 애니메이션
    ═══════════════════════════════════════════ */
 
 const MempoolViz = (() => {
   let canvas, ctx;
   let animId = null;
-  let blocks = [];
+  let confirmedData = [];   // 확인된 블록 실제 데이터
+  let mempoolData = [];     // 멤풀 대기 블록 데이터
   let particles = [];
-  let mempoolFeeRange = null;
-  let lastConfirm = Date.now();
+  let mempoolBlocks = [];   // 하단 애니메이션용 블록 상태
   let initialized = false;
   let initRetries = 0;
+  let resizeObserver = null;
 
-  const CONFIRMED_COLS = 4;  // 확인된 블록 수
-  const MEMPOOL_COLS = 3;    // 멤풀 대기 블록 수
-  const COLS = CONFIRMED_COLS + MEMPOOL_COLS;
-  const PX = 4;
+  const CONFIRMED_COUNT = 6;
+  const MEMPOOL_ANIM_COUNT = 3;  // 하단 애니메이션 멤풀 블록 수
+  const PX = 3;
 
   // 수수료 → 색상
   function feeColor(sat) {
@@ -30,282 +30,361 @@ const MempoolViz = (() => {
     return '#445566';
   }
 
-  // 랜덤 수수료 (현실 분포 반영)
-  function randomFee(range) {
-    if (range && range.length >= 2) {
-      const min = range[0], max = range[range.length - 1];
-      return min + Math.random() * (max - min);
+  function randomFee(feeRange) {
+    if (feeRange && feeRange.length >= 2) {
+      const idx = Math.floor(Math.random() * (feeRange.length - 1));
+      return feeRange[idx] + Math.random() * (feeRange[idx+1] - feeRange[idx]);
     }
     const r = Math.random();
-    if (r < 0.5)  return 0.1 + Math.random() * 0.9;
-    if (r < 0.75) return 1 + Math.random() * 4;
+    if (r < 0.5)  return 0.5 + Math.random() * 0.5;
+    if (r < 0.75) return 1 + Math.random() * 3;
     if (r < 0.9)  return 5 + Math.random() * 15;
     return 20 + Math.random() * 80;
   }
 
-  function makeBlock(index, confirmed, txCount, feeRange, mempoolIdx = 0) {
-    const W = canvas.width;
-    const H = canvas.height;
-    const dpr = window.devicePixelRatio || 1;
-    const cssW = W / dpr;
-    const cssH = H / dpr;
-    const BLOCK_W = Math.min(110, Math.floor((cssW - 80) / COLS - 12));
-    const BLOCK_H = Math.min(160, cssH - 60);
-    const totalW = COLS * (BLOCK_W + 12);
-    const startX = (cssW - totalW) / 2 + 6;
-    const x = startX + index * (BLOCK_W + 12);
-    const y = (cssH - BLOCK_H) / 2;
-    const maxTx = Math.floor(BLOCK_W / PX) * Math.floor(BLOCK_H / PX);
-    const count = Math.min(txCount, maxTx);
-    const txs = [];
-    for (let i = 0; i < count; i++) txs.push(feeColor(randomFee(feeRange)));
-    return { index, x, y, w: BLOCK_W, h: BLOCK_H, txs, maxTx, confirmed, mempoolIdx, meta: null };
+  function timeAgo(ts) {
+    const sec = Math.floor(Date.now() / 1000 - ts);
+    if (sec < 60) return sec + '초 전';
+    if (sec < 3600) return Math.floor(sec / 60) + '분 전';
+    return Math.floor(sec / 3600) + '시간 전';
   }
 
-  function initBlocks() {
-    blocks = [];
-    // 멤풀 블록: 왼쪽부터 +3, +2, NEXT 순
-    for (let i = 0; i < MEMPOOL_COLS; i++) {
-      const mi = MEMPOOL_COLS - 1 - i;  // mempoolIdx: 2,1,0
-      blocks.push(makeBlock(i, false, 0, null, mi));
-    }
-    // 확인된 블록: NEXT 오른쪽에 최신→오래된 순
-    for (let i = 0; i < CONFIRMED_COLS; i++) {
-      blocks.push(makeBlock(MEMPOOL_COLS + i, true, 0, null));
-    }
-  }
+  // ── 상단: 확인된 블록 렌더 ──────────────────
+  function drawConfirmedSection(W, topH) {
+    const count = CONFIRMED_COUNT;
+    const PAD = 10;
+    const GAP = 8;
+    const bw = Math.floor((W - PAD * 2 - GAP * (count - 1)) / count);
+    const LABEL_TOP = 14;
+    const LABEL_BOT = 18;
+    const bh = topH - LABEL_TOP - LABEL_BOT - 4;
 
-  function drawBlock(b) {
-    // 배경
-    ctx.fillStyle = '#0d1117';
-    ctx.fillRect(b.x, b.y, b.w, b.h);
+    for (let i = 0; i < count; i++) {
+      const x = PAD + i * (bw + GAP);
+      const y = LABEL_TOP;
+      const d = confirmedData[i] || null;
 
-    // TX 픽셀 (아래에서 위로)
-    const cols = Math.floor(b.w / PX);
-    const rows = Math.floor(b.h / PX);
-    let i = 0;
-    for (let r = rows - 1; r >= 0 && i < b.txs.length; r--) {
-      for (let c = 0; c < cols && i < b.txs.length; c++, i++) {
-        ctx.fillStyle = b.txs[i];
-        ctx.globalAlpha = b.confirmed ? 0.55 : Math.max(0.3, 0.85 - b.mempoolIdx * 0.2);
-        ctx.fillRect(b.x + c * PX, b.y + r * PX, PX - 1, PX - 1);
+      // 블록 배경
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(x, y, bw, bh);
+
+      // 픽셀 (수수료 분포)
+      if (d && d.pixels && d.pixels.length) {
+        const cols = Math.floor(bw / PX);
+        const rows = Math.floor(bh / PX);
+        const maxPx = cols * rows;
+        const pixels = d.pixels.slice(0, maxPx);
+        let pi = 0;
+        for (let r = rows - 1; r >= 0 && pi < pixels.length; r--) {
+          for (let c = 0; c < cols && pi < pixels.length; c++, pi++) {
+            ctx.fillStyle = pixels[pi];
+            ctx.globalAlpha = 0.6;
+            ctx.fillRect(x + c * PX, y + r * PX, PX - 1, PX - 1);
+          }
+        }
+        ctx.globalAlpha = 1;
+      } else {
+        // 로딩 중 shimmer
+        ctx.fillStyle = '#1c2128';
+        ctx.globalAlpha = 0.5;
+        ctx.fillRect(x, y, bw, bh);
+        ctx.globalAlpha = 1;
       }
-    }
-    ctx.globalAlpha = 1;
 
-    // 테두리
-    if (b.confirmed) {
-      ctx.strokeStyle = '#1e2530';
+      // 테두리
+      ctx.strokeStyle = '#21262d';
       ctx.lineWidth = 1;
-    } else if (b.mempoolIdx === 0) {
-      ctx.strokeStyle = '#f7931a';
-      ctx.lineWidth = 2;
-    } else {
-      ctx.strokeStyle = `rgba(247,147,26,${Math.max(0.2, 0.6 - b.mempoolIdx * 0.15)})`;
-      ctx.lineWidth = 1;
-    }
-    ctx.strokeRect(b.x, b.y, b.w, b.h);
+      ctx.strokeRect(x, y, bw, bh);
 
-    // NEXT 블록 glow
-    if (!b.confirmed && b.mempoolIdx === 0) {
-      ctx.save();
-      ctx.shadowColor = '#f7931a';
-      ctx.shadowBlur = 8;
-      ctx.strokeStyle = 'rgba(247,147,26,0.4)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(b.x, b.y, b.w, b.h);
-      ctx.restore();
-    }
-
-    // 라벨
-    ctx.font = '10px monospace';
-    ctx.textAlign = 'center';
-    // 확인된 블록 상세 라벨
-    if (b.confirmed && b.meta) {
-      const m = b.meta;
-      // 블록 높이
-      ctx.font = 'bold 11px "Space Mono", monospace';
-      ctx.fillStyle = '#f7931a';
+      // 상단 라벨: 블록 높이
+      ctx.font = 'bold 9px "Space Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('#' + m.height, b.x + b.w / 2, b.y - 22);
-      // 채굴자
-      ctx.font = '9px "Space Mono", monospace';
-      ctx.fillStyle = '#8b949e';
-      const minerLabel = m.miner ? (m.miner.length > 11 ? m.miner.slice(0,11)+'…' : m.miner) : '';
-      ctx.fillText(minerLabel, b.x + b.w / 2, b.y - 12);
-      // 경과 시간
-      if (m.timestamp) {
-        const sec = Math.floor(Date.now() / 1000 - m.timestamp);
-        let ago;
-        if (sec < 60) ago = sec + '초 전';
-        else if (sec < 3600) ago = Math.floor(sec/60) + '분 전';
-        else ago = Math.floor(sec/3600) + '시간 전';
-        ctx.font = '9px "Space Mono", monospace';
-        ctx.fillStyle = '#555';
-        ctx.fillText(ago, b.x + b.w / 2, b.y - 2);
+      if (d) {
+        ctx.fillStyle = '#f7931a';
+        ctx.fillText('#' + d.height.toLocaleString(), x + bw / 2, 10);
+      } else {
+        ctx.fillStyle = '#333';
+        ctx.fillText('···', x + bw / 2, 10);
       }
-      // TX 수 (하단)
-      ctx.font = '9px "Space Mono", monospace';
-      ctx.fillStyle = '#6e7681';
-      ctx.fillText(m.txCount.toLocaleString() + ' TX', b.x + b.w / 2, b.y + b.h + 12);
-      // 수수료율
-      if (m.medianFee) {
-        ctx.fillStyle = '#445566';
-        ctx.fillText('~' + Math.round(m.medianFee) + ' sat/vB', b.x + b.w / 2, b.y + b.h + 23);
+
+      // 하단 라벨
+      const botY = y + bh + 11;
+      if (d) {
+        ctx.font = '8px "Space Mono", monospace';
+        ctx.fillStyle = '#6e7681';
+        ctx.fillText(d.txCount.toLocaleString() + ' TX', x + bw / 2, botY);
+
+        ctx.fillStyle = '#3a4050';
+        ctx.font = '7px "Space Mono", monospace';
+        const miner = d.miner ? (d.miner.length > 9 ? d.miner.slice(0,9)+'…' : d.miner) : '';
+        ctx.fillText(miner, x + bw / 2, botY + 8);
       }
-    } else if (b.confirmed) {
-      // 메타 없을 때 fallback
-      ctx.font = '9px "Space Mono", monospace';
+    }
+
+    // 구분선
+    ctx.strokeStyle = '#21262d';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, topH);
+    ctx.lineTo(W, topH);
+    ctx.stroke();
+
+    // 섹션 제목
+    ctx.font = '8px "Space Mono", monospace';
+    ctx.fillStyle = '#3a4050';
+    ctx.textAlign = 'left';
+    ctx.fillText('CONFIRMED BLOCKS', PAD, topH - 3);
+  }
+
+  // ── 하단: 멤풀 애니메이션 ───────────────────
+  function drawMempoolSection(W, topH, H) {
+    const botH = H - topH;
+    const count = MEMPOOL_ANIM_COUNT;
+    const PAD = 10;
+    const GAP = 12;
+    const ARROW_W = 30;
+    const bw = Math.floor((W - PAD * 2 - GAP * (count - 1) - ARROW_W) / count);
+    const LABEL_TOP = topH + 14;
+    const LABEL_BOT = 16;
+    const bh = botH - (LABEL_TOP - topH) - LABEL_BOT - 4;
+
+    // "MEMPOOL" 제목
+    ctx.font = '8px "Space Mono", monospace';
+    ctx.fillStyle = '#3a4050';
+    ctx.textAlign = 'left';
+    ctx.fillText('MEMPOOL', PAD, topH + 10);
+
+    // 경과시간 표시
+    if (confirmedData[0] && confirmedData[0].timestamp) {
+      ctx.font = '8px "Space Mono", monospace';
       ctx.fillStyle = '#2a3040';
-      ctx.textAlign = 'center';
-      const ago = CONFIRMED_COLS - 1 - b.index;
-      ctx.fillText('~' + ago + '블록 전', b.x + b.w / 2, b.y - 8);
+      ctx.textAlign = 'right';
+      ctx.fillText(timeAgo(confirmedData[0].timestamp), W - PAD, topH + 10);
     }
 
-    if (!b.confirmed) {
-      ctx.fillStyle = '#f7931a';
-      ctx.fillText('MEMPOOL', b.x + b.w / 2, b.y - 8);
-      const pct = Math.round((b.txs.length / b.maxTx) * 100);
-      ctx.fillStyle = '#6e7681';
-      ctx.fillText(pct + '%', b.x + b.w / 2, b.y + b.h + 14);
+    // 블록들: 왼쪽이 NEXT (가장 높은 수수료), 오른쪽이 +2, +3
+    for (let i = 0; i < count; i++) {
+      const x = PAD + i * (bw + GAP);
+      const y = LABEL_TOP;
+      const mb = mempoolBlocks[i];
+
+      // 배경
+      ctx.fillStyle = '#0a0e15';
+      ctx.fillRect(x, y, bw, bh);
+
+      // 픽셀
+      if (mb && mb.txs.length) {
+        const cols = Math.floor(bw / PX);
+        const rows = Math.floor(bh / PX);
+        let pi = 0;
+        for (let r = rows - 1; r >= 0 && pi < mb.txs.length; r--) {
+          for (let c = 0; c < cols && pi < mb.txs.length; c++, pi++) {
+            ctx.fillStyle = mb.txs[pi];
+            ctx.globalAlpha = i === 0 ? 0.85 : Math.max(0.3, 0.7 - i * 0.2);
+            ctx.fillRect(x + c * PX, y + r * PX, PX - 1, PX - 1);
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // 테두리
+      if (i === 0) {
+        ctx.strokeStyle = '#f7931a';
+        ctx.lineWidth = 1.5;
+        // glow
+        ctx.save();
+        ctx.shadowColor = '#f7931a';
+        ctx.shadowBlur = 6;
+        ctx.strokeRect(x, y, bw, bh);
+        ctx.restore();
+      } else {
+        ctx.strokeStyle = `rgba(247,147,26,${0.4 - i * 0.1})`;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, bw, bh);
+      }
+
+      // 상단 라벨
+      ctx.font = 'bold 9px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = i === 0 ? '#f7931a' : '#555';
+      ctx.fillText(i === 0 ? 'NEXT' : '+' + (i + 1), x + bw / 2, LABEL_TOP - 3);
+
+      // 하단: 채움률 + 수수료
+      const pct = mb ? Math.round((mb.txs.length / mb.maxTx) * 100) : 0;
+      const botY = y + bh + 11;
+      ctx.font = '8px "Space Mono", monospace';
+      ctx.fillStyle = i === 0 ? (pct >= 99 ? '#ff8800' : '#f7931a') : '#445';
+      ctx.fillText(pct >= 99 ? 'FULL' : pct + '%', x + bw / 2, botY);
+
+      if (mb && mb.medianFee) {
+        ctx.font = '7px "Space Mono", monospace';
+        ctx.fillStyle = '#333';
+        ctx.fillText('~' + Math.round(mb.medianFee) + ' s/vB', x + bw / 2, botY + 8);
+      }
     }
+
+    // 파티클 그리기
+    particles.forEach(p => p.draw());
   }
 
-  // TX 파티클 with glow
-  class Tx {
-    constructor() {
-      const mb = blocks[MEMPOOL_COLS - 1];  // NEXT 블록으로 날아옴
+  // ── 파티클 클래스 ───────────────────────────
+  class Particle {
+    constructor(topH, H, W) {
+      this.topH = topH;
+      const mb = mempoolBlocks[0];
       if (!mb) { this.alive = false; return; }
-      const dpr = window.devicePixelRatio || 1;
-      const cssW = canvas.width / dpr;
-      this.x = -Math.random() * 150 - 20;  // 왼쪽에서 날아옴
-      this.y = mb.y + Math.random() * mb.h;
-      this.tx = mb.x + Math.random() * mb.w;
-      this.ty = mb.y + Math.random() * mb.h;
-      this.fee = randomFee(mempoolFeeRange);
+
+      const PAD = 10, GAP = 12;
+      const bw = Math.floor((W - PAD * 2 - GAP * (MEMPOOL_ANIM_COUNT - 1) - 30) / MEMPOOL_ANIM_COUNT);
+      const LABEL_TOP = topH + 14;
+      const LABEL_BOT = 16;
+      const bh = (H - topH) - (LABEL_TOP - topH) - LABEL_BOT - 4;
+
+      this.tx = PAD + Math.random() * bw;
+      this.ty = LABEL_TOP + Math.random() * bh;
+
+      // 왼쪽 또는 위에서 날아옴
+      if (Math.random() < 0.7) {
+        this.x = -20 - Math.random() * 80;
+        this.y = LABEL_TOP + Math.random() * bh;
+      } else {
+        this.x = Math.random() * (bw * 0.8);
+        this.y = topH + 2;
+      }
+
+      this.fee = randomFee(mempoolData[0] ? mempoolData[0].feeRange : null);
       this.color = feeColor(this.fee);
-      this.speed = 2 + Math.random() * 2.5;
+      this.speed = 1.5 + Math.random() * 2;
       this.alive = true;
-      this.size = 3;
+      this.size = 2.5;
     }
+
     update() {
       const dx = this.tx - this.x, dy = this.ty - this.y;
       const d = Math.sqrt(dx * dx + dy * dy);
-      if (d < 4) { this.alive = false; return; }
+      if (d < 3) { this.alive = false; return; }
       this.x += (dx / d) * this.speed;
       this.y += (dy / d) * this.speed;
     }
+
     draw() {
       ctx.save();
       ctx.globalAlpha = 0.9;
       ctx.fillStyle = this.color;
       ctx.shadowColor = this.color;
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 8;
       ctx.fillRect(this.x - 1, this.y - 1, this.size, this.size);
-      // Second pass for brighter glow
-      ctx.globalAlpha = 0.5;
-      ctx.shadowBlur = 20;
-      ctx.fillRect(this.x, this.y, this.size - 1, this.size - 1);
       ctx.restore();
     }
   }
 
-  function confirmBlock() {
-    // 확인된 블록 오른쪽으로 shift (오래된 것은 오른쪽 끝에서 사라짐)
-    for (let i = MEMPOOL_COLS + CONFIRMED_COLS - 1; i > MEMPOOL_COLS; i--) {
-      blocks[i].txs = [...blocks[i - 1].txs];
-      blocks[i].meta = blocks[i - 1].meta ? {...blocks[i - 1].meta} : null;
-    }
-    // NEXT 블록(MEMPOOL_COLS-1) → 첫 확인 블록(MEMPOOL_COLS)으로
-    if (blocks[MEMPOOL_COLS] && blocks[MEMPOOL_COLS - 1]) {
-      blocks[MEMPOOL_COLS].txs = [...blocks[MEMPOOL_COLS - 1].txs];
-      blocks[MEMPOOL_COLS].meta = null;
-    }
-    // 멤풀 블록 오른쪽으로 shift (+3→+2→NEXT)
-    for (let i = MEMPOOL_COLS - 1; i > 0; i--) {
-      blocks[i].txs = [...blocks[i - 1].txs];
-      blocks[i].mempoolIdx = blocks[i - 1].mempoolIdx;
-    }
-    // 가장 왼쪽 멤풀 블록 비우기
-    blocks[0].txs = [];
-    blocks[0].mempoolIdx = MEMPOOL_COLS - 1;
-    lastConfirm = Date.now();
-  }
-
+  // ── 메인 애니메이션 루프 ─────────────────────
   function animate() {
     if (!canvas || !ctx) return;
     const dpr = window.devicePixelRatio || 1;
-    const cssW = canvas.width / dpr;
-    const cssH = canvas.height / dpr;
+    const W = canvas.width / dpr;
+    const H = canvas.height / dpr;
+    const topH = Math.floor(H * 0.52);  // 상단 52% = 확인된 블록
 
-    ctx.clearRect(0, 0, cssW, cssH);
+    ctx.clearRect(0, 0, W, H);
 
-    // 연결선
-    for (let i = 0; i < blocks.length - 1; i++) {
-      const a = blocks[i], b = blocks[i + 1];
-      ctx.strokeStyle = '#1a2030';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(a.x + a.w, a.y + a.h / 2);
-      ctx.lineTo(b.x, b.y + b.h / 2);
-      ctx.stroke();
-    }
+    // 배경
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(0, 0, W, H);
 
-    blocks.forEach(drawBlock);
+    drawConfirmedSection(W, topH);
+    drawMempoolSection(W, topH, H);
 
-    // 파티클
+    // 파티클 업데이트
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.update();
-      if (p.alive) {
-        p.draw();
-      } else {
-        const mb = blocks[MEMPOOL_COLS - 1];
+      if (!p.alive) {
+        // NEXT 블록에 추가
+        const mb = mempoolBlocks[0];
         if (mb && mb.txs.length < mb.maxTx) mb.txs.push(p.color);
         particles.splice(i, 1);
       }
     }
-    if (Math.random() < 0.35 && particles.length < 50) {
-      const p = new Tx();
+
+    // 새 파티클 생성
+    if (Math.random() < 0.3 && particles.length < 40) {
+      const p = new Particle(topH, H, W);
       if (p.alive) particles.push(p);
     }
-
-    // 블록 확인 시뮬레이션 (15초)
-    if (Date.now() - lastConfirm > 15000) confirmBlock();
 
     animId = requestAnimationFrame(animate);
   }
 
+  // ── 멤풀 블록 초기화 ─────────────────────────
+  function initMempoolBlocks() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.width / dpr;
+    const H = canvas.height / dpr;
+    const topH = Math.floor(H * 0.52);
+    const PAD = 10, GAP = 12;
+    const bw = Math.floor((W - PAD * 2 - GAP * (MEMPOOL_ANIM_COUNT - 1) - 30) / MEMPOOL_ANIM_COUNT);
+    const LABEL_TOP = topH + 14;
+    const LABEL_BOT = 16;
+    const bh = (H - topH) - (LABEL_TOP - topH) - LABEL_BOT - 4;
+    const maxTx = Math.floor(bw / PX) * Math.floor(bh / PX);
+
+    mempoolBlocks = [];
+    for (let i = 0; i < MEMPOOL_ANIM_COUNT; i++) {
+      mempoolBlocks.push({ txs: [], maxTx, medianFee: null });
+    }
+  }
+
+  // ── 캔버스 리사이즈 ──────────────────────────
   function resizeCanvas() {
     if (!canvas) return;
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-
-    // canvas가 아직 레이아웃되지 않은 경우 재시도
     if (rect.width === 0 || rect.height === 0) {
-      if (initRetries < 10) {
-        initRetries++;
-        requestAnimationFrame(resizeCanvas);
-      }
+      if (initRetries < 10) { initRetries++; requestAnimationFrame(resizeCanvas); }
       return;
     }
-
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    initBlocks();
+    initMempoolBlocks();
+    // 기존 데이터로 다시 채움
+    if (mempoolData.length) applyMempoolData();
     initRetries = 0;
   }
 
-  let resizeObserver = null;
+  function applyMempoolData() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.width / dpr;
+    const H = canvas.height / dpr;
+    const topH = Math.floor(H * 0.52);
+    const PAD = 10, GAP = 12;
+    const bw = Math.floor((W - PAD * 2 - GAP * (MEMPOOL_ANIM_COUNT - 1) - 30) / MEMPOOL_ANIM_COUNT);
+    const LABEL_TOP = topH + 14;
+    const LABEL_BOT = 16;
+    const bh = (H - topH) - (LABEL_TOP - topH) - LABEL_BOT - 4;
+    const maxTx = Math.floor(bw / PX) * Math.floor(bh / PX);
 
+    for (let i = 0; i < Math.min(mempoolData.length, MEMPOOL_ANIM_COUNT); i++) {
+      const md = mempoolData[i];
+      mempoolBlocks[i].maxTx = maxTx;
+      mempoolBlocks[i].medianFee = md.medianFee;
+      mempoolBlocks[i].txs = [];
+      const fillRatio = Math.min((md.blockVSize || 0) / 1_000_000, 1);
+      const nTx = Math.round(maxTx * fillRatio);
+      for (let j = 0; j < nTx; j++) {
+        mempoolBlocks[i].txs.push(feeColor(randomFee(md.feeRange)));
+      }
+    }
+  }
+
+  // ── PUBLIC API ───────────────────────────────
   return {
     init(canvasEl) {
       if (!canvasEl) return;
       canvas = canvasEl;
       ctx = canvas.getContext('2d');
       initRetries = 0;
-
       resizeCanvas();
 
       if (!initialized) {
@@ -315,87 +394,62 @@ const MempoolViz = (() => {
         initialized = true;
       }
 
-      // ResizeObserver for dynamic resizing
       if (resizeObserver) resizeObserver.disconnect();
       resizeObserver = new ResizeObserver(() => {
         if (canvas && canvas.isConnected) resizeCanvas();
       });
       resizeObserver.observe(canvas);
 
-      // 애니메이션 시작
       if (animId) cancelAnimationFrame(animId);
       animate();
     },
 
-    updateData(confirmedBlocks, mempoolBlocks) {
+    updateData(confirmed, mempool) {
       if (!canvas) return;
 
-      if (confirmedBlocks && confirmedBlocks.length) {
-        // confirmedBlocks[0] = 최신 블록 → 멤풀 바로 왼쪽(COLS-2)에 배치
-        for (let i = 0; i < Math.min(confirmedBlocks.length, COLS - 1); i++) {
-          const bi = MEMPOOL_COLS + i;  // 최신 확인 블록부터 오른쪽으로
-          if (!blocks[bi]) continue;
-          const cb = confirmedBlocks[i];
-          // 블록 메타 저장
-          blocks[bi].meta = {
+      // 확인된 블록 데이터 처리
+      if (confirmed && confirmed.length) {
+        confirmedData = confirmed.slice(0, CONFIRMED_COUNT).map(cb => {
+          const feeRange = cb.extras && cb.extras.feeRange ? cb.extras.feeRange : null;
+          const vsize = cb.extras && cb.extras.virtualSize ? cb.extras.virtualSize : 900000;
+          const fillRatio = Math.min(vsize / 1_000_000, 1);
+
+          // 픽셀 배열 미리 생성
+          const dpr = window.devicePixelRatio || 1;
+          const W = canvas.width / dpr;
+          const H = canvas.height / dpr;
+          const topH = Math.floor(H * 0.52);
+          const PAD = 10, GAP = 8;
+          const bw = Math.floor((W - PAD * 2 - GAP * (CONFIRMED_COUNT - 1)) / CONFIRMED_COUNT);
+          const bh = topH - 14 - 18 - 4;
+          const maxPx = Math.floor(bw / PX) * Math.floor(bh / PX);
+          const count = Math.round(maxPx * fillRatio);
+          const pixels = [];
+          for (let j = 0; j < count; j++) {
+            const percentiles = cb.extras && cb.extras.feePercentiles ? cb.extras.feePercentiles : feeRange;
+            pixels.push(feeColor(randomFee(percentiles)));
+          }
+
+          return {
             height: cb.height,
             txCount: cb.tx_count,
             miner: cb.extras && cb.extras.pool ? cb.extras.pool.name : null,
             medianFee: cb.extras ? (cb.extras.medianFee || cb.extras.avgFeeRate) : null,
-            totalFees: cb.extras ? cb.extras.totalFees : null,
             timestamp: cb.timestamp || null,
+            pixels,
           };
-          blocks[bi].txs = [];
-          const maxTx = blocks[bi].maxTx;
-          const feeRange = cb.extras && cb.extras.feeRange ? cb.extras.feeRange : null;
-          // 실제 블록 vsize 비율로 채움 (보통 ~95~100%)
-          const vsize = cb.extras && cb.extras.virtualSize ? cb.extras.virtualSize : 900000;
-          const fillRatio = Math.min(vsize / 1_000_000, 1);
-          const count = Math.round(maxTx * fillRatio);
-
-          if (feeRange && feeRange.length >= 2) {
-            // feePercentiles 있으면 더 정확한 분포 사용
-            const percentiles = cb.extras && cb.extras.feePercentiles ? cb.extras.feePercentiles : null;
-            const dist = percentiles || feeRange;
-            for (let j = 0; j < count; j++) {
-              // 분포 배열에서 균등 샘플링
-              const idx = Math.floor(Math.random() * (dist.length - 1));
-              const fee = dist[idx] + Math.random() * (dist[idx + 1] - dist[idx]);
-              blocks[bi].txs.push(feeColor(Math.max(0, fee)));
-            }
-          } else {
-            // fallback: medianFee 기반
-            const median = cb.extras && cb.extras.medianFee ? cb.extras.medianFee : 5;
-            for (let j = 0; j < count; j++) {
-              const fee = median * (0.5 + Math.random());
-              blocks[bi].txs.push(feeColor(fee));
-            }
-          }
-        }
+        });
       }
 
-      if (mempoolBlocks && mempoolBlocks.length) {
-        mempoolFeeRange = mempoolBlocks[0].feeRange;
-        for (let mi = 0; mi < Math.min(mempoolBlocks.length, MEMPOOL_COLS); mi++) {
-          const mb = blocks[MEMPOOL_COLS - 1 - mi];  // NEXT=오른쪽, +2=가운데, +3=왼쪽
-          if (!mb) continue;
-          const mblock = mempoolBlocks[mi];
-          mb.mempoolIdx = mi;
-          mb.txs = [];
-          const fillRatio = Math.min((mblock.blockVSize || 0) / 1_000_000, 1);
-          const nTx = Math.round(mb.maxTx * fillRatio);
-          for (let j = 0; j < nTx; j++) {
-            mb.txs.push(feeColor(randomFee(mblock.feeRange)));
-          }
-        }
+      // 멤풀 데이터 처리
+      if (mempool && mempool.length) {
+        mempoolData = mempool;
+        applyMempoolData();
       }
     },
 
     stop() {
-      if (animId) {
-        cancelAnimationFrame(animId);
-        animId = null;
-      }
+      if (animId) { cancelAnimationFrame(animId); animId = null; }
     }
   };
 })();
