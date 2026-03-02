@@ -36,13 +36,68 @@
   --text3: #8c959f;
   --accent: #cf6b00;
 }
+/* 라이트 테마 전체 오버라이드 */
+[data-theme="light"] body {
+  background: #f6f8fa;
+  background-image: none;
+  color: #1f2328;
+}
 [data-theme="light"] header { background: rgba(246,248,250,0.95); border-bottom-color: #d0d7de; }
 [data-theme="light"] #stats-bar { background: #ffffff; border-color: #d0d7de; }
-[data-theme="light"] .block-card { background: #ffffff; border-color: #d0d7de; }
+[data-theme="light"] .stat-val { color: #1f2328; }
+[data-theme="light"] .stat-lbl { color: #656d76; }
+[data-theme="light"] .block-card { background: #ffffff; border-color: #d0d7de; color: #1f2328; }
+[data-theme="light"] .block-card:hover { border-color: #cf6b00; background: #fff8f0; }
+[data-theme="light"] .bc-height { color: #cf6b00; }
+[data-theme="light"] .bc-time, [data-theme="light"] .bc-miner { color: #656d76; }
 [data-theme="light"] .info-table tr:hover { background: #f0f3f6; }
-[data-theme="light"] .modal { background: #ffffff; }
-[data-theme="light"] .toast { background: #ffffff; border-color: #d0d7de; }
-[data-theme="light"] #mempool-canvas { filter: invert(0); }
+[data-theme="light"] .info-label { color: #656d76; }
+[data-theme="light"] .info-value { color: #1f2328; }
+[data-theme="light"] .modal { background: #ffffff; border-color: #d0d7de; color: #1f2328; }
+[data-theme="light"] .ms-card { background: #f6f8fa; border-color: #d0d7de; }
+[data-theme="light"] .ms-val { color: #1f2328; }
+[data-theme="light"] .ms-lbl { color: #656d76; }
+[data-theme="light"] .toast { background: #ffffff; border-color: #d0d7de; color: #1f2328; }
+[data-theme="light"] .section-title { color: #1f2328; }
+[data-theme="light"] .page-title { color: #1f2328; }
+[data-theme="light"] .mining-card { background: #ffffff; border-color: #d0d7de; }
+[data-theme="light"] .mining-card h3 { color: #1f2328; }
+[data-theme="light"] .addr-stat { background: #ffffff; border-color: #d0d7de; }
+[data-theme="light"] .addr-stat .as-val { color: #1f2328; }
+[data-theme="light"] .addr-stat .as-lbl { color: #656d76; }
+[data-theme="light"] .tx-table th { background: #eaeef2; color: #1f2328; }
+[data-theme="light"] .tx-table td { color: #1f2328; border-color: #d0d7de; }
+[data-theme="light"] .tx-table tr:hover td { background: #f0f3f6; }
+[data-theme="light"] .fee-calc-table th { background: #eaeef2; color: #1f2328; }
+[data-theme="light"] .fee-calc-table td { color: #1f2328; border-color: #d0d7de; }
+[data-theme="light"] .mempool-info-body { background: #f6f8fa; }
+[data-theme="light"] .skeleton { background: linear-gradient(90deg, #eaeef2 25%, #f0f3f6 50%, #eaeef2 75%); background-size: 200% 100%; }
+[data-theme="light"] .fav-chip { background: #ffffff; border-color: #d0d7de; color: #1f2328; }
+[data-theme="light"] footer { background: #eaeef2; border-top-color: #d0d7de; color: #656d76; }
+[data-theme="light"] #footer-live { color: #656d76; }
+[data-theme="light"] #mempool-section { background: #ffffff; border-color: #d0d7de; }
+[data-theme="light"] #mempool-legend { background: #f6f8fa; }
+[data-theme="light"] .leg { color: #656d76; }
+[data-theme="light"] .mempool-hint { color: #8c959f; }
+[data-theme="light"] .mempool-info summary { background: #f6f8fa; color: #656d76; }
+[data-theme="light"] .error-box { background: #fff0f0; color: #c03030; }
+[data-theme="light"] .badge { background: #eaeef2; color: #1f2328; }
+[data-theme="light"] select, [data-theme="light"] input[type="number"],
+[data-theme="light"] input[type="text"] { background: #ffffff; border-color: #d0d7de; color: #1f2328; }
+[data-theme="light"] .miners-table th { background: #eaeef2; color: #1f2328; }
+[data-theme="light"] .miners-table td { color: #1f2328; border-color: #eaeef2; }
+[data-theme="light"] .diff-bar-wrap { background: #eaeef2; }
+[data-theme="light"] .tx-io-item { background: #f6f8fa; border-color: #d0d7de; }
+[data-theme="light"] .io-addr { color: #1f2328; }
+[data-theme="light"] .coinbase-item { background: #fff8f0; border-color: #f0d0a0; }
+[data-theme="light"] #nav-links a { color: #656d76; }
+[data-theme="light"] #nav-links a:hover, [data-theme="light"] #nav-links a.active { color: #cf6b00; }
+[data-theme="light"] .logo { color: #cf6b00; }
+[data-theme="light"] .chart-card { background: #ffffff; border-color: #d0d7de; }
+[data-theme="light"] .chart-card h3 { color: #1f2328; }
+[data-theme="light"] .ln-stat { background: #ffffff; border-color: #d0d7de; }
+[data-theme="light"] .ln-stat .ls-val { color: #1f2328; }
+[data-theme="light"] .ln-stat .ls-lbl { color: #656d76; }
 
 body {
   background: var(--bg);
