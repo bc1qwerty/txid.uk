@@ -64,11 +64,14 @@ const MempoolViz = (() => {
 
   function initBlocks() {
     blocks = [];
-    for (let i = 0; i < CONFIRMED_COLS; i++) {
-      blocks.push(makeBlock(i, true, 0, null));
-    }
+    // 멤풀 블록: 왼쪽부터 +3, +2, NEXT 순
     for (let i = 0; i < MEMPOOL_COLS; i++) {
-      blocks.push(makeBlock(CONFIRMED_COLS + i, false, 0, null, i));
+      const mi = MEMPOOL_COLS - 1 - i;  // mempoolIdx: 2,1,0
+      blocks.push(makeBlock(i, false, 0, null, mi));
+    }
+    // 확인된 블록: NEXT 오른쪽에 최신→오래된 순
+    for (let i = 0; i < CONFIRMED_COLS; i++) {
+      blocks.push(makeBlock(MEMPOOL_COLS + i, true, 0, null));
     }
   }
 
@@ -171,11 +174,11 @@ const MempoolViz = (() => {
   // TX 파티클 with glow
   class Tx {
     constructor() {
-      const mb = blocks[CONFIRMED_COLS];  // NEXT 블록으로 날아옴
+      const mb = blocks[MEMPOOL_COLS - 1];  // NEXT 블록으로 날아옴
       if (!mb) { this.alive = false; return; }
       const dpr = window.devicePixelRatio || 1;
       const cssW = canvas.width / dpr;
-      this.x = cssW + Math.random() * 150 + 20;
+      this.x = -Math.random() * 150 - 20;  // 왼쪽에서 날아옴
       this.y = mb.y + Math.random() * mb.h;
       this.tx = mb.x + Math.random() * mb.w;
       this.ty = mb.y + Math.random() * mb.h;
@@ -208,22 +211,24 @@ const MempoolViz = (() => {
   }
 
   function confirmBlock() {
-    // 확인된 블록 shift
-    for (let i = 0; i < CONFIRMED_COLS - 1; i++) {
-      blocks[i].txs = [...blocks[i + 1].txs];
+    // 확인된 블록 오른쪽으로 shift (오래된 것은 오른쪽 끝에서 사라짐)
+    for (let i = MEMPOOL_COLS + CONFIRMED_COLS - 1; i > MEMPOOL_COLS; i--) {
+      blocks[i].txs = [...blocks[i - 1].txs];
+      blocks[i].meta = blocks[i - 1].meta ? {...blocks[i - 1].meta} : null;
     }
-    // 첫 멤풀 블록 → 마지막 확인 블록으로
-    if (blocks[CONFIRMED_COLS - 1] && blocks[CONFIRMED_COLS]) {
-      blocks[CONFIRMED_COLS - 1].txs = [...blocks[CONFIRMED_COLS].txs];
+    // NEXT 블록(MEMPOOL_COLS-1) → 첫 확인 블록(MEMPOOL_COLS)으로
+    if (blocks[MEMPOOL_COLS] && blocks[MEMPOOL_COLS - 1]) {
+      blocks[MEMPOOL_COLS].txs = [...blocks[MEMPOOL_COLS - 1].txs];
+      blocks[MEMPOOL_COLS].meta = null;
     }
-    // 멤풀 블록 shift
-    for (let i = 0; i < MEMPOOL_COLS - 1; i++) {
-      const cur = blocks[CONFIRMED_COLS + i];
-      const next = blocks[CONFIRMED_COLS + i + 1];
-      if (cur && next) cur.txs = [...next.txs];
+    // 멤풀 블록 오른쪽으로 shift (+3→+2→NEXT)
+    for (let i = MEMPOOL_COLS - 1; i > 0; i--) {
+      blocks[i].txs = [...blocks[i - 1].txs];
+      blocks[i].mempoolIdx = blocks[i - 1].mempoolIdx;
     }
-    const lastMb = blocks[CONFIRMED_COLS + MEMPOOL_COLS - 1];
-    if (lastMb) lastMb.txs = lastMb.txs.slice(Math.floor(lastMb.txs.length * 0.4));
+    // 가장 왼쪽 멤풀 블록 비우기
+    blocks[0].txs = [];
+    blocks[0].mempoolIdx = MEMPOOL_COLS - 1;
     lastConfirm = Date.now();
   }
 
@@ -255,7 +260,7 @@ const MempoolViz = (() => {
       if (p.alive) {
         p.draw();
       } else {
-        const mb = blocks[CONFIRMED_COLS];
+        const mb = blocks[MEMPOOL_COLS - 1];
         if (mb && mb.txs.length < mb.maxTx) mb.txs.push(p.color);
         particles.splice(i, 1);
       }
@@ -328,7 +333,7 @@ const MempoolViz = (() => {
       if (confirmedBlocks && confirmedBlocks.length) {
         // confirmedBlocks[0] = 최신 블록 → 멤풀 바로 왼쪽(COLS-2)에 배치
         for (let i = 0; i < Math.min(confirmedBlocks.length, COLS - 1); i++) {
-          const bi = CONFIRMED_COLS - 1 - i;
+          const bi = MEMPOOL_COLS + i;  // 최신 확인 블록부터 오른쪽으로
           if (!blocks[bi]) continue;
           const cb = confirmedBlocks[i];
           // 블록 메타 저장
@@ -372,7 +377,7 @@ const MempoolViz = (() => {
       if (mempoolBlocks && mempoolBlocks.length) {
         mempoolFeeRange = mempoolBlocks[0].feeRange;
         for (let mi = 0; mi < Math.min(mempoolBlocks.length, MEMPOOL_COLS); mi++) {
-          const mb = blocks[CONFIRMED_COLS + mi];
+          const mb = blocks[MEMPOOL_COLS - 1 - mi];  // NEXT=오른쪽, +2=가운데, +3=왼쪽
           if (!mb) continue;
           const mblock = mempoolBlocks[mi];
           mb.mempoolIdx = mi;
