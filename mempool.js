@@ -266,7 +266,7 @@ const MempoolViz = (() => {
       // 상단: NEXT + 대기 블록 수
       ctx.font = 'bold 10px "Space Mono", monospace'; ctx.textAlign = 'center';
       ctx.fillStyle = '#f7931a';
-      ctx.fillText('NEXT', x + bw / 2, 13);
+      ctx.fillText('NEXT (예측)', x + bw / 2, 13);
 
       // 대기 블록 수
       if (window._mempoolBlockCount > 1) {

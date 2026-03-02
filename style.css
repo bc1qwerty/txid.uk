@@ -1385,3 +1385,39 @@ h1, h2, h3, h4, button:not(#search-btn),
 .section-title .icon, h3 .icon { width: 13px; height: 13px; }
 .page-title .icon { width: 16px; height: 16px; }
 .monitor-btn .icon { color: inherit; margin-right: 4px; }
+
+/* ── 멤풀 설명 패널 ── */
+.mempool-info {
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  font-family: var(--font-ko);
+}
+.mempool-info summary {
+  padding: 7px 12px;
+  font-size: .75rem;
+  color: var(--text2);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg2);
+}
+.mempool-info summary:hover { color: var(--text1); }
+.mempool-info summary::marker { display: none; }
+.mempool-info[open] summary { border-bottom: 1px solid var(--border); color: var(--accent); }
+.mempool-info-body {
+  padding: 10px 14px;
+  background: var(--bg);
+  font-size: .75rem;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.mempool-info-body p { margin: 0 0 8px; }
+.mempool-info-body strong { color: var(--text1); }
+.mempool-info-body em { color: var(--accent); font-style: normal; }
+.mempool-info-body ul { margin: 0; padding-left: 16px; }
+.mempool-info-body li { margin-bottom: 3px; }
