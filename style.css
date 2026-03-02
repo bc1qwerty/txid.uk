@@ -150,7 +150,7 @@ header {
   max-width: var(--max-w);
   margin: 0 auto;
   padding: 0 20px;
-  height: 44px;
+  height: 48px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -281,9 +281,9 @@ header {
   color: var(--text2);
   font-family: var(--font-ko);
   font-size: .72rem;
-  height: 30px;
+  height: 32px;
   padding: 0 10px;
-  border-radius: 7px;
+  border-radius: 6px;
   cursor: pointer;
   transition: border-color .2s, color .2s;
   display: inline-flex;
@@ -293,7 +293,7 @@ header {
   line-height: 1;
   letter-spacing: .02em;
 }
-#theme-btn, #fee-calc-header-btn, #converter-btn, .icon-btn { width: 30px; padding: 0; }
+#theme-btn, #fee-calc-header-btn, #converter-btn, .icon-btn { width: 32px; padding: 0; }
 #theme-btn svg, #fee-calc-header-btn svg, #converter-btn svg, .icon-btn svg { display: block; stroke: currentColor; flex-shrink: 0; }
 #lang-btn:hover, #theme-btn:hover, #fee-calc-header-btn:hover, #converter-btn:hover, .icon-btn:hover,
 #lang-btn:focus, #theme-btn:focus, #fee-calc-header-btn:focus, #converter-btn:focus, .icon-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
