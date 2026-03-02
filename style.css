@@ -384,9 +384,9 @@ footer {
   gap: 16px;
   font-size: .7rem;
   color: var(--text3);
-  font-family: var(--font);
+  font-family: var(--font-ko);
 }
-.footer-live span { color: var(--accent); font-weight: 600; }
+.footer-live span { color: var(--accent); font-weight: 600; font-family: var(--font); }
 .footer-links {
   display: flex;
   gap: 16px;
