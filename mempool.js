@@ -14,7 +14,9 @@ const MempoolViz = (() => {
   let initialized = false;
   let initRetries = 0;
 
-  const COLS = 7;
+  const CONFIRMED_COLS = 4;  // 확인된 블록 수
+  const MEMPOOL_COLS = 3;    // 멤풀 대기 블록 수
+  const COLS = CONFIRMED_COLS + MEMPOOL_COLS;
   const PX = 4;
 
   // 수수료 → 색상
@@ -41,7 +43,7 @@ const MempoolViz = (() => {
     return 20 + Math.random() * 80;
   }
 
-  function makeBlock(index, confirmed, txCount, feeRange) {
+  function makeBlock(index, confirmed, txCount, feeRange, mempoolIdx = 0) {
     const W = canvas.width;
     const H = canvas.height;
     const dpr = window.devicePixelRatio || 1;
@@ -57,17 +59,17 @@ const MempoolViz = (() => {
     const count = Math.min(txCount, maxTx);
     const txs = [];
     for (let i = 0; i < count; i++) txs.push(feeColor(randomFee(feeRange)));
-    return { index, x, y, w: BLOCK_W, h: BLOCK_H, txs, maxTx, confirmed };
+    return { index, x, y, w: BLOCK_W, h: BLOCK_H, txs, maxTx, confirmed, mempoolIdx };
   }
 
   function initBlocks() {
     blocks = [];
-    for (let i = 0; i < COLS - 1; i++) {
-      // 실제 API 데이터 오기 전: 확인된 블록은 절반만 채움 (로딩 상태 표시)
+    for (let i = 0; i < CONFIRMED_COLS; i++) {
       blocks.push(makeBlock(i, true, 0, null));
     }
-    // 멤풀 블록은 비워서 시작 → API 데이터로 채움
-    blocks.push(makeBlock(COLS - 1, false, 0, null));
+    for (let i = 0; i < MEMPOOL_COLS; i++) {
+      blocks.push(makeBlock(CONFIRMED_COLS + i, false, 0, null, i));
+    }
   }
 
   function drawBlock(b) {
@@ -82,19 +84,27 @@ const MempoolViz = (() => {
     for (let r = rows - 1; r >= 0 && i < b.txs.length; r--) {
       for (let c = 0; c < cols && i < b.txs.length; c++, i++) {
         ctx.fillStyle = b.txs[i];
-        ctx.globalAlpha = b.confirmed ? 0.55 : 0.85;
+        ctx.globalAlpha = b.confirmed ? 0.55 : Math.max(0.3, 0.85 - b.mempoolIdx * 0.2);
         ctx.fillRect(b.x + c * PX, b.y + r * PX, PX - 1, PX - 1);
       }
     }
     ctx.globalAlpha = 1;
 
     // 테두리
-    ctx.strokeStyle = b.confirmed ? '#1e2530' : '#f7931a';
-    ctx.lineWidth = b.confirmed ? 1 : 2;
+    if (b.confirmed) {
+      ctx.strokeStyle = '#1e2530';
+      ctx.lineWidth = 1;
+    } else if (b.mempoolIdx === 0) {
+      ctx.strokeStyle = '#f7931a';
+      ctx.lineWidth = 2;
+    } else {
+      ctx.strokeStyle = `rgba(247,147,26,${Math.max(0.2, 0.6 - b.mempoolIdx * 0.15)})`;
+      ctx.lineWidth = 1;
+    }
     ctx.strokeRect(b.x, b.y, b.w, b.h);
 
-    // 멤풀 블록 glow effect
-    if (!b.confirmed) {
+    // NEXT 블록 glow
+    if (!b.confirmed && b.mempoolIdx === 0) {
       ctx.save();
       ctx.shadowColor = '#f7931a';
       ctx.shadowBlur = 8;
@@ -123,11 +133,11 @@ const MempoolViz = (() => {
   // TX 파티클 with glow
   class Tx {
     constructor() {
-      const mb = blocks[COLS - 1];
+      const mb = blocks[CONFIRMED_COLS];  // NEXT 블록으로 날아옴
       if (!mb) { this.alive = false; return; }
       const dpr = window.devicePixelRatio || 1;
       const cssW = canvas.width / dpr;
-      this.x = cssW + Math.random() * 200 + 30;
+      this.x = cssW + Math.random() * 150 + 20;
       this.y = mb.y + Math.random() * mb.h;
       this.tx = mb.x + Math.random() * mb.w;
       this.ty = mb.y + Math.random() * mb.h;
@@ -160,14 +170,22 @@ const MempoolViz = (() => {
   }
 
   function confirmBlock() {
-    for (let i = 0; i < COLS - 2; i++) {
+    // 확인된 블록 shift
+    for (let i = 0; i < CONFIRMED_COLS - 1; i++) {
       blocks[i].txs = [...blocks[i + 1].txs];
     }
-    if (blocks[COLS - 2] && blocks[COLS - 1]) {
-      blocks[COLS - 2].txs = blocks[COLS - 1].txs.slice(0, Math.floor(blocks[COLS - 1].txs.length * 0.6));
+    // 첫 멤풀 블록 → 마지막 확인 블록으로
+    if (blocks[CONFIRMED_COLS - 1] && blocks[CONFIRMED_COLS]) {
+      blocks[CONFIRMED_COLS - 1].txs = [...blocks[CONFIRMED_COLS].txs];
     }
-    const mb = blocks[COLS - 1];
-    if (mb) mb.txs = mb.txs.slice(Math.floor(mb.txs.length * 0.4));
+    // 멤풀 블록 shift
+    for (let i = 0; i < MEMPOOL_COLS - 1; i++) {
+      const cur = blocks[CONFIRMED_COLS + i];
+      const next = blocks[CONFIRMED_COLS + i + 1];
+      if (cur && next) cur.txs = [...next.txs];
+    }
+    const lastMb = blocks[CONFIRMED_COLS + MEMPOOL_COLS - 1];
+    if (lastMb) lastMb.txs = lastMb.txs.slice(Math.floor(lastMb.txs.length * 0.4));
     lastConfirm = Date.now();
   }
 
@@ -199,7 +217,7 @@ const MempoolViz = (() => {
       if (p.alive) {
         p.draw();
       } else {
-        const mb = blocks[COLS - 1];
+        const mb = blocks[CONFIRMED_COLS];
         if (mb && mb.txs.length < mb.maxTx) mb.txs.push(p.color);
         particles.splice(i, 1);
       }
@@ -272,7 +290,7 @@ const MempoolViz = (() => {
       if (confirmedBlocks && confirmedBlocks.length) {
         // confirmedBlocks[0] = 최신 블록 → 멤풀 바로 왼쪽(COLS-2)에 배치
         for (let i = 0; i < Math.min(confirmedBlocks.length, COLS - 1); i++) {
-          const bi = COLS - 2 - i;
+          const bi = CONFIRMED_COLS - 1 - i;
           if (!blocks[bi]) continue;
           const cb = confirmedBlocks[i];
           blocks[bi].txs = [];
@@ -304,16 +322,18 @@ const MempoolViz = (() => {
         }
       }
 
-      if (mempoolBlocks && mempoolBlocks[0]) {
+      if (mempoolBlocks && mempoolBlocks.length) {
         mempoolFeeRange = mempoolBlocks[0].feeRange;
-        const mb = blocks[COLS - 1];
-        if (mb) {
+        for (let mi = 0; mi < Math.min(mempoolBlocks.length, MEMPOOL_COLS); mi++) {
+          const mb = blocks[CONFIRMED_COLS + mi];
+          if (!mb) continue;
+          const mblock = mempoolBlocks[mi];
+          mb.mempoolIdx = mi;
           mb.txs = [];
-          // blockVSize / 1_000_000 = 실제 블록 채움 비율 (0~1)
-          const fillRatio = Math.min((mempoolBlocks[0].blockVSize || 0) / 1_000_000, 1);
+          const fillRatio = Math.min((mblock.blockVSize || 0) / 1_000_000, 1);
           const nTx = Math.round(mb.maxTx * fillRatio);
-          for (let i = 0; i < nTx; i++) {
-            mb.txs.push(feeColor(randomFee(mempoolBlocks[0].feeRange)));
+          for (let j = 0; j < nTx; j++) {
+            mb.txs.push(feeColor(randomFee(mblock.feeRange)));
           }
         }
       }
