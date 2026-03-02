@@ -33,7 +33,6 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
         <a href="#/mining" data-page="mining" data-ko="채굴" data-en="Mining" data-ja="マイニング" data-ja="マイニング">채굴</a>
       </div>
       <span id="monitor-badge" class="monitor-badge" style="display:none" title="모니터링 중">0</span>
-      <button id="theme-btn" onclick="App.toggleTheme()" title="테마 전환"></button>
       <button id="fee-calc-header-btn" onclick="App.openFeeCalc()" title="수수료 계산기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="11" y2="14"/><line x1="8" y1="18" x2="11" y2="18"/></svg></button>
     <div id="lang-wrap">
       <button id="lang-btn" onclick="App.toggleLangMenu()">KO</button>
@@ -43,6 +42,7 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
         <button onclick="App.setLang('ja')">日</button>
       </div>
     </div>
+      <button id="theme-btn" onclick="App.toggleTheme()" title="테마 전환"></button>
     </div>
   </div>
   <div class="nav-search">
