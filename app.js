@@ -489,14 +489,14 @@ async function updateStats(force = false) {
 
     // BTC/USD + KRW + 도미 병렬 fetch
     const [cgRes, upbitRes, globalRes] = await Promise.allSettled([
-      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', {signal: AbortSignal.timeout(8000)}).then(r=>r.json()),
+      fetch('https://mempool.space/api/v1/prices', {signal: AbortSignal.timeout(8000)}).then(r=>r.json()),
       fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC', {signal: AbortSignal.timeout(8000)}).then(r=>r.json()),
-      fetch('https://api.coingecko.com/api/v3/global', {signal: AbortSignal.timeout(10000)}).then(r=>r.json())
+      fetch('https://api.coingecko.com/api/v3/global', {signal: AbortSignal.timeout(10000)}).then(r=>r.json()).catch(()=>fetch('https://api.coinpaprika.com/v1/global', {signal: AbortSignal.timeout(10000)}).then(r=>r.json()))
     ]);
 
-    if (cgRes.status === 'fulfilled' && cgRes.value?.bitcoin?.usd) {
-      window._btcUsd = cgRes.value.bitcoin.usd;
-      flashStat('s-usd', '$' + formatNum(cgRes.value.bitcoin.usd));
+    if (cgRes.status === 'fulfilled' && cgRes.value?.USD) {
+      window._btcUsd = cgRes.value.USD;
+      flashStat('s-usd', '$' + formatNum(cgRes.value.USD));
     }
     if (upbitRes.status === 'fulfilled' && upbitRes.value?.[0]) {
       const u = upbitRes.value[0];
@@ -508,8 +508,9 @@ async function updateStats(force = false) {
       if (krwCh) { krwCh.textContent = (change>=0?'+':'')+change.toFixed(2)+'%'; krwCh.className='stat-change '+(change>=0?'up':'down'); }
     }
     if (globalRes.status === 'fulfilled') {
-      const dom = globalRes.value?.data?.market_cap_percentage?.btc;
-      if (dom) flashStat('s-dom', dom.toFixed(1) + '%');
+      const v = globalRes.value;
+      const dom = v?.data?.market_cap_percentage?.btc ?? v?.bitcoin_dominance_percentage;
+      if (dom) flashStat('s-dom', parseFloat(dom).toFixed(1) + '%');
     }
 
     // 멤풀 TPS (vbytes_per_second 기반)
