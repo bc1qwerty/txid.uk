@@ -1318,7 +1318,7 @@ async function renderTx(app, txid) {
           <h4>${t('inputs')} (${tx.vin ? tx.vin.length : 0})</h4>
           ${(tx.vin || []).map((v, i) => {
             if (v.is_coinbase) return `<div class="tx-io-item coinbase-item stagger-item" style="--i:${i}"><div class="io-addr" style="color:var(--accent)">${t('coinbaseReward')}</div><div class="io-val">${formatBtc(totalOut)}</div></div>`;
-            const addr = v.prevout ? (v.prevout.scriptpubkey_address || 'Unknown') : 'Unknown';
+            const addr = v.prevout ? (v.prevout.scriptpubkey_address || (v.prevout.scriptpubkey_type === 'p2pk' ? `P2PK:${(v.prevout.scriptpubkey||'').slice(2,14)}…` : (v.prevout.scriptpubkey_type||'Unknown').toUpperCase())) : 'Unknown';
             const val = v.prevout ? v.prevout.value || 0 : 0;
             const addrType = v.prevout ? getAddrType(v.prevout.scriptpubkey_type) : '?';
             return `<div class="tx-io-item stagger-item" style="--i:${i}">
@@ -1336,7 +1336,7 @@ async function renderTx(app, txid) {
           <h4>${t('outputs')} (${tx.vout ? tx.vout.length : 0})</h4>
           ${(tx.vout || []).map((o, i) => {
             const isOpReturn = o.scriptpubkey_type === 'op_return';
-            const addr = o.scriptpubkey_address || (isOpReturn ? 'OP_RETURN' : 'Unknown');
+            const addr = o.scriptpubkey_address || (isOpReturn ? 'OP_RETURN' : (o.scriptpubkey_type === 'p2pk' ? `P2PK:${(o.scriptpubkey||'').slice(2,14)}…` : (o.scriptpubkey_type||'Unknown').toUpperCase()));
             const addrType = getAddrType(o.scriptpubkey_type);
             const itemClass = isOpReturn ? 'tx-io-item op-return-item' : 'tx-io-item';
             let opReturnText = "";
