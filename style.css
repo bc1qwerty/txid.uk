@@ -164,6 +164,9 @@ header {
   max-width: 100%;
 }
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   color: var(--accent);
   font-size: 1.1rem;
   font-weight: 700;
