@@ -297,7 +297,8 @@ header {
   line-height: 1;
   letter-spacing: .02em;
 }
-#theme-btn, #fee-calc-header-btn, .icon-btn { width: 32px; padding: 0; }
+#theme-btn, #fee-calc-header-btn { width: 32px; padding: 0; }
+.icon-btn { min-width: 32px; width: auto; white-space: nowrap; }
 #theme-btn svg, #fee-calc-header-btn svg, .icon-btn svg { display: block; stroke: currentColor; flex-shrink: 0; }
 #lang-btn:hover, #theme-btn:hover, #fee-calc-header-btn:hover, .icon-btn:hover,
 #lang-btn:focus, #theme-btn:focus, #fee-calc-header-btn:focus, .icon-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
