@@ -2022,6 +2022,18 @@ function updateThemeBtn() {
   const btn = document.getElementById('theme-btn');
   if (!btn) return;
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  // settings panel theme label
+  const tIcon = document.getElementById('theme-icon');
+  const tLabel = document.getElementById('theme-label');
+  if (tIcon) tIcon.innerHTML = isDark
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+  if (tLabel) tLabel.textContent = isDark ? '라이트 모드로 전환' : '다크 모드로 전환';
+  // 언어 버튼 active 상태
+  ['ko','en','ja'].forEach(l => {
+    const b = document.getElementById('slang-' + l);
+    if (b) b.classList.toggle('active', l === lang);
+  });
   btn.innerHTML = isDark
     ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
         <circle cx="12" cy="12" r="4"/>
@@ -2833,3 +2845,26 @@ function openPortfolioAdd(addr) {
 function openTxLookup(txid) {
   window.open(`https://tx.txid.uk/?lookup=${encodeURIComponent(txid)}`, '_blank');
 }
+
+
+// ── 설정 패널 ──
+function toggleSettings() {
+  const panel = document.getElementById('settings-panel');
+  const btn = document.getElementById('settings-btn');
+  if (!panel) return;
+  const open = panel.classList.toggle('open');
+  btn.setAttribute('aria-expanded', open);
+  btn.style.borderColor = open ? 'var(--accent)' : '';
+  btn.style.color = open ? 'var(--accent)' : '';
+}
+function closeSettings() {
+  const panel = document.getElementById('settings-panel');
+  const btn = document.getElementById('settings-btn');
+  if (panel) panel.classList.remove('open');
+  if (btn) { btn.setAttribute('aria-expanded','false'); btn.style.borderColor=''; btn.style.color=''; }
+}
+// 외부 클릭 시 닫기
+document.addEventListener('click', e => {
+  const dd = document.getElementById('settings-dropdown');
+  if (dd && !dd.contains(e.target)) closeSettings();
+});

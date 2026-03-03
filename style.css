@@ -1875,3 +1875,70 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 }
 .tools-dropdown-menu a:hover { background: var(--bg3); color: var(--accent); }
 .tools-dropdown-menu a svg { flex-shrink: 0; }
+
+/* ── 설정 드롭다운 ── */
+.settings-dropdown { position: relative; }
+.settings-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-width: 200px;
+  z-index: 300;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  overflow: hidden;
+}
+.settings-panel.open { display: block; }
+.settings-section { padding: 8px 6px; }
+.settings-section--border { border-top: 1px solid var(--border); }
+.settings-label {
+  font-size: .62rem;
+  color: var(--text3);
+  font-family: var(--font-ko);
+  padding: 2px 8px 6px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-family: var(--font-ko);
+  font-size: .78rem;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  text-align: left;
+}
+.settings-item:hover { background: var(--bg3); color: var(--accent); }
+.settings-item svg { flex-shrink: 0; stroke: currentColor; }
+.settings-lang-row {
+  display: flex;
+  gap: 4px;
+  padding: 2px 8px 4px;
+}
+.settings-lang-btn {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-family: var(--font);
+  font-size: .72rem;
+  padding: 5px 0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.settings-lang-btn:hover,
+.settings-lang-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(247,147,26,.08); }
+/* 기존 lang-wrap 숨김 */
+#lang-wrap { display: none !important; }
+#fee-calc-header-btn { display: none !important; }
