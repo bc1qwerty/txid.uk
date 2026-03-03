@@ -1080,6 +1080,7 @@ footer {
   .footer-inner { flex-direction: column; text-align: center; }
   footer { padding-bottom: 70px; }
   #mobile-bottom-nav { display: flex; }
+  .appbar { display: none; }
 }
 
 @media (max-width: 600px) {
