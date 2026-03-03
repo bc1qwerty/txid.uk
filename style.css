@@ -1919,7 +1919,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   text-align: left;
 }
 .settings-item:hover { background: var(--bg3); color: var(--accent); }
-.settings-item svg { flex-shrink: 0; stroke: currentColor; }
+.settings-item svg { flex-shrink: 0; stroke: currentColor; width: 14px; height: 14px; }
 .settings-lang-row {
   display: flex;
   gap: 4px;
