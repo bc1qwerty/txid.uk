@@ -594,7 +594,7 @@ footer {
   gap: 4px;
 }
 .block-card .bc-miner::before {
-  content: '⛏';
+  content: '▶';
   font-size: .7rem;
 }
 .block-card .bc-fee-range {
@@ -1807,9 +1807,9 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 
 /* ── 고래 TX ── */
 .whale-tx { background:rgba(247,147,26,.05); }
-.whale-tx td:first-child::before { content:'🐋 '; }
+.whale-tx td:first-child::before { content:'▲ '; }
 .whale-tx-mega { background:rgba(247,147,26,.12); }
-.whale-tx-mega td:first-child::before { content:'🔥 '; }
+.whale-tx-mega td:first-child::before { content:'★ '; }
 
 /* ── 푸터 방문자 카운터 ── */
 .footer-visitor {
