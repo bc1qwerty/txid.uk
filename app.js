@@ -169,7 +169,7 @@ const i18n = {
   }
 };
 
-let lang = 'ko';
+let lang = localStorage.getItem('lang') || 'ko';
 function t(key) { return (i18n[lang] && i18n[lang][key]) || key; }
 
 // ── 유틸 ──
@@ -1947,14 +1947,24 @@ window.App = {
   },
   setLang(newLang) {
     lang = newLang;
-    const btn = document.getElementById("lang-btn");
-    if (btn) btn.textContent = { ko: "KO", en: "EN", ja: "日" }[lang] || "KO";
+    localStorage.setItem('lang', lang);
     document.documentElement.lang = lang;
+    // slang 버튼 active
+    ['ko','en','ja'].forEach(l => {
+      const b = document.getElementById('slang-' + l);
+      if (b) b.classList.toggle('active', l === lang);
+    });
     document.getElementById('search-input').placeholder = t('search_ph');
     document.getElementById('tagline').textContent = t('tagline');
     document.querySelectorAll('[data-ko]').forEach(el => {
       const val = el.dataset[lang] || el.dataset.en || el.dataset.ko;
       el.textContent = val;
+    });
+    // 앱바 텍스트 업데이트
+    document.querySelectorAll('.appbar a span').forEach(el => {
+      if (el.dataset.ko) {
+        el.textContent = el.dataset[lang] || el.dataset.en || el.dataset.ko;
+      }
     });
     route();
   },
