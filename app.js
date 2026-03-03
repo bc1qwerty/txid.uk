@@ -1322,7 +1322,7 @@ async function renderTx(app, txid) {
             const val = v.prevout ? v.prevout.value || 0 : 0;
             const addrType = v.prevout ? getAddrType(v.prevout.scriptpubkey_type) : '?';
             return `<div class="tx-io-item stagger-item" style="--i:${i}">
-              <div class="io-addr" onclick="location.hash='#/address/${addr}'">${addr}</div>
+              <div class="io-addr" ${/^(bc1|1|3)[a-zA-Z0-9]{25,62}$/.test(addr) ? `onclick="location.hash='#/address/${addr}'" style="cursor:pointer"` : 'style="cursor:default;opacity:.7"'}>${addr}</div>
               <div class="io-val">${formatBtc(val)}</div>
               <div class="io-type">${addrType}</div>
             </div>`;
@@ -1352,7 +1352,7 @@ async function renderTx(app, txid) {
               } catch {}
             }
             return `<div class="${itemClass} stagger-item" style="--i:${i}">
-              <div class="io-addr" ${!isOpReturn && addr !== 'Unknown' ? `onclick="location.hash='#/address/${addr}'"` : ''}>${isOpReturn ? '📝 OP_RETURN' : addr}</div>
+              <div class="io-addr" ${!isOpReturn && /^(bc1|1|3)[a-zA-Z0-9]{25,62}$/.test(addr) ? `onclick="location.hash='#/address/${addr}'" style="cursor:pointer"` : `style="cursor:default;${isOpReturn?'':'opacity:.7'}"`}>${isOpReturn ? '📝 OP_RETURN' : addr}</div>
               <div class="io-val">${formatBtc(o.value)}</div>
               <div class="io-type">${addrType}</div>
               ${opReturnText}
