@@ -2830,7 +2830,7 @@ if (typeof ResizeObserver !== 'undefined') {
 
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
   if (!localStorage.getItem('theme')) {
-    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    // prefers-color-scheme 무시 — 기본 dark
     if (typeof updateThemeBtn === 'function') updateThemeBtn();
   }
 });
