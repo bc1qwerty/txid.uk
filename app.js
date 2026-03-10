@@ -688,6 +688,12 @@ function route() {
 
   updateActiveNav(path);
 
+  const learnBar = document.getElementById('learn-links-bar');
+  if (learnBar) {
+    const ctx = path === '' ? 'home' : path;
+    learnBar.innerHTML = LEARN_LINKS[ctx] ? learnLinksHtml(ctx) : '';
+  }
+
   switch (path) {
     case '': renderHome(app); break;
     case 'block': renderBlock(app, param); break;
@@ -773,11 +779,6 @@ async function renderHome(app) {
     favDiv.innerHTML = favHtml;
     app.appendChild(favDiv.firstElementChild);
   }
-
-  // Learn links
-  const learnDiv = document.createElement('div');
-  learnDiv.innerHTML = learnLinksHtml('home');
-  app.appendChild(learnDiv);
 
   // 최근 블록
   _lastBlockHeights = null;  // 라우팅 시 캐시 초기화
@@ -1198,7 +1199,6 @@ async function renderBlock(app, param) {
       </div>
 
       <div id="coinbase-msg-wrap"></div>
-      ${learnLinksHtml('block')}
       <div class="section-title">${icon('list')} ${t('transactions')}</div>
       <div id="block-txs">${skeletonTable(6)}</div>
       <div id="block-txs-pagination"></div>
@@ -1376,7 +1376,6 @@ async function renderTx(app, txid) {
         <div class="info-item"><div class="info-label">${t('rbf')}</div><div class="info-value">${tx.vin && tx.vin.some(v => v.sequence < 0xfffffffe) ? 'Yes' : 'No'}</div></div>
       </div>
 
-      ${learnLinksHtml('tx')}
       <div class="subsite-links" style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
         <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko);border-color:var(--accent);color:var(--accent)" onclick="openViz('tx','${tx.txid}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 시각화</button>
         <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko)" onclick="openTxLookup('${tx.txid}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> TX 분석</button>
@@ -1535,7 +1534,6 @@ async function renderAddress(app, address) {
         <div id="addr-txs-more"></div>
       </div>
       <div id="tab-utxo" hidden></div>
-      ${learnLinksHtml('address')}
     `;
 
     // 탭 전환

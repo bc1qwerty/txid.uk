@@ -304,6 +304,8 @@ header {
 #lang-btn:focus, #theme-btn:focus, #fee-calc-header-btn:focus, .icon-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
 
 /* ── Stats Bar ── */
+#learn-links-bar { max-width: var(--max-w); margin: 0 auto; padding: 0 16px; }
+#learn-links-bar:empty { display: none; }
 #stats-bar {
   background: linear-gradient(180deg, var(--bg2), rgba(22,27,34,0.8));
   border-bottom: 1px solid var(--border);
