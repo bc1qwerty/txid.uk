@@ -774,6 +774,11 @@ async function renderHome(app) {
     app.appendChild(favDiv.firstElementChild);
   }
 
+  // Learn links
+  const learnDiv = document.createElement('div');
+  learnDiv.innerHTML = learnLinksHtml('home');
+  app.appendChild(learnDiv);
+
   // 최근 블록
   _lastBlockHeights = null;  // 라우팅 시 캐시 초기화
   const blocksSection = document.createElement('div');
@@ -812,11 +817,6 @@ async function renderHome(app) {
     <div class="lightning-stats-grid" id="ln-stats">${skeletonCards(4)}</div>
   </div>`;
   app.appendChild(lnDiv);
-
-  // Learn links
-  const learnDiv = document.createElement('div');
-  learnDiv.innerHTML = learnLinksHtml('home');
-  app.appendChild(learnDiv);
 
   // 데이터 로드
   try {
