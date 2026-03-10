@@ -1954,3 +1954,10 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .appbar a{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--text2);font-size:.62rem;font-family:var(--font-ko);background:var(--bg3);min-width:56px;transition:all .2s}
 .appbar a:hover,.appbar a.active{border-color:var(--accent);color:var(--accent)}
 .appbar a svg{flex-shrink:0}
+
+/* ── 상단 진행 바 (NProgress 스타일) ── */
+#nprogress { pointer-events: none; }
+#nprogress .bar { background: var(--accent); position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 3px; }
+#nprogress .bar::after { content: ''; display: block; position: absolute; right: 0; width: 100px; height: 100%; box-shadow: 0 0 10px var(--accent), 0 0 5px var(--accent); opacity: 1; transform: rotate(3deg) translateY(-4px); }
+#nprogress .peg { display: block; position: absolute; right: 0; width: 100px; height: 100%; box-shadow: 0 0 10px var(--accent), 0 0 5px var(--accent); opacity: 1; transform: rotate(3deg) translateY(-4px); }
+@keyframes nprogress-spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

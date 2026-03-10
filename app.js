@@ -1,4 +1,35 @@
 
+// ── 상단 진행 바 ──────────────────
+const NProgress = (() => {
+  let bar, timer, val = 0, running = false;
+  function getBar() {
+    if (!bar) {
+      const el = document.createElement('div');
+      el.id = 'nprogress';
+      el.innerHTML = '<div class="bar"><div class="peg"></div></div>';
+      document.body.appendChild(el);
+      bar = el.querySelector('.bar');
+    }
+    return bar;
+  }
+  function set(n) {
+    val = Math.min(n, 0.994);
+    getBar().style.cssText = `width:${val*100}%;opacity:1;transition:width 200ms linear`;
+  }
+  function start() {
+    if (running) return;
+    running = true; val = 0.1; set(val);
+    timer = setInterval(() => { set(val + (0.9 - val) * 0.12); }, 200);
+  }
+  function done() {
+    clearInterval(timer); running = false;
+    getBar().style.cssText = 'width:100%;opacity:1;transition:width 100ms linear';
+    setTimeout(() => { if (bar) bar.style.cssText = 'width:100%;opacity:0;transition:opacity 300ms'; }, 150);
+    setTimeout(() => { if (bar) bar.style.cssText = 'width:0;opacity:0'; }, 500);
+  }
+  return { start, done };
+})();
+
 // ── 외부 라이브러리 동적 로더 ──────────────────
 const _loadedScripts = {};
 function loadScript(url) {
@@ -616,6 +647,7 @@ function saveScroll() { _scrollPos[location.hash] = window.scrollY; }
 window.addEventListener('scroll', () => { if (window._routeReady) saveScroll(); }, { passive: true });
 
 function route() {
+  NProgress.start();
   if (window._txPollInterval) { clearInterval(window._txPollInterval); window._txPollInterval = null; }
   const { path, param } = getRoute();
   const app = document.getElementById('app');
@@ -631,7 +663,7 @@ function route() {
     case 'tx': renderTx(app, param); break;
     case 'address': renderAddress(app, param); break;
     case 'mining': renderMining(app); break;
-    default: app.innerHTML = `<div class="error-box">${t('notFound')}</div>`;
+    default: app.innerHTML = `<div class="error-box">${t('notFound')}</div>`; NProgress.done(); break;
   }
 }
 
@@ -671,6 +703,7 @@ function breadcrumb(items) {
 // HOME PAGE
 // ═══════════════════════════════════════════
 async function renderHome(app) {
+  NProgress.done();
   document.title = 'txid.uk | Bitcoin Block Explorer';
   app.innerHTML = '';
 
@@ -1105,6 +1138,7 @@ async function renderBlock(app, param) {
 
     const favLabel = '#' + formatNum(block.height);
 
+    NProgress.done();
     app.innerHTML = `
       ${breadcrumb([
         { href: '#/', label: t('home') },
@@ -1189,7 +1223,7 @@ async function renderBlock(app, param) {
     loadBlockTxs(block.id, block.tx_count, 0);
     // 블록 treemap 버튼 (page-actions에 이미 있음)
   } catch (e) {
-    app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 
@@ -1287,6 +1321,7 @@ async function renderTx(app, txid) {
 
     const favLabel = 'TX ' + shortHash(txid);
 
+    NProgress.done();
     app.innerHTML = `
       ${breadcrumb(bcItems)}
 
@@ -1396,7 +1431,7 @@ async function renderTx(app, txid) {
     }, 20000);
   }
   } catch (e) {
-    app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 
@@ -1434,6 +1469,7 @@ async function renderAddress(app, address) {
       saveMonitoredAddrs(m);
     }
 
+    NProgress.done();
     app.innerHTML = `
       ${breadcrumb([
         { href: '#/', label: t('home') },
@@ -1493,7 +1529,7 @@ async function renderAddress(app, address) {
     loadAddrTxs(address, null);
     loadAddressBalanceChart(address);
   } catch (e) {
-    app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 
@@ -1622,6 +1658,7 @@ async function renderMining(app) {
     const diffProgress = diffAdj.progressPercent || 0;
     const estChange = diffAdj.difficultyChange || 0;
 
+    NProgress.done();
     app.innerHTML = `
       ${breadcrumb([
         { href: '#/', label: t('home') },
@@ -1688,7 +1725,7 @@ async function renderMining(app) {
     app.appendChild(poolCard);
     setTimeout(() => renderPoolChart(topMiners, recentBlocks.length), 200);
   } catch (e) {
-    app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 
