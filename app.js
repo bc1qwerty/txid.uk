@@ -805,19 +805,6 @@ async function renderHome(app) {
     </div>`;
   app.appendChild(chainDiv);
 
-  // Lightning
-  const lnDiv = document.createElement('div');
-  lnDiv.id = 'lightning-section';
-  lnDiv.className = 'lightning-section';
-  lnDiv.innerHTML = `<div class="lightning-header" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
-    <h3>${icon('zap')} ${t('lightning')}</h3>
-    <span class="toggle-icon">▼</span>
-  </div>
-  <div class="lightning-body">
-    <div class="lightning-stats-grid" id="ln-stats">${skeletonCards(4)}</div>
-  </div>`;
-  app.appendChild(lnDiv);
-
   // 데이터 로드
   try {
     const [blocks, mempoolBlocks] = await Promise.all([
@@ -838,7 +825,7 @@ async function renderHome(app) {
   // Load charts & lightning in parallel
   loadBtcPriceChart();
   loadMempoolHistoryChart();
-  loadLightningStats();
+  // loadLightningStats();
   try { loadMempoolHeatmap(); } catch {}
   try { loadDifficultyTimer(); } catch {}
   try { renderPoolChart(document.getElementById('pool-chart')); } catch {}
