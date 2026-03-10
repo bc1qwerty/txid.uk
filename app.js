@@ -1914,7 +1914,7 @@ function updateFeeCalc() {
 // ═══════════════════════════════════════════
 // QR CODE
 // ═══════════════════════════════════════════
-function showQRModal(address) {
+async function showQRModal(address) {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.id = 'qr-modal';
