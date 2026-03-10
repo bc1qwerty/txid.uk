@@ -1,0 +1,13 @@
+{
+  "names": {
+    "_": "d0398827a84a687ddbb88926e010851daeed391395b461e559ea12035b8d04d1",
+    "bitsunsa": "d0398827a84a687ddbb88926e010851daeed391395b461e559ea12035b8d04d1"
+  },
+  "relays": {
+    "d0398827a84a687ddbb88926e010851daeed391395b461e559ea12035b8d04d1": [
+      "wss://relay.damus.io",
+      "wss://relay.primal.net",
+      "wss://nos.lol"
+    ]
+  }
+}
