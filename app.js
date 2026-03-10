@@ -1,4 +1,20 @@
 
+// ── 외부 라이브러리 동적 로더 ──────────────────
+const _loadedScripts = {};
+function loadScript(url) {
+  if (_loadedScripts[url]) return _loadedScripts[url];
+  _loadedScripts[url] = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = url; s.async = true;
+    s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  return _loadedScripts[url];
+}
+const CDN_QRCODE = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
+const CDN_CHARTS = 'https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js';
+const CDN_D3 = 'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js';
+
 // ── SVG 아이콘 인라인 헬퍼 ──────────────────
 const ICONS = {
   'pickaxe': 'M14 10-8.5 8.5c-.83.83-.83 2.17 0 3 .83.83 2.17.83 3 0L17 13M15 11 9 5m1-3-4 4m11 2-4-4m1 0 1.5-1.5M11 13l-1.5 1.5',
@@ -924,7 +940,8 @@ async function loadBtcPriceChart() {
     const textColor = isDark ? '#8b949e' : '#555';
     const borderColor = isDark ? '#21262d' : '#e0e0e0';
 
-    // Lightweight Charts 사용 가능 여부 확인
+    // Lightweight Charts 동적 로드
+    await loadScript(CDN_CHARTS).catch(()=>{});
     if (typeof LightweightCharts !== 'undefined') {
       const chart = LightweightCharts.createChart(container, {
         width: container.clientWidth || container.parentElement?.clientWidth || 400,
@@ -1876,7 +1893,8 @@ function showQRModal(address) {
   </div>`;
   document.body.appendChild(modal);
 
-  // Generate QR using qrcode-generator
+  // Generate QR using qrcode-generator (동적 로드)
+  await loadScript(CDN_QRCODE).catch(()=>{});
   if (typeof qrcode !== 'undefined') {
     const qr = qrcode(0, 'M');
     qr.addData('bitcoin:' + address);
@@ -2320,7 +2338,8 @@ function renderTxFlowDiagram(tx) {
   }
 }
 
-function renderTxFlowD3(tx, container) {
+async function renderTxFlowD3(tx, container) {
+  await loadScript(CDN_D3).catch(()=>{});
   const W = container.clientWidth || 600;
   const ins = (tx.vin || []).slice(0, 8);
   const outs = (tx.vout || []).slice(0, 8);

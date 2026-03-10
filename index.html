@@ -221,11 +221,8 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
 
 <!-- Fee Calculator Floating Button -->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-<script src="mempool.js"></script>
-<script src="app.js"></script>
+<script src="mempool.js" defer></script>
+<script src="app.js" defer></script>
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js").catch(()=>{});
