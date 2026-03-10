@@ -497,6 +497,11 @@ footer {
   border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 20px;
+  max-width: var(--max-w);
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
 }
 #mempool-canvas {
   width: 100%;
