@@ -1686,6 +1686,13 @@ body { transition: background .2s, color .2s; }
 .utxo-sum { font-size:.82rem; color:var(--text2); margin-bottom:10px; }
 .utxo-sum strong { color:var(--accent); font-family:var(--font); }
 
+/* ── Learn 교육 링크 ── */
+.learn-links { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:10px 14px; background:var(--bg2); border:1px solid var(--border); border-radius:7px; margin:14px 0; font-size:.78rem; }
+.learn-links svg { color:var(--text3); flex-shrink:0; }
+.learn-label { color:var(--text3); font-family:var(--font-ko); white-space:nowrap; margin-right:2px; }
+.learn-chip { color:var(--text2); text-decoration:none; padding:3px 10px; border:1px solid var(--border); border-radius:4px; font-family:var(--font-ko); font-size:.72rem; transition:all .15s; white-space:nowrap; }
+.learn-chip:hover { border-color:var(--accent); color:var(--accent); }
+
 /* ── RBF / CPFP 배지 ── */
 .tx-badge { font-size:.62rem; font-weight:700; padding:2px 6px; border-radius:4px; font-family:var(--font); letter-spacing:.04em; vertical-align:middle; }
 .tx-badge.rbf { background:rgba(255,68,68,.15); color:#ff4444; border:1px solid rgba(255,68,68,.3); }

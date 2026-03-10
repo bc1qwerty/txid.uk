@@ -121,6 +121,7 @@ const i18n = {
     newTx: '새 트랜잭션 발견!',
     mempoolSizeHistory: '멤풀 크기 추이',
     clickBlockHint: '블록을 클릭해 상세 정보를 확인하세요',
+    learnMore: '더 알아보기',
   },
   ja: {
     home: 'ホーム', mining: 'マイニング', search_ph: 'TXID / ブロック高 / アドレス検索...',
@@ -160,6 +161,7 @@ const i18n = {
     mempoolSizeHistory: 'メンプール推移',
     lightning: 'ライトニング統計',
     clickBlockHint: 'ブロックをクリックして詳細を確認',
+    learnMore: 'もっと学ぶ',
     krwPrice: 'BTC価格', monitoring_active: 'モニタリング中',
     copy: 'コピー', copied: 'コピー完了',
     btcKrw: 'BTC/KRW', btcUsd: 'BTC/USD',
@@ -213,11 +215,40 @@ const i18n = {
     newTx: 'New transaction found!',
     mempoolSizeHistory: 'Mempool Size Trend',
     clickBlockHint: 'Click a block for details',
+    learnMore: 'Learn More',
   }
 };
 
 let lang = localStorage.getItem('lang') || 'ko';
 function t(key) { return (i18n[lang] && i18n[lang][key]) || key; }
+
+// ── learn.txid.uk 교육 링크 ──
+const LEARN_LINKS = {
+  home: [
+    { slug: 'what-is-mempool', ko: '멤풀이란 무엇인가', en: 'What is the Mempool?', ja: 'メンプールとは' },
+    { slug: 'bitcoin-fee-guide', ko: '수수료 가이드', en: 'Fee Guide', ja: '手数料ガイド' },
+  ],
+  tx: [
+    { slug: 'what-is-txid', ko: 'TXID란 무엇인가', en: 'What is a TXID?', ja: 'TXIDとは' },
+    { slug: 'how-to-read-bitcoin-transaction', ko: '트랜잭션 읽는 법', en: 'Reading Transactions', ja: 'トランザクションの読み方' },
+  ],
+  block: [
+    { slug: 'proof-of-work', ko: '작업증명이란', en: 'Proof of Work', ja: 'プルーフ・オブ・ワーク' },
+    { slug: 'bitcoin-mining', ko: '비트코인 채굴', en: 'Bitcoin Mining', ja: 'マイニング' },
+  ],
+  address: [
+    { slug: 'bitcoin-wallet-address', ko: '지갑 주소란', en: 'Wallet Addresses', ja: 'ウォレットアドレス' },
+    { slug: 'utxo-model', ko: 'UTXO 모델', en: 'UTXO Model', ja: 'UTXOモデル' },
+  ],
+};
+function learnLinksHtml(context) {
+  const links = LEARN_LINKS[context];
+  if (!links || !links.length) return '';
+  const chips = links.map(l =>
+    `<a href="https://learn.txid.uk/${lang}/blog/${l.slug}/" class="learn-chip" target="_blank" rel="noopener">${l[lang] || l.en}</a>`
+  ).join('');
+  return `<div class="learn-links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="learn-label">${t('learnMore')}</span>${chips}</div>`;
+}
 
 // ── 유틸 ──
 function satToBtc(sat) { return (sat / 1e8).toFixed(8); }
@@ -782,6 +813,11 @@ async function renderHome(app) {
   </div>`;
   app.appendChild(lnDiv);
 
+  // Learn links
+  const learnDiv = document.createElement('div');
+  learnDiv.innerHTML = learnLinksHtml('home');
+  app.appendChild(learnDiv);
+
   // 데이터 로드
   try {
     const [blocks, mempoolBlocks] = await Promise.all([
@@ -1175,6 +1211,7 @@ async function renderBlock(app, param) {
       </div>
 
       <div id="coinbase-msg-wrap"></div>
+      ${learnLinksHtml('block')}
       <div class="section-title">${icon('list')} ${t('transactions')}</div>
       <div id="block-txs">${skeletonTable(6)}</div>
       <div id="block-txs-pagination"></div>
@@ -1352,6 +1389,7 @@ async function renderTx(app, txid) {
         <div class="info-item"><div class="info-label">${t('rbf')}</div><div class="info-value">${tx.vin && tx.vin.some(v => v.sequence < 0xfffffffe) ? 'Yes' : 'No'}</div></div>
       </div>
 
+      ${learnLinksHtml('tx')}
       <div class="subsite-links" style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
         <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko);border-color:var(--accent);color:var(--accent)" onclick="openViz('tx','${tx.txid}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 시각화</button>
         <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko)" onclick="openTxLookup('${tx.txid}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> TX 분석</button>
@@ -1510,6 +1548,7 @@ async function renderAddress(app, address) {
         <div id="addr-txs-more"></div>
       </div>
       <div id="tab-utxo" hidden></div>
+      ${learnLinksHtml('address')}
     `;
 
     // 탭 전환
