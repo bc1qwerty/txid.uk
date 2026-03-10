@@ -1,4 +1,4 @@
-const CACHE = "txid-v2";
+const CACHE = "txid-v3";
 const PRECACHE = ["/", "/app.js", "/style.css", "/mempool.js", "/static/icons.svg"];
 
 self.addEventListener("install", e => {
@@ -11,7 +11,7 @@ self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   const url = new URL(e.request.url);
   // Network-first for API calls
-  if (url.hostname.includes("mempool.space") || url.hostname.includes("upbit") || url.hostname.includes("coingecko")) {
+  if (url.hostname.includes("mempool.space") || url.hostname.includes("upbit") || url.hostname.includes("coingecko") || url.hostname.includes("binance")) {
     e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
     return;
   }
