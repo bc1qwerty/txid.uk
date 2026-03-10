@@ -780,6 +780,17 @@ async function renderHome(app) {
     app.appendChild(favDiv.firstElementChild);
   }
 
+  // Chain status + 멤풀 예측 섹션
+  const chainDiv = document.createElement('div');
+  chainDiv.className = 'section';
+  chainDiv.innerHTML = `
+    <div class="section-header"><span class="section-title">${lang==='ko'?'블록체인 상태':'Chain Status'}</span></div>
+    <div class="chain-status-grid">
+      <div class="cs-card"><div class="cs-label">${lang==='ko'?'난이도 조정':'Difficulty Adj.'}</div><div class="cs-val" id="diff-timer">—</div></div>
+      <div class="cs-card"><div class="cs-label">${lang==='ko'?'수수료별 예상 대기':'Estimated Wait'}</div><div class="cs-val" id="mempool-predict" style="font-size:.72rem">—</div></div>
+    </div>`;
+  app.appendChild(chainDiv);
+
   // 최근 블록
   _lastBlockHeights = null;  // 라우팅 시 캐시 초기화
   const blocksSection = document.createElement('div');
@@ -794,17 +805,6 @@ async function renderHome(app) {
     <div class="chart-card"><h3>${icon('package')} ${t('mempoolSizeHistory')}</h3><div class="chart-subtitle">&nbsp;</div><canvas id="mempool-history-chart"></canvas></div>
   </div>`;
   app.appendChild(chartsDiv);
-
-  // Chain status + 멤풀 예측 섹션
-  const chainDiv = document.createElement('div');
-  chainDiv.className = 'section';
-  chainDiv.innerHTML = `
-    <div class="section-header"><span class="section-title">${lang==='ko'?'블록체인 상태':'Chain Status'}</span></div>
-    <div class="chain-status-grid">
-      <div class="cs-card"><div class="cs-label">${lang==='ko'?'난이도 조정':'Difficulty Adj.'}</div><div class="cs-val" id="diff-timer">—</div></div>
-      <div class="cs-card"><div class="cs-label">${lang==='ko'?'수수료별 예상 대기':'Estimated Wait'}</div><div class="cs-val" id="mempool-predict" style="font-size:.72rem">—</div></div>
-    </div>`;
-  app.appendChild(chainDiv);
 
   // 데이터 로드
   try {
