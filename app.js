@@ -2095,6 +2095,15 @@ window.App = {
     overlay.classList.remove('open');
   },
 
+  openToolsSheet() {
+    document.getElementById('mobile-tools-sheet').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  },
+  closeToolsSheet() {
+    document.getElementById('mobile-tools-sheet').classList.remove('open');
+    document.body.style.overflow = '';
+  },
+
   openFeeCalc() {
     const existing = document.getElementById('fee-calc-modal');
     if (existing) { existing.remove(); return; }
@@ -2167,7 +2176,7 @@ document.getElementById('search-input').addEventListener('input', e => {
   if (!val) { showSearchHistory(); return; }
   document.getElementById('search-history-drop')?.remove();
   // 타입 힌트
-  const hint = document.getElementById('search-hint');
+  const hint = document.getElementById('search-status');
   if (hint) {
     if (/^\d+$/.test(val)) hint.textContent = '블록 높이';
     else if (/^[0-9a-fA-F]{64}$/.test(val)) hint.textContent = 'TXID / Block Hash';
@@ -2187,6 +2196,9 @@ document.getElementById('mobile-search-input').addEventListener('keydown', e => 
   if (e.key === 'Enter') App.doSearch(true);
   if (e.key === 'Escape') App.closeMobileSearch();
 });
+document.getElementById('mobile-tools-sheet')?.addEventListener('click', function(e) {
+  if (e.target === this) App.closeToolsSheet();
+});
 
 // "/" 키로 검색 포커스
 document.addEventListener('keydown', e => {
@@ -2197,6 +2209,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     document.getElementById('search-input').blur();
     App.closeMobileSearch();
+    App.closeToolsSheet();
     const feeModal = document.getElementById('fee-calc-modal');
     if (feeModal) feeModal.remove();
     const qrModal = document.getElementById('qr-modal');
