@@ -5,3 +5,4 @@ User-agent: Yeti
 Allow: /
 
 Sitemap: https://txid.uk/sitemap.xml
+Sitemap: https://learn.txid.uk/sitemap.xml
