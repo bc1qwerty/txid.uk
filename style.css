@@ -1125,7 +1125,7 @@ footer {
   nav { gap: 8px; padding: 0 12px; }
   .nav-search #search-wrap { max-width: none; }
   .search-shortcut { display: none; }
-  #nav-links { display: none; }
+  #nav-links, .tools-dropdown { display: none; }
   #stats-bar { gap: 16px; padding: 10px 12px; font-size: .9rem; }
   .stat-val { font-size: 1rem; }
   main { padding: 12px; padding-bottom: 70px; }
