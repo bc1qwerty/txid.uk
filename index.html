@@ -88,7 +88,6 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
         </div>
       <div class="nav-right">
       <span id="monitor-badge" class="monitor-badge" style="display:none" title="모니터링 중">0</span>
-      <div id="txid-auth-mount" style="position:relative;display:inline-flex"></div>
       <!-- 설정 패널 -->
       <div class="settings-dropdown" id="settings-dropdown">
         <button class="icon-btn" id="settings-btn" onclick="toggleSettings()" title="설정" aria-label="설정" aria-expanded="false">
@@ -139,6 +138,7 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
           </div>
         </div>
       </div>
+      <div id="txid-auth-mount" style="position:relative;display:inline-flex"></div>
     </div>
   </div>
   <div class="nav-search">
