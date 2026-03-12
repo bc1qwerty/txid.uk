@@ -1,4 +1,4 @@
-const CACHE = "txid-v3";
+const CACHE = "txid-v4";
 const PRECACHE = ["/", "/app.js", "/style.css", "/mempool.js", "/static/icons.svg"];
 
 self.addEventListener("install", e => {
