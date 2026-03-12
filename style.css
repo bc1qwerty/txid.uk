@@ -1151,7 +1151,7 @@ footer {
   nav { gap: 8px; padding: 0 12px; }
   .nav-search #search-wrap { max-width: none; }
   .search-shortcut { display: none; }
-  #nav-links, .tools-dropdown { display: none; }
+  #nav-links { display: none; }
   #stats-bar { gap: 16px; padding: 10px 12px; font-size: .9rem; }
   .stat-val { font-size: 1rem; }
   main { padding: 12px; padding-bottom: 70px; }
@@ -1928,53 +1928,6 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   color: var(--text2);
 }
 
-/* ── 서브사이트 도구 드롭다운 ── */
-.tools-dropdown { position: relative; }
-.tools-dropdown-btn {
-  background: none; border: none; color: var(--text2);
-  font-family: var(--font-ko); font-size: .8rem; padding: 6px 12px;
-  border-radius: 4px; cursor: pointer; transition: all .2s;
-  white-space: nowrap; display: flex; align-items: center; gap: 3px;
-  position: relative;
-}
-.tools-dropdown-btn::after {
-  content: '';
-  position: absolute;
-  bottom: -2px; left: 50%;
-  transform: translateX(-50%);
-  width: 0; height: 2px;
-  background: var(--accent);
-  border-radius: 1px;
-  transition: width .2s;
-}
-.tools-dropdown-btn:hover,
-.tools-dropdown:hover .tools-dropdown-btn {
-  color: var(--accent);
-  background: rgba(247,147,26,0.06);
-}
-.tools-dropdown:hover .tools-dropdown-btn::after { width: 60%; }
-.tools-dropdown-menu {
-  display: none; position: absolute; top: calc(100% + 6px); right: 0;
-  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
-  min-width: 200px; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.4);
-  overflow: hidden;
-}
-.tools-dropdown:hover .tools-dropdown-menu { display: block; }
-.tools-dropdown-menu a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 14px;
-  color: var(--text2);
-  font-family: var(--font-ko);
-  font-size: .78rem;
-  text-decoration: none;
-  transition: background .15s, color .15s;
-}
-.tools-dropdown-menu a:hover { background: var(--bg3); color: var(--accent); }
-.tools-dropdown-menu a svg { flex-shrink: 0; }
-.tools-dropdown-menu a > span > span { display: block; color: inherit; }
-.tools-dropdown-desc { font-size: .65rem; color: var(--text3, #6e7681); }
 
 /* ── 설정 드롭다운 ── */
 .settings-dropdown { position: relative; }
