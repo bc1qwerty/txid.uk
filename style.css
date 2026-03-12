@@ -178,14 +178,18 @@ header {
   align-items: center;
   gap: 7px;
   color: var(--accent);
-  font-size: 1.1rem;
+  font-family: var(--font);
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: .05em;
   white-space: nowrap;
   flex-shrink: 0;
+  text-decoration: none;
   transition: opacity .2s;
 }
 .logo:hover { opacity: .8; }
+.logo-sep { color: var(--border); font-family: var(--font); font-size: .9rem; margin: 0 2px; }
+.logo-sub { font-family: var(--font); font-size: .8rem; color: var(--text3); }
 
 #search-wrap {
   flex: 1;
@@ -254,14 +258,17 @@ header {
 }
 #nav-links {
   display: flex;
+  align-items: center;
   gap: 4px;
 }
 #nav-links a {
   color: var(--text2);
+  font-family: var(--font-ko);
   font-size: .8rem;
   padding: 6px 12px;
   border-radius: 4px;
   transition: all .2s;
+  text-decoration: none;
   position: relative;
 }
 #nav-links a::after {
