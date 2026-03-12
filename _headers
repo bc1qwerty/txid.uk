@@ -10,7 +10,7 @@
   X-DNS-Prefetch-Control: off
 
 /js/*
-  Cache-Control: public, max-age=2592000
+  Cache-Control: public, max-age=0, must-revalidate
 
 /static/*
   Cache-Control: public, max-age=31536000, immutable
