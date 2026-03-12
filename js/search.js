@@ -25,8 +25,15 @@ function showSearchHistory() {
   drop.innerHTML = hist.map(h => {
     const ic = h.type==='block'?'▣':h.type==='tx'?'↔':'◎';
     const q = escHtml(h.query.slice(0,28)) + (h.query.length>28?'…':'');
-    return `<div class="sh-item" onclick="document.getElementById('search-input').value='${escHtml(h.query)}';document.getElementById('search-history-drop')?.remove();App.doSearch(false)">${ic} <span class="sh-q">${q}</span><span class="sh-t">${h.type}</span></div>`;
+    return `<div class="sh-item" data-query="${escHtml(h.query)}">${ic} <span class="sh-q">${q}</span><span class="sh-t">${h.type}</span></div>`;
   }).join('');
+  drop.querySelectorAll('.sh-item[data-query]').forEach(el => {
+    el.addEventListener('click', () => {
+      document.getElementById('search-input').value = el.dataset.query;
+      document.getElementById('search-history-drop')?.remove();
+      App.doSearch(false);
+    });
+  });
   document.getElementById('search-wrap')?.appendChild(drop);
 }
 

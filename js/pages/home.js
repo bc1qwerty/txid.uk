@@ -107,15 +107,15 @@ export async function renderHome(app) {
     }
   } catch (e) {
     const el = document.getElementById('recent-blocks');
-    if (el) el.innerHTML = `<div class="error-box">${t('error')}</div>`;
+    if (el) el.innerHTML = `<div class="error-box" role="alert">${t('error')}</div>`;
   }
 
   // Load charts & lightning in parallel
   loadBtcPriceChart();
   loadMempoolHistoryChart();
   // loadLightningStats();
-  try { loadMempoolHeatmap(); } catch {}
-  try { loadDifficultyTimer(); } catch {}
+  try { loadMempoolHeatmap(); } catch(e) { console.warn('mempool heatmap:', e); }
+  try { loadDifficultyTimer(); } catch(e) { console.warn('difficulty timer:', e); }
   // pool chart는 mining 페이지에서만 렌더링
   getMempoolFeeEstimates().then(est => {
     const el = document.getElementById('mempool-predict');
@@ -331,7 +331,7 @@ async function loadMempoolHistoryChart() {
       if (mempoolStats && mempoolStats.length) {
         chartData = mempoolStats.map(s => s.vbytes_per_second || 0);
       }
-    } catch {}
+    } catch(e) { console.warn('mempool stats fetch:', e); }
 
     if (!chartData.length && data.hashrates) {
       chartData = data.hashrates.map(h => h.avgHashrate / 1e18);
@@ -340,7 +340,7 @@ async function loadMempoolHistoryChart() {
     const canvas = document.getElementById('mempool-history-chart');
     if (!canvas || !chartData.length) return;
     drawAreaChart(canvas, chartData, '#4488ff');
-  } catch {}
+  } catch(e) { console.warn('mempool history chart:', e); }
 }
 
 export function drawLineChart(canvas, values, color) {
@@ -430,7 +430,7 @@ export async function loadDifficultyTimer() {
     const days = Math.floor(blocksLeft * 10 / 60 / 24);
     const hrs = Math.floor((blocksLeft * 10 / 60) % 24);
     el.innerHTML = `<span class="diff-blocks">${formatNum(blocksLeft)} 블록</span> <span class="diff-days">(~${days}일 ${hrs}시간)</span> <span class="diff-pct ${adj.difficultyChange>=0?'up':'down'}">${sign}${pct}% 예상</span>`;
-  } catch {}
+  } catch(e) { console.warn('difficulty timer:', e); }
 }
 
 // ── 멤풀 수수료 히트맵 ──
@@ -442,7 +442,7 @@ export async function loadMempoolHeatmap() {
     const blocks = await api('/v1/fees/mempool-blocks');
     if (!blocks?.length) return;
     drawFeeHeatmap(canvas, blocks);
-  } catch {}
+  } catch(e) { console.warn('mempool heatmap:', e); }
 }
 
 function drawFeeHeatmap(canvas, blocks) {

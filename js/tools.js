@@ -251,7 +251,7 @@ async function openFavDashboard() {
       const bal = (chain.funded_txo_sum - chain.spent_txo_sum + mem.funded_txo_sum - mem.spent_txo_sum) / 1e8;
       const el = document.getElementById('fdbal-' + f.value.slice(0,8));
       if (el) el.textContent = bal.toFixed(8) + ' BTC';
-    } catch {}
+    } catch(e) { console.warn(e); }
   });
 }
 

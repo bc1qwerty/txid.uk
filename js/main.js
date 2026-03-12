@@ -246,8 +246,9 @@ function updateThemeBtn() {
 }
 
 (function initTheme() {
-  const saved = localStorage.getItem('theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', saved);
+  const saved = localStorage.getItem('theme');
+  const theme = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  document.documentElement.setAttribute('data-theme', theme);
   updateThemeBtn();
   const lbtn = document.getElementById('lang-btn');
   if (lbtn) lbtn.textContent = { ko: 'KO', en: 'EN', ja: '日' }[state.lang] || 'KO';
@@ -404,9 +405,10 @@ if (typeof ResizeObserver !== 'undefined') {
   if (appEl) _chartObs.observe(appEl);
 }
 
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
   if (!localStorage.getItem('theme')) {
-    if (typeof updateThemeBtn === 'function') updateThemeBtn();
+    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    updateThemeBtn();
   }
 });
 
@@ -441,3 +443,21 @@ document.addEventListener('click', e => {
   const dd = document.getElementById('settings-dropdown');
   if (dd && !dd.contains(e.target)) closeSettings();
 });
+
+// ── 인라인 onclick 대체 이벤트 리스너 ──
+document.getElementById('settings-btn')?.addEventListener('click', toggleSettings);
+document.getElementById('si-fee-calc')?.addEventListener('click', () => { App.openFeeCalc(); closeSettings(); });
+document.getElementById('si-converter')?.addEventListener('click', () => { openConverter(); closeSettings(); });
+document.getElementById('si-btc-calc')?.addEventListener('click', () => { openBtcCalculator(); closeSettings(); });
+document.getElementById('si-fav-dash')?.addEventListener('click', () => { openFavDashboard(); closeSettings(); });
+document.getElementById('si-lightning')?.addEventListener('click', () => { openLightningMap(); closeSettings(); });
+document.getElementById('si-shortcuts')?.addEventListener('click', () => { showShortcuts(); closeSettings(); });
+document.getElementById('slang-ko')?.addEventListener('click', () => App.setLang('ko'));
+document.getElementById('slang-en')?.addEventListener('click', () => App.setLang('en'));
+document.getElementById('slang-ja')?.addEventListener('click', () => App.setLang('ja'));
+document.getElementById('theme-btn')?.addEventListener('click', () => App.toggleTheme());
+document.getElementById('search-btn')?.addEventListener('click', () => App.doSearch(false));
+document.getElementById('mnav-search')?.addEventListener('click', () => App.openMobileSearch());
+document.getElementById('mnav-tools')?.addEventListener('click', () => App.openToolsSheet());
+document.getElementById('close-mobile-search')?.addEventListener('click', () => App.closeMobileSearch());
+document.getElementById('close-tools-sheet')?.addEventListener('click', () => App.closeToolsSheet());

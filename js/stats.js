@@ -50,12 +50,12 @@ async function onNewBlock(block) {
         try {
           const { renderRecentBlocks } = await import('./pages/home.js');
           renderRecentBlocks(newBlocks.slice(0, 8));
-        } catch {}
+        } catch(e) { console.warn(e); }
 
         if (typeof MempoolViz !== 'undefined') {
           MempoolViz.updateData(newBlocks.slice(0, 6), mempoolBlocks);
         }
-      } catch {}
+      } catch(e) { console.warn(e); }
     }
   } catch(e) { console.warn('onNewBlock error:', e); }
 }
@@ -144,7 +144,7 @@ async function updateSecondaryStats() {
       const dom = v?.data?.market_cap_percentage?.btc ?? v?.bitcoin_dominance_percentage;
       if (dom) flashStat('s-dom', parseFloat(dom).toFixed(1) + '%');
     }
-  } catch {}
+  } catch(e) { console.warn(e); }
   try {
     const stats = await fetch('https://mempool.space/api/v1/statistics/2h', {signal: AbortSignal.timeout(8000)}).then(r=>r.json());
     if (Array.isArray(stats) && stats.length) {
@@ -152,7 +152,7 @@ async function updateSecondaryStats() {
       const tps = (latest.vbytes_per_second || 0) / 250;
       flashStat('s-tps', tps.toFixed(1) + ' tx/s');
     }
-  } catch {}
+  } catch(e) { console.warn(e); }
 }
 
 // ── Page Visibility API: 비활성 탭에서 폴링 중단 ──

@@ -385,7 +385,19 @@ function showToast(title, body, onClick, duration = 8000) {
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = 'toast';
-  toast.innerHTML = `<span class="toast-close" onclick="event.stopPropagation();this.parentElement.remove()">✕</span><div class="toast-title">${title}</div><div class="toast-body">${body}</div>`;
+  const closeSpan = document.createElement('span');
+  closeSpan.className = 'toast-close';
+  closeSpan.textContent = '✕';
+  closeSpan.addEventListener('click', (e) => { e.stopPropagation(); toast.remove(); });
+  toast.appendChild(closeSpan);
+  const titleDiv = document.createElement('div');
+  titleDiv.className = 'toast-title';
+  titleDiv.textContent = title;
+  toast.appendChild(titleDiv);
+  const bodyDiv = document.createElement('div');
+  bodyDiv.className = 'toast-body';
+  bodyDiv.textContent = body;
+  toast.appendChild(bodyDiv);
   if (onClick) toast.addEventListener('click', onClick);
   container.appendChild(toast);
   requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
@@ -729,7 +741,7 @@ function route() {
     case 'tx': renderTx(app, param); break;
     case 'address': renderAddress(app, param); break;
     case 'mining': renderMining(app); break;
-    default: app.innerHTML = `<div class="error-box">${t('notFound')}</div>`; NProgress.done(); break;
+    default: app.innerHTML = `<div class="error-box" role="alert">${t('notFound')}</div>`; NProgress.done(); break;
   }
 }
 
@@ -849,7 +861,7 @@ async function renderHome(app) {
     }
   } catch (e) {
     const el = document.getElementById('recent-blocks');
-    if (el) el.innerHTML = `<div class="error-box">${t('error')}</div>`;
+    if (el) el.innerHTML = `<div class="error-box" role="alert">${t('error')}</div>`;
   }
 
   // Load charts & lightning in parallel
@@ -1276,7 +1288,7 @@ async function renderBlock(app, param) {
     loadBlockTxs(block.id, block.tx_count, 0);
     // 블록 treemap 버튼 (page-actions에 이미 있음)
   } catch (e) {
-    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box" role="alert">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 
@@ -1334,7 +1346,7 @@ async function loadBlockTxs(blockHash, totalCount, startIdx) {
       </div>
     `;
   } catch (e) {
-    container.innerHTML = `<div class="error-box">${t('error')}</div>`;
+    container.innerHTML = `<div class="error-box" role="alert">${t('error')}</div>`;
   }
 }
 
@@ -1427,7 +1439,7 @@ async function renderTx(app, txid) {
             const val = v.prevout ? v.prevout.value || 0 : 0;
             const addrType = v.prevout ? getAddrType(v.prevout.scriptpubkey_type) : '?';
             return `<div class="tx-io-item stagger-item" style="--i:${i}">
-              <div class="io-addr" ${/^(bc1|1|3)[a-zA-Z0-9]{25,62}$/.test(addr) ? `onclick="location.hash='#/address/${addr}'" style="cursor:pointer"` : 'style="cursor:default;opacity:.7"'}>${addr}</div>
+              <div class="io-addr" ${/^(bc1|1|3)[a-zA-Z0-9]{25,62}$/.test(addr) ? `data-addr="${addr}" style="cursor:pointer"` : 'style="cursor:default;opacity:.7"'}>${addr}</div>
               <div class="io-val">${formatBtc(val)}</div>
               <div class="io-type">${addrType}</div>
             </div>`;
@@ -1454,10 +1466,10 @@ async function renderTx(app, txid) {
                 opReturnText = isPrintable
                   ? `<div class="op-return-decoded">💬 "${escHtml(text)}"</div>`
                   : `<div class="op-return-decoded">0x${hexData.slice(0, 40)}${hexData.length > 40 ? "…" : ""}</div>`;
-              } catch {}
+              } catch(e) { console.warn('OP_RETURN decode:', e); }
             }
             return `<div class="${itemClass} stagger-item" style="--i:${i}">
-              <div class="io-addr" ${!isOpReturn && /^(bc1|1|3)[a-zA-Z0-9]{25,62}$/.test(addr) ? `onclick="location.hash='#/address/${addr}'" style="cursor:pointer"` : `style="cursor:default;${isOpReturn?'':'opacity:.7'}"`}>${isOpReturn ? '📝 OP_RETURN' : addr}</div>
+              <div class="io-addr" ${!isOpReturn && /^(bc1|1|3)[a-zA-Z0-9]{25,62}$/.test(addr) ? `data-addr="${addr}" style="cursor:pointer"` : `style="cursor:default;${isOpReturn?'':'opacity:.7'}"`}>${isOpReturn ? '📝 OP_RETURN' : addr}</div>
               <div class="io-val">${formatBtc(o.value)}</div>
               <div class="io-type">${addrType}</div>
               ${opReturnText}
@@ -1466,6 +1478,11 @@ async function renderTx(app, txid) {
         </div>
       </div>
     `;
+  // 주소 클릭 이벤트 위임 (onclick 대신)
+  app.querySelectorAll('.io-addr[data-addr]').forEach(el => {
+    el.addEventListener('click', () => { location.hash = '#/address/' + el.dataset.addr; });
+  });
+
   // 미확인 TX 폴링
   if (!isConfirmed) {
     window._txPollInterval = setInterval(async () => {
@@ -1480,11 +1497,11 @@ async function renderTx(app, txid) {
             statusBar.textContent = '✓ ' + t('confirmed') + ' — Block #' + formatNum(updated.status.block_height);
           }
         }
-      } catch {}
+      } catch(e) { console.warn('TX poll:', e); }
     }, 20000);
   }
   } catch (e) {
-    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box" role="alert">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 
@@ -1582,7 +1599,7 @@ async function renderAddress(app, address) {
     loadAddrTxs(address, null);
     loadAddressBalanceChart(address);
   } catch (e) {
-    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box" role="alert">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 
@@ -1643,7 +1660,7 @@ async function loadAddrTxs(address, lastTxid) {
       moreBtn.innerHTML = '';
     }
   } catch (e) {
-    container.innerHTML = `<div class="error-box">${t('error')}</div>`;
+    container.innerHTML = `<div class="error-box" role="alert">${t('error')}</div>`;
   }
 }
 
@@ -1671,7 +1688,7 @@ async function loadAddrUtxo(address) {
         </table>
       </div>`;
   } catch (e) {
-    container.innerHTML = `<div class="error-box">${t('error')}</div>`;
+    container.innerHTML = `<div class="error-box" role="alert">${t('error')}</div>`;
   }
 }
 window.loadAddrUtxo = loadAddrUtxo;
@@ -1778,7 +1795,7 @@ async function renderMining(app) {
     app.appendChild(poolCard);
     setTimeout(() => renderPoolChart(topMiners, recentBlocks.length), 200);
   } catch (e) {
-    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box" role="alert">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 
@@ -1969,7 +1986,7 @@ function updateFeeCalc() {
 // ═══════════════════════════════════════════
 async function showQRModal(address) {
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+  modal.className = 'modal-overlay'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
   modal.id = 'qr-modal';
   modal.onclick = function(e) { if (e.target === this) this.remove(); };
   modal.innerHTML = `<div class="modal">
@@ -2003,7 +2020,7 @@ function openConverter() {
   const usd = window._btcUsd || 0;
   document.getElementById('converter-modal')?.remove();
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+  modal.className = 'modal-overlay'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
   modal.id = 'converter-modal';
   modal.innerHTML = `
     <div class="modal-box" style="max-width:340px">
@@ -2106,7 +2123,7 @@ window.App = {
         const resolved = await resolveHex64(detected.val);
         if (resolved === 'block') { addSearchHistory(q, 'block'); navigate('#/block/' + detected.val); }
         else if (resolved === 'tx') { addSearchHistory(q, 'tx'); navigate('#/tx/' + detected.val); }
-        else { app.innerHTML = `<div class="error-box">${t('notFound')}</div>`; }
+        else { app.innerHTML = `<div class="error-box" role="alert">${t('notFound')}</div>`; }
         break;
     }
     input.value = '';
@@ -2192,9 +2209,17 @@ function updateThemeBtn() {
   btn.title = themeLabels[lang] || themeLabels.en;
 }
 (function initTheme() {
-  const saved = localStorage.getItem('theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', saved);
+  const saved = localStorage.getItem('theme');
+  const theme = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  document.documentElement.setAttribute('data-theme', theme);
   updateThemeBtn();
+  // 시스템 테마 변경 감지 (사용자가 수동 설정하지 않은 경우)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+      updateThemeBtn();
+    }
+  });
   // 언어 버튼 초기값 동기화
   const lbtn = document.getElementById('lang-btn');
   if (lbtn) lbtn.textContent = { ko: 'KO', en: 'EN', ja: '日' }[lang] || 'KO';
@@ -2349,7 +2374,7 @@ window.loadMempoolHeatmap = loadMempoolHeatmap;
 async function openBlockTreemap(blockId, height) {
   document.getElementById('treemap-modal')?.remove();
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+  modal.className = 'modal-overlay'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
   modal.id = 'treemap-modal';
   modal.innerHTML = `<div class="modal-box" style="max-width:620px;width:95vw">
     <div class="modal-header">
@@ -2543,7 +2568,7 @@ function showShortcuts() {
     ['?', lang==='ko'?'이 도움말':lang==='ja'?'ショートカット':'This help'],
   ];
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+  modal.className = 'modal-overlay'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
   modal.id = 'shortcuts-modal';
   modal.innerHTML = `<div class="modal-box" style="max-width:340px">
     <div class="modal-header">
@@ -2696,7 +2721,7 @@ function openBtcCalculator() {
   ];
   const curUsd = window._btcUsd || 66000;
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+  modal.className = 'modal-overlay'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
   modal.id = 'btc-calc-modal';
   modal.innerHTML = `<div class="modal-box" style="max-width:440px">
     <div class="modal-header">
@@ -2730,7 +2755,7 @@ async function openFavDashboard() {
   document.getElementById('fav-dashboard-modal')?.remove();
   const favs = getFavorites().filter(f => f.type === 'address');
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+  modal.className = 'modal-overlay'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
   modal.id = 'fav-dashboard-modal';
   modal.innerHTML = `<div class="modal-box" style="max-width:500px">
     <div class="modal-header">
@@ -2766,7 +2791,7 @@ function openAddressNotes(address) {
   const key = 'addr_notes_' + address;
   const saved = localStorage.getItem(key) || '';
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+  modal.className = 'modal-overlay'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
   modal.id = 'addr-notes-modal';
   modal.innerHTML = `<div class="modal-box" style="max-width:400px">
     <div class="modal-header">
@@ -2804,8 +2829,15 @@ function showSearchHistory() {
   drop.innerHTML = hist.map(h => {
     const ic = h.type==='block'?'▣':h.type==='tx'?'↔':'◎';
     const q = escHtml(h.query.slice(0,28)) + (h.query.length>28?'…':'');
-    return `<div class="sh-item" onclick="document.getElementById('search-input').value='${escHtml(h.query)}';document.getElementById('search-history-drop')?.remove();App.doSearch(false)">${ic} <span class="sh-q">${q}</span><span class="sh-t">${h.type}</span></div>`;
+    return `<div class="sh-item" data-query="${escHtml(h.query)}">${ic} <span class="sh-q">${q}</span><span class="sh-t">${h.type}</span></div>`;
   }).join('');
+  drop.querySelectorAll('.sh-item[data-query]').forEach(el => {
+    el.addEventListener('click', () => {
+      document.getElementById('search-input').value = el.dataset.query;
+      document.getElementById('search-history-drop')?.remove();
+      App.doSearch(false);
+    });
+  });
   document.getElementById('search-wrap')?.appendChild(drop);
 }
 window.showSearchHistory = showSearchHistory;
@@ -2826,7 +2858,7 @@ window.highlightWhaleTx = highlightWhaleTx;
 async function showAddressCluster(address) {
   document.getElementById('cluster-modal')?.remove();
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+  modal.className = 'modal-overlay'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
   modal.id = 'cluster-modal';
   modal.innerHTML = `<div class="modal-box" style="max-width:520px">
     <div class="modal-header">
@@ -2872,7 +2904,7 @@ window.showAddressCluster = showAddressCluster;
 async function openLightningMap() {
   document.getElementById('ln-map-modal')?.remove();
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+  modal.className = 'modal-overlay'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
   modal.id = 'ln-map-modal';
   modal.innerHTML = `<div class="modal-box" style="max-width:560px">
     <div class="modal-header">
@@ -3008,3 +3040,21 @@ document.addEventListener('click', e => {
   const dd = document.getElementById('settings-dropdown');
   if (dd && !dd.contains(e.target)) closeSettings();
 });
+
+// ── 인라인 onclick 대체 이벤트 리스너 ──
+document.getElementById('settings-btn')?.addEventListener('click', toggleSettings);
+document.getElementById('si-fee-calc')?.addEventListener('click', () => { App.openFeeCalc(); closeSettings(); });
+document.getElementById('si-converter')?.addEventListener('click', () => { openConverter(); closeSettings(); });
+document.getElementById('si-btc-calc')?.addEventListener('click', () => { openBtcCalculator(); closeSettings(); });
+document.getElementById('si-fav-dash')?.addEventListener('click', () => { openFavDashboard(); closeSettings(); });
+document.getElementById('si-lightning')?.addEventListener('click', () => { openLightningMap(); closeSettings(); });
+document.getElementById('si-shortcuts')?.addEventListener('click', () => { showShortcuts(); closeSettings(); });
+document.getElementById('slang-ko')?.addEventListener('click', () => App.setLang('ko'));
+document.getElementById('slang-en')?.addEventListener('click', () => App.setLang('en'));
+document.getElementById('slang-ja')?.addEventListener('click', () => App.setLang('ja'));
+document.getElementById('theme-btn')?.addEventListener('click', () => App.toggleTheme());
+document.getElementById('search-btn')?.addEventListener('click', () => App.doSearch(false));
+document.getElementById('mnav-search')?.addEventListener('click', () => App.openMobileSearch());
+document.getElementById('mnav-tools')?.addEventListener('click', () => App.openToolsSheet());
+document.getElementById('close-mobile-search')?.addEventListener('click', () => App.closeMobileSearch());
+document.getElementById('close-tools-sheet')?.addEventListener('click', () => App.closeToolsSheet());

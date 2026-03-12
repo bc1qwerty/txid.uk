@@ -106,7 +106,7 @@ export async function renderTx(app, txid) {
             const val = v.prevout ? v.prevout.value || 0 : 0;
             const addrType = v.prevout ? getAddrType(v.prevout.scriptpubkey_type) : '?';
             return `<div class="tx-io-item stagger-item" style="--i:${i}">
-              <div class="io-addr" ${/^(bc1|1|3)[a-zA-Z0-9]{25,62}$/.test(addr) ? `onclick="location.hash='#/address/${addr}'" style="cursor:pointer"` : 'style="cursor:default;opacity:.7"'}>${addr}</div>
+              <div class="io-addr" ${/^(bc1|1|3)[a-zA-Z0-9]{25,62}$/.test(addr) ? `data-addr="${addr}" style="cursor:pointer"` : 'style="cursor:default;opacity:.7"'}>${addr}</div>
               <div class="io-val">${formatBtc(val)}</div>
               <div class="io-type">${addrType}</div>
             </div>`;
@@ -133,10 +133,10 @@ export async function renderTx(app, txid) {
                 opReturnText = isPrintable
                   ? `<div class="op-return-decoded">\u{1F4AC} "${escHtml(text)}"</div>`
                   : `<div class="op-return-decoded">0x${hexData.slice(0, 40)}${hexData.length > 40 ? "…" : ""}</div>`;
-              } catch {}
+              } catch(e) { console.warn('OP_RETURN decode:', e); }
             }
             return `<div class="${itemClass} stagger-item" style="--i:${i}">
-              <div class="io-addr" ${!isOpReturn && /^(bc1|1|3)[a-zA-Z0-9]{25,62}$/.test(addr) ? `onclick="location.hash='#/address/${addr}'" style="cursor:pointer"` : `style="cursor:default;${isOpReturn?'':'opacity:.7'}"`}>${isOpReturn ? '\u{1F4DD} OP_RETURN' : addr}</div>
+              <div class="io-addr" ${!isOpReturn && /^(bc1|1|3)[a-zA-Z0-9]{25,62}$/.test(addr) ? `data-addr="${addr}" style="cursor:pointer"` : `style="cursor:default;${isOpReturn?'':'opacity:.7'}"`}>${isOpReturn ? '\u{1F4DD} OP_RETURN' : addr}</div>
               <div class="io-val">${formatBtc(o.value)}</div>
               <div class="io-type">${addrType}</div>
               ${opReturnText}
@@ -145,6 +145,11 @@ export async function renderTx(app, txid) {
         </div>
       </div>
     `;
+  // 주소 클릭 이벤트 위임
+  app.querySelectorAll('.io-addr[data-addr]').forEach(el => {
+    el.addEventListener('click', () => { location.hash = '#/address/' + el.dataset.addr; });
+  });
+
   // 미확인 TX 폴링
   if (!isConfirmed) {
     window._txPollInterval = setInterval(async () => {
@@ -159,11 +164,11 @@ export async function renderTx(app, txid) {
             statusBar.textContent = '\u2713 ' + t('confirmed') + ' — Block #' + formatNum(updated.status.block_height);
           }
         }
-      } catch {}
+      } catch(e) { console.warn('TX poll:', e); }
     }, 20000);
   }
   } catch (e) {
-    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box" role="alert">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 

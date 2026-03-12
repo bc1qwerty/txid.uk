@@ -387,7 +387,7 @@ export function showToast(title, body, onClick, duration = 8000) {
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = 'toast';
-  toast.innerHTML = `<span class="toast-close">✕</span><div class="toast-title">${title}</div><div class="toast-body">${body}</div>`;
+  toast.innerHTML = `<span class="toast-close">✕</span><div class="toast-title">${escHtml(title)}</div><div class="toast-body">${escHtml(body)}</div>`;
   toast.querySelector('.toast-close').addEventListener('click', (e) => { e.stopPropagation(); toast.remove(); });
   if (onClick) toast.addEventListener('click', onClick);
   container.appendChild(toast);
@@ -524,7 +524,7 @@ export async function checkMonitoredAddresses() {
       }
       m[addr].txCount = totalTx;
       m[addr].lastCheck = Date.now();
-    } catch {}
+    } catch(e) { console.warn(e); }
   }
   saveMonitoredAddrs(m);
 }
@@ -543,11 +543,11 @@ export async function resolveHex64(hex) {
   try {
     const block = await api('/block/' + hex);
     if (block && block.id) return 'block';
-  } catch {}
+  } catch(e) { console.warn(e); }
   try {
     const tx = await api('/tx/' + hex);
     if (tx && tx.txid) return 'tx';
-  } catch {}
+  } catch(e) { console.warn(e); }
   return null;
 }
 
@@ -600,7 +600,7 @@ export function setAddrLabel(addr, label) {
     const m = JSON.parse(localStorage.getItem('addr_labels')||'{}');
     if (label) m[addr] = label; else delete m[addr];
     localStorage.setItem('addr_labels', JSON.stringify(m));
-  } catch {}
+  } catch(e) { console.warn(e); }
 }
 export function promptAddrLabel(addr) {
   const cur = getAddrLabel(addr);

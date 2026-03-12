@@ -116,7 +116,7 @@ export async function renderAddress(app, address) {
     loadAddrTxs(address, null);
     loadAddressBalanceChart(address);
   } catch (e) {
-    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box" role="alert">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 
@@ -178,7 +178,7 @@ export async function loadAddrTxs(address, lastTxid) {
       moreBtn.innerHTML = '';
     }
   } catch (e) {
-    container.innerHTML = `<div class="error-box">${t('error')}</div>`;
+    container.innerHTML = `<div class="error-box" role="alert">${t('error')}</div>`;
   }
 }
 
@@ -206,7 +206,7 @@ export async function loadAddrUtxo(address) {
         </table>
       </div>`;
   } catch (e) {
-    container.innerHTML = `<div class="error-box">${t('error')}</div>`;
+    container.innerHTML = `<div class="error-box" role="alert">${t('error')}</div>`;
   }
 }
 
@@ -228,7 +228,7 @@ export async function loadAddressBalanceChart(address) {
     });
     if (points.length < 2) return;
     drawLineChart(canvas, points, 'BTC', '#f7931a');
-  } catch {}
+  } catch(e) { console.warn('address balance chart:', e); }
 }
 
 // ── 주소 클러스터 분석 ──

@@ -110,7 +110,7 @@ export async function renderBlock(app, param) {
             }
           }
         }
-      } catch {}
+      } catch(e) { console.warn('coinbase parse:', e); }
     })();
 
     // 블록 네비게이션 삽입
@@ -134,7 +134,7 @@ export async function renderBlock(app, param) {
     loadBlockTxs(block.id, block.tx_count, 0);
     // 블록 treemap 버튼 (page-actions에 이미 있음)
   } catch (e) {
-    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box" role="alert">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 
@@ -192,7 +192,7 @@ export async function loadBlockTxs(blockHash, totalCount, startIdx) {
       </div>
     `;
   } catch (e) {
-    container.innerHTML = `<div class="error-box">${t('error')}</div>`;
+    container.innerHTML = `<div class="error-box" role="alert">${t('error')}</div>`;
   }
 }
 
@@ -219,7 +219,7 @@ export async function openBlockTreemap(blockId, height) {
   try {
     const txs = await api('/block/' + blockId + '/txs/0');
     setTimeout(() => drawBlockTreemap(txs), 80);
-  } catch {}
+  } catch(e) { console.warn('block treemap:', e); }
 }
 
 function drawBlockTreemap(txs) {

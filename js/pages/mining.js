@@ -115,7 +115,7 @@ export async function renderMining(app) {
     app.appendChild(poolCard);
     setTimeout(() => renderPoolChart(topMiners, recentBlocks.length), 200);
   } catch (e) {
-    NProgress.done(); app.innerHTML = `<div class="error-box">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
+    NProgress.done(); app.innerHTML = `<div class="error-box" role="alert">${t('error')}<br><small>${escHtml(e.message)}</small></div>`;
   }
 }
 
