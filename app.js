@@ -1,4 +1,13 @@
 
+// ── AbortSignal.timeout() 폴리필 ──────────────────
+if (!AbortSignal.timeout) {
+  AbortSignal.timeout = (ms) => {
+    const c = new AbortController();
+    setTimeout(() => c.abort(new DOMException('TimeoutError', 'TimeoutError')), ms);
+    return c.signal;
+  };
+}
+
 // ── 상단 진행 바 ──────────────────
 const NProgress = (() => {
   let bar, timer, val = 0, running = false;
@@ -32,11 +41,20 @@ const NProgress = (() => {
 
 // ── 외부 라이브러리 동적 로더 ──────────────────
 const _loadedScripts = {};
+const CDN_SRI = {
+  'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js': 'sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1',
+  'https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js': 'sha384-OK7vELvjHdhUFi31JYioPIcRHTROLdcDa6ZsNWgvgLaKj+9JqhU0Ad8g4wz3CXjA',
+  'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js': 'sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i',
+};
 function loadScript(url) {
   if (_loadedScripts[url]) return _loadedScripts[url];
   _loadedScripts[url] = new Promise((resolve, reject) => {
     const s = document.createElement('script');
     s.src = url; s.async = true;
+    if (CDN_SRI[url]) {
+      s.integrity = CDN_SRI[url];
+      s.crossOrigin = 'anonymous';
+    }
     s.onload = resolve; s.onerror = reject;
     document.head.appendChild(s);
   });

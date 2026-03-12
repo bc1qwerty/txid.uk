@@ -2008,3 +2008,25 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 #nprogress .bar::after { content: ''; display: block; position: absolute; right: 0; width: 100px; height: 100%; box-shadow: 0 0 10px var(--accent), 0 0 5px var(--accent); opacity: 1; transform: rotate(3deg) translateY(-4px); }
 #nprogress .peg { display: block; position: absolute; right: 0; width: 100px; height: 100%; box-shadow: 0 0 10px var(--accent), 0 0 5px var(--accent); opacity: 1; transform: rotate(3deg) translateY(-4px); }
 @keyframes nprogress-spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* ── Accessibility Improvements ── */
+
+/* Minimum touch target size (WCAG 2.5.8) */
+.mnav-item { min-height: 44px; }
+.icon-btn, .settings-item, #search-btn { min-height: 44px; min-width: 44px; }
+.mobile-tool-item { min-height: 44px; min-width: 44px; }
+
+/* Improved contrast for --text3 (#6e7681) on dark bg */
+[data-theme="dark"] .stat-lbl,
+[data-theme="dark"] .stat-change { color: #8b949e; }
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  #nprogress .bar { transition: none !important; }
+}
