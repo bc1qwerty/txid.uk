@@ -70,7 +70,7 @@ async function route() {
 
   switch (path) {
     case '': {
-      const { renderHome } = await import('./pages/home.js');
+      const { renderHome } = await import('./pages/home.js?v=20260312');
       renderHome(app);
       break;
     }
