@@ -296,8 +296,8 @@ header {
 }
 /* ── 헤더 버튼 공통 ── */
 #lang-btn, #theme-btn, #fee-calc-header-btn, .icon-btn {
-  background: none;
-  border: 1px solid var(--border);
+  background: var(--bg3);
+  border: 1px solid var(--border2);
   color: var(--text2);
   font-family: var(--font-ko);
   font-size: .72rem;
@@ -320,7 +320,7 @@ header {
 #lang-btn:focus, #theme-btn:focus, #fee-calc-header-btn:focus, .icon-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
 
 /* ── Stats Bar ── */
-#learn-links-bar { max-width: var(--max-w); margin: 0 auto; padding: 0 16px; }
+#learn-links-bar { max-width: var(--max-w); margin: 0 auto; }
 #learn-links-bar:empty { display: none; }
 #stats-bar {
   background: linear-gradient(180deg, var(--bg2), rgba(22,27,34,0.8));
