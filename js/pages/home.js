@@ -81,7 +81,7 @@ export async function renderHome(app) {
   // 최근 블록
   _lastBlockHeights = null;  // 라우팅 시 캐시 초기화
   const blocksSection = document.createElement('div');
-  blocksSection.innerHTML = `<div class="section-title">${icon('pickaxe')} ${t('recentBlocks')}</div><div class="blocks-grid" id="recent-blocks">${skeletonCards(8)}</div>`;
+  blocksSection.innerHTML = `<div class="section-title">${t('recentBlocks')}</div><div class="blocks-grid" id="recent-blocks">${skeletonCards(8)}</div>`;
   app.appendChild(blocksSection);
 
   // Charts placeholder

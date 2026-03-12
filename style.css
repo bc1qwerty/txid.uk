@@ -556,6 +556,7 @@ footer {
   font-size: .9rem;
   font-weight: 600;
   color: var(--text1);
+  margin-top: 40px;
   margin-bottom: 14px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
@@ -2020,7 +2021,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 
 /* Minimum touch target size (WCAG 2.5.8) */
 .mnav-item { min-height: 44px; }
-.settings-item, #search-btn { min-height: 44px; min-width: 44px; }
+.settings-item { min-height: 44px; min-width: 44px; }
 .mobile-tool-item { min-height: 44px; min-width: 44px; }
 
 /* Improved contrast for --text3 (#6e7681) on dark bg */
