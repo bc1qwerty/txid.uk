@@ -171,7 +171,8 @@ export async function loadAddrTxs(address, lastTxid) {
         }, { threshold: 0.1 });
         obs.observe(document.getElementById('addr-txs-sentinel'));
       } else {
-        moreBtn.innerHTML = `<div class="pagination"><button onclick="loadAddrTxs('${address}', '${lastId}')">${t('next')} →</button></div>`;
+        moreBtn.innerHTML = `<div class="pagination"><button class="load-more-btn" data-address="${escHtml(address)}" data-last="${escHtml(lastId)}">${t('next')} →</button></div>`;
+        moreBtn.querySelector('.load-more-btn').addEventListener('click', () => loadAddrTxs(address, lastId));
       }
     } else {
       moreBtn.innerHTML = '';

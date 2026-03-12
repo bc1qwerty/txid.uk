@@ -2,7 +2,7 @@
 // tools.js — 도구 모달 (수수료 계산, QR, 변환기, 단축키 등)
 // ═══════════════════════════════════════════
 
-import { state, t, api, loadScript, CDN_QRCODE, escHtml, formatNum, formatBtc, shortHash, showToast, getFavorites, coloredFeeRate } from './core.js';
+import { state, t, api, loadScript, CDN_QRCODE, escHtml, formatNum, formatBtc, shortHash, showToast, getFavorites, coloredFeeRate, trapFocus } from './core.js';
 import { statsData } from './stats.js';
 
 function navigate(hash) { location.hash = hash; }
@@ -89,15 +89,22 @@ async function showQRModal(address) {
   modal.id = 'qr-modal';
   modal.onclick = function(e) { if (e.target === this) this.remove(); };
   modal.innerHTML = `<div class="modal">
-    <button class="modal-close" onclick="document.getElementById('qr-modal').remove()">✕</button>
+    <button class="modal-close">✕</button>
     <div class="qr-modal-content">
       <h2>📱 ${t('qrView')}</h2>
       <div id="qr-code"></div>
       <div class="qr-addr-text">${escHtml(address)}</div>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('${escHtml(address)}').then(()=>{this.textContent='${t('copied')}'});setTimeout(()=>{this.textContent='${t('copy')}'},1500)">${t('copy')}</button>
+      <button class="copy-btn">${t('copy')}</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
+  modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
+  modal.querySelector('.copy-btn').addEventListener('click', function() {
+    const btn = this;
+    navigator.clipboard.writeText(address).then(() => { btn.textContent = t('copied'); });
+    setTimeout(() => { btn.textContent = t('copy'); }, 1500);
+  });
+  trapFocus(modal);
 
   // Generate QR using qrcode-generator (동적 로드)
   await loadScript(CDN_QRCODE).catch(()=>{});

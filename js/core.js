@@ -387,7 +387,8 @@ export function showToast(title, body, onClick, duration = 8000) {
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = 'toast';
-  toast.innerHTML = `<span class="toast-close" onclick="event.stopPropagation();this.parentElement.remove()">✕</span><div class="toast-title">${title}</div><div class="toast-body">${body}</div>`;
+  toast.innerHTML = `<span class="toast-close">✕</span><div class="toast-title">${title}</div><div class="toast-body">${body}</div>`;
+  toast.querySelector('.toast-close').addEventListener('click', (e) => { e.stopPropagation(); toast.remove(); });
   if (onClick) toast.addEventListener('click', onClick);
   container.appendChild(toast);
   requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
@@ -395,6 +396,28 @@ export function showToast(title, body, onClick, duration = 8000) {
     toast.classList.remove('show');
     setTimeout(() => toast.remove(), 300);
   }, duration);
+}
+
+// ═══════════════════════════════════════════
+// MODAL FOCUS TRAP
+// ═══════════════════════════════════════════
+export function trapFocus(modal) {
+  const focusable = 'a[href],button:not([disabled]),input:not([disabled]),textarea,select,[tabindex]:not([tabindex="-1"])';
+  function handler(e) {
+    if (e.key !== 'Tab') return;
+    const els = modal.querySelectorAll(focusable);
+    if (!els.length) return;
+    const first = els[0], last = els[els.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+  function escHandler(e) { if (e.key === 'Escape') modal.remove(); }
+  modal.addEventListener('keydown', handler);
+  modal.addEventListener('keydown', escHandler);
+  requestAnimationFrame(() => {
+    const first = modal.querySelector(focusable);
+    if (first) first.focus();
+  });
 }
 
 // ═══════════════════════════════════════════
