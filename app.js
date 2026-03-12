@@ -565,43 +565,8 @@ async function updateStats(force = false) {
     flashStat('s-size', (mem.vsize / 1e6).toFixed(1) + ' MB');
     flashStat('s-fee', fees.fastestFee + ' sat/vB');
 
-    // BTC/USD + KRW + 도미 병렬 fetch
-    const [cgRes, upbitRes, globalRes] = await Promise.allSettled([
-      fetch('https://mempool.space/api/v1/prices', {signal: AbortSignal.timeout(8000)}).then(r=>r.json()),
-      fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC', {signal: AbortSignal.timeout(8000)}).then(r=>r.json()),
-      fetch('https://api.coingecko.com/api/v3/global', {signal: AbortSignal.timeout(10000)}).then(r=>r.json()).catch(()=>fetch('https://api.coinpaprika.com/v1/global', {signal: AbortSignal.timeout(10000)}).then(r=>r.json()))
-    ]);
-
-    if (cgRes.status === 'fulfilled' && cgRes.value?.USD) {
-      window._btcUsd = cgRes.value.USD;
-      flashStat('s-usd', '$' + formatNum(cgRes.value.USD));
-    }
-    if (upbitRes.status === 'fulfilled' && upbitRes.value?.[0]) {
-      const u = upbitRes.value[0];
-      window._btcKrw = u.trade_price;
-      const change = u.signed_change_rate * 100;
-      const priceStr = u.trade_price >= 1e8 ? (u.trade_price/1e8).toFixed(2)+'억' : Math.round(u.trade_price/1e4)+'만';
-      flashStat('s-krw', priceStr+'원');
-      const krwCh = document.getElementById('s-krw-change');
-      if (krwCh) { krwCh.textContent = (change>=0?'+':'')+change.toFixed(2)+'%'; krwCh.className='stat-change '+(change>=0?'up':'down'); }
-    }
-    if (globalRes.status === 'fulfilled') {
-      const v = globalRes.value;
-      const dom = v?.data?.market_cap_percentage?.btc ?? v?.bitcoin_dominance_percentage;
-      if (dom) flashStat('s-dom', parseFloat(dom).toFixed(1) + '%');
-    }
-
-    // 멤풀 TPS (vbytes_per_second 기반)
-    try {
-      const stats = await fetch('https://mempool.space/api/v1/statistics/2h').then(r=>r.json());
-      if (Array.isArray(stats) && stats.length) {
-        const latest = stats[stats.length - 1];
-        const vbps = latest.vbytes_per_second || 0;
-        // 평균 트랜잭션 vsize ~250vB
-        const tps = vbps / 250;
-        flashStat('s-tps', tps.toFixed(1) + ' tx/s');
-      }
-    } catch {}
+    // BTC/USD + 도미 + TPS — 초기 로드 시 지연 호출, 이후 매 업데이트마다
+    if (!force) updateSecondaryStats();
 
     // 반감기 카운트다운
     const currentHeight = Number(height);
@@ -639,10 +604,56 @@ function flashStat(id, newVal) {
   }
 }
 
+// ── 보조 통계 (USD, 도미넌스, TPS) — 초기 로드 후 지연 호출 ──
+async function updateSecondaryStats() {
+  try {
+    const [cgRes, globalRes] = await Promise.allSettled([
+      fetch('https://mempool.space/api/v1/prices', {signal: AbortSignal.timeout(8000)}).then(r=>r.json()),
+      fetch('https://api.coingecko.com/api/v3/global', {signal: AbortSignal.timeout(10000)}).then(r=>r.json()).catch(()=>fetch('https://api.coinpaprika.com/v1/global', {signal: AbortSignal.timeout(10000)}).then(r=>r.json()))
+    ]);
+    if (cgRes.status === 'fulfilled' && cgRes.value?.USD) {
+      window._btcUsd = cgRes.value.USD;
+      flashStat('s-usd', '$' + formatNum(cgRes.value.USD));
+    }
+    if (globalRes.status === 'fulfilled') {
+      const v = globalRes.value;
+      const dom = v?.data?.market_cap_percentage?.btc ?? v?.bitcoin_dominance_percentage;
+      if (dom) flashStat('s-dom', parseFloat(dom).toFixed(1) + '%');
+    }
+  } catch {}
+  try {
+    const stats = await fetch('https://mempool.space/api/v1/statistics/2h', {signal: AbortSignal.timeout(8000)}).then(r=>r.json());
+    if (Array.isArray(stats) && stats.length) {
+      const latest = stats[stats.length - 1];
+      const tps = (latest.vbytes_per_second || 0) / 250;
+      flashStat('s-tps', tps.toFixed(1) + ' tx/s');
+    }
+  } catch {}
+}
+
 updateStats(true);
+setTimeout(updateSecondaryStats, 2000); // 보조 통계는 2초 후 로드
 updateMonitorBadge();
-setInterval(() => { if (navigator.onLine) updateStats(); }, 30000);
-setInterval(checkMonitoredAddresses, 60000);
+
+// ── Page Visibility API: 비활성 탭에서 폴링 중단 ──
+let _statsInterval = setInterval(() => { if (navigator.onLine) updateStats(); }, 30000);
+let _monitorInterval = setInterval(checkMonitoredAddresses, 60000);
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    clearInterval(_statsInterval);
+    clearInterval(_monitorInterval);
+    _statsInterval = null;
+    _monitorInterval = null;
+  } else {
+    if (!_statsInterval) {
+      updateStats();
+      updateSecondaryStats();
+      _statsInterval = setInterval(() => { if (navigator.onLine) updateStats(); }, 30000);
+      _monitorInterval = setInterval(checkMonitoredAddresses, 60000);
+    }
+  }
+});
 
 // ── 네비게이션 활성 상태 ──
 function updateActiveNav(path) {
