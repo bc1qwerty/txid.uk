@@ -16,7 +16,7 @@
   Cache-Control: public, max-age=31536000, immutable
 
 /style.css
-  Cache-Control: public, max-age=300
+  Cache-Control: public, max-age=0, must-revalidate
 
 /sw.js
   Cache-Control: no-cache
