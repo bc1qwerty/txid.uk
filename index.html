@@ -85,8 +85,8 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
     </div>
       <div class="nav-right">
       <span id="monitor-badge" class="monitor-badge" style="display:none" title="모니터링 중">0</span>
-      <!-- 도구 패널 -->
-      <div class="settings-dropdown" id="settings-dropdown">
+      <!-- 도구 패널 (데스크톱만) -->
+      <div class="settings-dropdown desktop-only" id="settings-dropdown">
         <button class="icon-btn" id="settings-btn" title="도구" aria-label="도구" aria-expanded="false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
@@ -121,7 +121,7 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
         </div>
       </div>
       <div id="txid-auth-mount" style="position:relative;display:inline-flex"></div>
-      <div class="lang-dropdown">
+      <div class="lang-dropdown desktop-only">
         <button class="lang-btn" id="lang-btn" title="언어 변경" aria-label="언어 선택" aria-expanded="false">KO</button>
         <div class="lang-menu" id="lang-menu" role="menu" aria-label="언어 선택">
           <button role="menuitem">한국어</button>
@@ -129,7 +129,29 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
           <button role="menuitem">日本語</button>
         </div>
       </div>
-      <button class="theme-btn" id="theme-btn" title="테마 전환" aria-label="테마 전환"></button>
+      <button class="theme-btn desktop-only" id="theme-btn" title="테마 전환" aria-label="테마 전환"></button>
+      <!-- 햄버거 (모바일만) -->
+      <div class="hamburger-wrap mobile-only">
+        <button class="icon-btn" id="hamburger-btn" aria-label="메뉴" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="hamburger-panel" id="hamburger-panel">
+          <div class="settings-section">
+            <div class="settings-label" data-ko="언어" data-en="Language" data-ja="言語">언어</div>
+            <div class="settings-lang-row">
+              <button class="settings-lang-btn" data-lang="ko">KO</button>
+              <button class="settings-lang-btn" data-lang="en">EN</button>
+              <button class="settings-lang-btn" data-lang="ja">JA</button>
+            </div>
+          </div>
+          <div class="settings-section settings-section--border">
+            <button class="settings-item" id="hamburger-theme-btn">
+              <span id="hamburger-theme-icon"></span>
+              <span id="hamburger-theme-label" data-ko="테마 전환" data-en="Toggle Theme" data-ja="テーマ切替">테마 전환</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="nav-search">
