@@ -85,57 +85,51 @@ fetch("static/icons.svg").then(r=>r.text()).then(t=>{
     </div>
       <div class="nav-right">
       <span id="monitor-badge" class="monitor-badge" style="display:none" title="모니터링 중">0</span>
-      <!-- 설정 패널 -->
+      <!-- 도구 패널 -->
       <div class="settings-dropdown" id="settings-dropdown">
-        <button class="icon-btn" id="settings-btn" title="설정" aria-label="설정" aria-expanded="false">
+        <button class="icon-btn" id="settings-btn" title="도구" aria-label="도구" aria-expanded="false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
         <div class="settings-panel" id="settings-panel">
           <div class="settings-section">
-            <div class="settings-label">도구</div>
+            <div class="settings-label" data-ko="도구" data-en="Tools" data-ja="ツール">도구</div>
             <button class="settings-item" id="si-fee-calc">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="14" height="14" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="11" y2="14"/><line x1="8" y1="18" x2="11" y2="18"/></svg>
-              <span>수수료 계산기</span>
+              <span data-ko="수수료 계산기" data-en="Fee Calculator" data-ja="手数料計算機">수수료 계산기</span>
             </button>
             <button class="settings-item" id="si-converter">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-              <span>단위 변환기</span>
+              <span data-ko="단위 변환기" data-en="Unit Converter" data-ja="単位変換">단위 변환기</span>
             </button>
             <button class="settings-item" id="si-btc-calc">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              <span>BTC 구매력 계산기</span>
+              <span data-ko="BTC 구매력 계산기" data-en="BTC Calculator" data-ja="BTC計算機">BTC 구매력 계산기</span>
             </button>
             <button class="settings-item" id="si-fav-dash">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              <span>즐겨찾기 대시보드</span>
+              <span data-ko="즐겨찾기 대시보드" data-en="Favorites" data-ja="お気に入り">즐겨찾기 대시보드</span>
             </button>
             <button class="settings-item" id="si-lightning">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>라이트닝 노드 지도</span>
+              <span data-ko="라이트닝 노드 지도" data-en="Lightning Map" data-ja="ライトニング地図">라이트닝 노드 지도</span>
             </button>
             <button class="settings-item" id="si-shortcuts">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <span>단축키 도움말</span>
-            </button>
-          </div>
-          <div class="settings-section settings-section--border">
-            <div class="settings-label">언어</div>
-            <div class="settings-lang-row">
-              <button class="settings-lang-btn" id="slang-ko">KO</button>
-              <button class="settings-lang-btn" id="slang-en">EN</button>
-              <button class="settings-lang-btn" id="slang-ja">日</button>
-            </div>
-          </div>
-          <div class="settings-section settings-section--border">
-            <div class="settings-label">테마</div>
-            <button class="settings-item" id="theme-btn">
-              <span id="theme-icon"></span>
-              <span id="theme-label">라이트 모드로 전환</span>
+              <span data-ko="단축키 도움말" data-en="Shortcuts" data-ja="ショートカット">단축키 도움말</span>
             </button>
           </div>
         </div>
       </div>
       <div id="txid-auth-mount" style="position:relative;display:inline-flex"></div>
+      <div class="lang-dropdown">
+        <button class="lang-btn" id="lang-btn" title="언어 변경" aria-label="언어 선택" aria-expanded="false">KO</button>
+        <div class="lang-menu" id="lang-menu" role="menu" aria-label="언어 선택">
+          <button role="menuitem">한국어</button>
+          <button role="menuitem">English</button>
+          <button role="menuitem">日本語</button>
+        </div>
+      </div>
+      <button class="theme-btn" id="theme-btn" title="테마 전환" aria-label="테마 전환"></button>
     </div>
   </div>
   <div class="nav-search">

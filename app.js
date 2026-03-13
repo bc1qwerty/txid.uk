@@ -2068,17 +2068,20 @@ window.App = {
   },
 
   toggleLangMenu() {
-    document.getElementById('lang-menu')?.classList.toggle('open');
+    const m = document.getElementById('lang-menu');
+    m?.classList.toggle('open');
+    document.getElementById('lang-btn')?.setAttribute('aria-expanded', m?.classList.contains('open') || false);
   },
   setLang(newLang) {
     lang = newLang;
     localStorage.setItem('lang', lang);
     document.documentElement.lang = lang;
-    // slang 버튼 active
-    ['ko','en','ja'].forEach(l => {
-      const b = document.getElementById('slang-' + l);
-      if (b) b.classList.toggle('active', l === lang);
-    });
+    // lang-btn 텍스트 업데이트
+    const lbtn = document.getElementById('lang-btn');
+    if (lbtn) lbtn.textContent = { ko: 'KO', en: 'EN', ja: 'JA' }[lang] || 'KO';
+    // lang-menu 닫기
+    document.getElementById('lang-menu')?.classList.remove('open');
+    document.getElementById('lang-btn')?.setAttribute('aria-expanded', 'false');
     document.getElementById('search-input').placeholder = t('search_ph');
     document.getElementById('tagline').textContent = t('tagline');
     document.querySelectorAll('[data-ko]').forEach(el => {
@@ -2091,6 +2094,8 @@ window.App = {
         el.textContent = el.dataset[lang] || el.dataset.en || el.dataset.ko;
       }
     });
+    // 테마 버튼 title 업데이트
+    updateThemeBtn();
     route();
   },
 
@@ -2167,40 +2172,9 @@ function updateThemeBtn() {
   const btn = document.getElementById('theme-btn');
   if (!btn) return;
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-  // settings panel theme label
-  const tIcon = document.getElementById('theme-icon');
-  const tLabel = document.getElementById('theme-label');
-  if (tIcon) tIcon.innerHTML = isDark
-    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>`
-    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
-  if (tLabel) {
-    const themeLabelTexts = {
-      ko: isDark ? '라이트 모드로 변경' : '다크 모드로 변경',
-      en: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-      ja: isDark ? 'ライトモードに変更' : 'ダークモードに変更',
-    };
-    tLabel.textContent = themeLabelTexts[lang] || themeLabelTexts.ko;
-  }
-  // 언어 버튼 active 상태
-  ['ko','en','ja'].forEach(l => {
-    const b = document.getElementById('slang-' + l);
-    if (b) b.classList.toggle('active', l === lang);
-  });
   btn.innerHTML = isDark
-    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
-        <circle cx="12" cy="12" r="4"/>
-        <line x1="12" y1="2" x2="12" y2="5"/>
-        <line x1="12" y1="19" x2="12" y2="22"/>
-        <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/>
-        <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
-        <line x1="2" y1="12" x2="5" y2="12"/>
-        <line x1="19" y1="12" x2="22" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
-        <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
-      </svg>`
-    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>`;
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
   const themeLabels = {
     ko: isDark ? '라이트 모드로 전환' : '다크 모드로 전환',
     en: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
@@ -2222,7 +2196,7 @@ function updateThemeBtn() {
   });
   // 언어 버튼 초기값 동기화
   const lbtn = document.getElementById('lang-btn');
-  if (lbtn) lbtn.textContent = { ko: 'KO', en: 'EN', ja: '日' }[lang] || 'KO';
+  if (lbtn) lbtn.textContent = { ko: 'KO', en: 'EN', ja: 'JA' }[lang] || 'KO';
 })();
 
 // Enter 키 검색
@@ -3049,9 +3023,22 @@ document.getElementById('si-btc-calc')?.addEventListener('click', () => { openBt
 document.getElementById('si-fav-dash')?.addEventListener('click', () => { openFavDashboard(); closeSettings(); });
 document.getElementById('si-lightning')?.addEventListener('click', () => { openLightningMap(); closeSettings(); });
 document.getElementById('si-shortcuts')?.addEventListener('click', () => { showShortcuts(); closeSettings(); });
-document.getElementById('slang-ko')?.addEventListener('click', () => App.setLang('ko'));
-document.getElementById('slang-en')?.addEventListener('click', () => App.setLang('en'));
-document.getElementById('slang-ja')?.addEventListener('click', () => App.setLang('ja'));
+// 언어 메뉴
+document.getElementById('lang-btn')?.addEventListener('click', () => App.toggleLangMenu());
+document.querySelectorAll('#lang-menu button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const map = { '한국어': 'ko', 'English': 'en', '日本語': 'ja' };
+    App.setLang(map[btn.textContent] || 'ko');
+  });
+});
+document.addEventListener('click', e => {
+  const m = document.getElementById('lang-menu');
+  if (m && !e.target.closest('.lang-dropdown')) {
+    m.classList.remove('open');
+    document.getElementById('lang-btn')?.setAttribute('aria-expanded', 'false');
+  }
+});
+// 테마
 document.getElementById('theme-btn')?.addEventListener('click', () => App.toggleTheme());
 document.getElementById('search-btn')?.addEventListener('click', () => App.doSearch(false));
 document.getElementById('mnav-search')?.addEventListener('click', () => App.openMobileSearch());
