@@ -365,6 +365,15 @@ header {
   100% { color: var(--accent); text-shadow: none; }
 }
 .stat-val.flash { animation: stat-flash 0.6s ease; }
+.stat-val.stat-loading {
+  background: linear-gradient(90deg, var(--text3) 0%, var(--accent) 50%, var(--text3) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: stat-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes stat-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 /* ── Main ── */
 main {

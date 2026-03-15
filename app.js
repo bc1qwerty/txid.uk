@@ -571,6 +571,29 @@ window.addEventListener('mempool:newblock', (e) => {
 let statsData = {};
 let lastKnownHeight = null;
 
+// Instant cache: show previous values immediately on load
+(function restoreStatsCache() {
+  try {
+    var c = JSON.parse(localStorage.getItem('_statsCache'));
+    if (c && Date.now() - c.ts < 600000) { // 10분 이내 캐시만
+      var m = c.data;
+      if (m.height) flashStat('s-block', formatNum(m.height));
+      if (m.txCount) flashStat('s-tx', formatNum(m.txCount));
+      if (m.mempoolSize) flashStat('s-size', m.mempoolSize);
+      if (m.fee) flashStat('s-fee', m.fee);
+      if (m.usd) flashStat('s-usd', '$' + formatNum(m.usd));
+      if (m.dom) flashStat('s-dom', m.dom);
+      if (m.tps) flashStat('s-tps', m.tps);
+      if (m.halving) flashStat('s-halving', m.halving);
+      if (m.halvingSub) { var he = document.getElementById('s-halving-sub'); if (he) he.textContent = m.halvingSub; }
+    }
+  } catch(e) {}
+  // Add loading pulse to stats still showing "—"
+  document.querySelectorAll('.stat-val').forEach(function(el) {
+    if (el.textContent === '—' || el.textContent === '\u2014') el.classList.add('stat-loading');
+  });
+})();
+
 let _statsLastRun = 0;
 async function updateStats(force = false) {
   const now = Date.now();
@@ -595,8 +618,11 @@ async function updateStats(force = false) {
     flashStat('s-size', (mem.vsize / 1e6).toFixed(1) + ' MB');
     flashStat('s-fee', fees.fastestFee + ' sat/vB');
 
-    // BTC/USD + 도미 + TPS — 초기 로드 시 지연 호출, 이후 매 업데이트마다
-    if (!force) updateSecondaryStats();
+    // BTC/USD + 도미 + TPS
+    updateSecondaryStats();
+
+    // Cache for instant restore on next visit
+    _saveStatsCache();
 
     // 반감기 카운트다운
     const currentHeight = Number(height);
@@ -618,6 +644,7 @@ async function updateStats(force = false) {
 function flashStat(id, newVal) {
   const el = document.getElementById(id);
   if (!el) return;
+  el.classList.remove('stat-loading');
   const oldVal = el.textContent;
   // 숫자+기호는 Space Mono, 한글 단위는 Pretendard로 분리
   const formatted = String(newVal).replace(
@@ -659,10 +686,22 @@ async function updateSecondaryStats() {
       flashStat('s-tps', tps.toFixed(1) + ' tx/s');
     }
   } catch {}
+  _saveStatsCache();
 }
 
 updateStats(true);
-setTimeout(updateSecondaryStats, 2000); // 보조 통계는 2초 후 로드
+// 보조 통계도 즉시 병렬 로드 (지연 제거)
+updateSecondaryStats();
+
+function _saveStatsCache() {
+  try {
+    var data = {};
+    var ids = {height:'s-block',txCount:'s-tx',mempoolSize:'s-size',fee:'s-fee',usd:'s-usd',dom:'s-dom',tps:'s-tps',halving:'s-halving'};
+    for (var k in ids) { var e = document.getElementById(ids[k]); if (e && e.textContent !== '—') data[k] = e.textContent; }
+    var he = document.getElementById('s-halving-sub'); if (he && he.textContent) data.halvingSub = he.textContent;
+    localStorage.setItem('_statsCache', JSON.stringify({ts:Date.now(),data:data}));
+  } catch(e) {}
+}
 updateMonitorBadge();
 
 // ── Page Visibility API: 비활성 탭에서 폴링 중단 ──
