@@ -22,17 +22,17 @@ function renderFeeCalcModal() {
     { label: state.lang === 'ko' ? '직접 입력' : state.lang === 'ja' ? 'カスタム' : 'Custom', vb: 0 },
   ];
 
-  return `<div class="modal-overlay" id="fee-calc-modal" onclick="if(event.target===this)this.remove()">
+  return `<div class="modal-overlay" id="fee-calc-modal" data-dismiss-overlay>
     <div class="modal">
-      <button class="modal-close" onclick="document.getElementById('fee-calc-modal').remove()">✕</button>
+      <button class="modal-close" data-dismiss="fee-calc-modal">✕</button>
       <h2>${t('feeCalc')}</h2>
       <label>TX ${t('type')}</label>
-      <select id="fc-type" onchange="updateFeeCalc()">
+      <select id="fc-type" data-onchange="updateFeeCalc">
         ${txTypes.map((tt, i) => `<option value="${i}">${tt.label} ${tt.vb ? '(~' + tt.vb + ' vB)' : ''}</option>`).join('')}
       </select>
       <div id="fc-custom-wrap" style="display:none">
         <label>vBytes</label>
-        <input type="number" id="fc-vbytes" value="200" min="1" onchange="updateFeeCalc()">
+        <input type="number" id="fc-vbytes" value="200" min="1" data-onchange="updateFeeCalc">
       </div>
       <table class="fee-table" id="fc-table">
         <thead><tr><th>${t('speed')}</th><th>${t('feeRate')}</th><th>${t('estFee')} (sat)</th><th>${t('estFee')} (BTC)</th><th>${t('estTime')}</th></tr></thead>
@@ -132,7 +132,7 @@ function openConverter() {
     <div class="modal-box" style="max-width:340px">
       <div class="modal-header">
         <span>${state.lang==='ko'?'단위 변환기':state.lang==='ja'?'単位換算':'Unit Converter'}</span>
-        <button class="modal-close" onclick="document.getElementById('converter-modal')?.remove()">✕</button>
+        <button class="modal-close" data-dismiss="converter-modal">✕</button>
       </div>
       <div class="converter-rows" id="conv-rows">
         ${['BTC','Sat','KRW','USD'].map(u => `
@@ -173,7 +173,7 @@ function showShortcuts() {
   modal.innerHTML = `<div class="modal-box" style="max-width:340px">
     <div class="modal-header">
       <span>${state.lang==='ko'?'키보드 단축키':state.lang==='ja'?'キーボードショートカット':'Keyboard Shortcuts'}</span>
-      <button class="modal-close" onclick="document.getElementById('shortcuts-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="shortcuts-modal">✕</button>
     </div>
     <div class="shortcuts-list">
       ${kbShortcuts.map(([k,d]) => `<div class="shortcut-row"><kbd class="shortcut-key">${k}</kbd><span class="shortcut-desc">${d}</span></div>`).join('')}
@@ -198,7 +198,7 @@ function openBtcCalculator() {
   modal.innerHTML = `<div class="modal-box" style="max-width:440px">
     <div class="modal-header">
       <span>${state.lang==='ko'?'BTC 구매력 계산기':state.lang==='ja'?'BTC購買力':'BTC Purchasing Power'}</span>
-      <button class="modal-close" onclick="document.getElementById('btc-calc-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="btc-calc-modal">✕</button>
     </div>
     <div style="margin-bottom:12px;font-size:.78rem;color:var(--text2);font-family:var(--font-ko)">
       ${state.lang==='ko'?'당시 BTC를 얼마에 샀다면 지금 얼마일까?':'If you had bought BTC back then...'}
@@ -231,11 +231,11 @@ async function openFavDashboard() {
   modal.innerHTML = `<div class="modal-box" style="max-width:500px">
     <div class="modal-header">
       <span>${state.lang==='ko'?'즐겨찾기 대시보드':state.lang==='ja'?'お気に入りダッシュボード':'Favorites Dashboard'}</span>
-      <button class="modal-close" onclick="document.getElementById('fav-dashboard-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="fav-dashboard-modal">✕</button>
     </div>
     <div id="fav-dash-list">
       ${favs.length ? favs.map(f => `<div class="fav-dash-row" id="fav-dash-${f.value.slice(0,8)}">
-        <a href="#/address/${f.value}" onclick="document.getElementById('fav-dashboard-modal')?.remove()" class="fav-dash-addr">${f.label||shortHash(f.value)}</a>
+        <a href="#/address/${f.value}" data-dismiss="fav-dashboard-modal" class="fav-dash-addr">${f.label||shortHash(f.value)}</a>
         <span class="fav-dash-bal" id="fdbal-${f.value.slice(0,8)}">…</span>
       </div>`).join('') : `<div class="empty-state">${state.lang==='ko'?'즐겨찾기한 주소가 없습니다.':'No favorite addresses.'}</div>`}
     </div>
@@ -266,13 +266,13 @@ function openAddressNotes(address) {
   modal.innerHTML = `<div class="modal-box" style="max-width:400px">
     <div class="modal-header">
       <span>${state.lang==='ko'?'주소 메모':state.lang==='ja'?'アドレスメモ':'Address Notes'}</span>
-      <button class="modal-close" onclick="document.getElementById('addr-notes-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="addr-notes-modal">✕</button>
     </div>
     <div style="font-size:.68rem;color:var(--text3);margin-bottom:8px;font-family:var(--font)">${address.slice(0,20)}…</div>
     <textarea id="addr-notes-text" style="width:100%;height:120px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text1);padding:10px;font-family:var(--font-ko);font-size:.82rem;resize:vertical;outline:none;box-sizing:border-box">${escHtml(saved)}</textarea>
     <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
-      <button onclick="document.getElementById('addr-notes-modal')?.remove()" style="background:none;border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:5px;cursor:pointer;font-family:var(--font-ko)">${state.lang==='ko'?'취소':'Cancel'}</button>
-      <button onclick="(()=>{localStorage.setItem('addr_notes_${address}',document.getElementById('addr-notes-text').value);document.getElementById('addr-notes-modal')?.remove();showToast('📝','${state.lang==='ko'?'메모 저장됨':'Saved'}',null,2000);})()" style="background:var(--accent);border:none;color:#000;padding:6px 14px;border-radius:5px;cursor:pointer;font-family:var(--font-ko);font-weight:600">${state.lang==='ko'?'저장':'Save'}</button>
+      <button data-dismiss="addr-notes-modal" style="background:none;border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:5px;cursor:pointer;font-family:var(--font-ko)">${state.lang==='ko'?'취소':'Cancel'}</button>
+      <button data-save-notes="${address}" data-saved-msg="${state.lang==='ko'?'메모 저장됨':'Saved'}" style="background:var(--accent);border:none;color:#000;padding:6px 14px;border-radius:5px;cursor:pointer;font-family:var(--font-ko);font-weight:600">${state.lang==='ko'?'저장':'Save'}</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
@@ -288,7 +288,7 @@ async function openLightningMap() {
   modal.innerHTML = `<div class="modal-box" style="max-width:560px">
     <div class="modal-header">
       <span>${state.lang==='ko'?'라이트닝 노드 분포':'Lightning Node Distribution'}</span>
-      <button class="modal-close" onclick="document.getElementById('ln-map-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="ln-map-modal">✕</button>
     </div>
     <div id="ln-map-content"><div class="loading">${t('loading')}</div></div>
   </div>`;

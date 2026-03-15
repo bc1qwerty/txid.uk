@@ -451,7 +451,7 @@ export function removeFavorite(type, value) {
 }
 export function favButton(type, value, label) {
   const active = isFavorite(type, value);
-  return `<button class="fav-btn ${active ? 'active' : ''}" data-type="${type}" data-value="${escHtml(value)}" onclick="event.stopPropagation();toggleFavorite('${type}','${escHtml(value)}','${escHtml(label)}')">${active ? '★' : '☆'}</button>`;
+  return `<button class="fav-btn ${active ? 'active' : ''}" data-type="${type}" data-value="${escHtml(value)}" data-fav-toggle data-fav-type="${type}" data-fav-value="${escHtml(value)}" data-fav-label="${escHtml(label)}">${active ? '★' : '☆'}</button>`;
 }
 export function renderFavoritesSection() {
   const favs = getFavorites();
@@ -460,7 +460,7 @@ export function renderFavoritesSection() {
     const href = f.type === 'block' ? `#/block/${f.value}` : f.type === 'tx' ? `#/tx/${f.value}` : `#/address/${f.value}`;
     return `<a href="${href}" class="fav-chip">
       <span>${f.type === 'block' ? '▣' : f.type === 'tx' ? '↔' : '◎'} ${escHtml(f.label)}</span>
-      <span class="fav-remove" onclick="event.preventDefault();event.stopPropagation();removeFavorite('${f.type}','${escHtml(f.value)}');document.getElementById('fav-section')?.remove();route();">✕</span>
+      <span class="fav-remove" data-fav-remove data-fav-type="${f.type}" data-fav-value="${escHtml(f.value)}">✕</span>
     </a>`;
   }).join('');
   const countBadge = favs.length > 10 ? `<span class="fav-count">+${favs.length - 10}개 더</span>` : '';

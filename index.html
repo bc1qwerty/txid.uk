@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="naver-site-verification" content="37c2eefcaf7e4730bb93e843b90b036e">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-L2+7mXNi9gDA+0/T0lFPaYiU14QqFtZdgzgbfKUc+A0=' 'sha256-MWccMQv4AiRuTdCheb1gf4EngErP9gvby5f/KVDq1ao=' 'sha256-ZhBafx9E2OIkYg0aNG07f5O/CXvZkGs1Mue3ah1s+pQ=' 'sha256-1bWkvgy6LQ5mwKJtWU1J+SoIK5AGGwIxsOnexd8Z/vQ=' https://cdn.jsdelivr.net https://gc.zgo.at https://api.txid.uk https://apps.txid.uk https://www.googletagmanager.com https://cdnjs.cloudflare.com https://unpkg.com; script-src-attr 'unsafe-inline'; connect-src 'self' https://api.txid.uk https://mempool.space https://mempool.space/api wss://mempool.space https://api.upbit.com https://api.coingecko.com https://txid.goatcounter.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://api.txid.uk https://apps.txid.uk; font-src https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https://api.txid.uk;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-L2+7mXNi9gDA+0/T0lFPaYiU14QqFtZdgzgbfKUc+A0=' 'sha256-MWccMQv4AiRuTdCheb1gf4EngErP9gvby5f/KVDq1ao=' 'sha256-ZhBafx9E2OIkYg0aNG07f5O/CXvZkGs1Mue3ah1s+pQ=' 'sha256-1bWkvgy6LQ5mwKJtWU1J+SoIK5AGGwIxsOnexd8Z/vQ=' https://cdn.jsdelivr.net https://gc.zgo.at https://api.txid.uk https://apps.txid.uk https://www.googletagmanager.com https://cdnjs.cloudflare.com https://unpkg.com; connect-src 'self' https://api.txid.uk https://mempool.space https://mempool.space/api wss://mempool.space https://api.upbit.com https://api.coingecko.com https://txid.goatcounter.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://api.txid.uk https://apps.txid.uk; font-src https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https://api.txid.uk;">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>txid.uk — Bitcoin Block Explorer & Mempool Viewer</title>
@@ -28,8 +28,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" media="print" data-loadmedia="all">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet" media="print" data-loadmedia="all">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"><link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet"></noscript>
 
   <meta property="og:title" content="txid.uk — Bitcoin Block Explorer & Mempool Viewer">
@@ -353,5 +353,6 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 <script src="https://api.txid.uk/txid-auth.js" defer></script>
+<script src="/js/event-delegate.js" defer></script>
 </body>
 </html>

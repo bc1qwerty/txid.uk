@@ -157,7 +157,7 @@ export function renderRecentBlocks(blocks) {
     }
 
     return `
-      <div class="block-card stagger-item" style="--i:${idx}" onclick="location.hash='#/block/${b.id}'" title="${b.id}">
+      <div class="block-card stagger-item" style="--i:${idx}" data-nav="#/block/${b.id}" title="${b.id}">
         <div class="bc-top">
           <span class="bc-height">#${formatNum(b.height)}</span>
           <span class="bc-time" title="${fullDate(b.timestamp)}">${timeAgo(b.timestamp)}</span>

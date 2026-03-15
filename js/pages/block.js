@@ -60,11 +60,11 @@ export async function renderBlock(app, param) {
       <div class="page-actions">
         <div class="page-title">${t('blockExplorer')} #${formatNum(block.height)}</div>
         ${favButton('block', block.id, favLabel)}
-        <button class="icon-btn" onclick="openBlockTreemap('${block.id}', ${block.height})" title="Treemap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
-        <button class="icon-btn" onclick="showQR('${block.id}','Block Hash QR')" title="QR"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="7" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7"/><rect x="18" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="7" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg></button>
-        <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        <button class="icon-btn" data-treemap="${block.id}" data-height="${block.height}" title="Treemap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
+        <button class="icon-btn" data-action="showQR" data-arg="${block.id}" data-arg2="Block Hash QR" title="QR"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="7" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7"/><rect x="18" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="7" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg></button>
+        <button class="share-btn" data-action="shareUrl" data-arg="" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
       </div>
-      <div class="page-hash-wrap"><div class="page-hash" title="${block.id}">${block.id}</div><button class="copy-hash-btn" onclick="copyToClip('${block.id}',this)" title="${t('copy')}">⧉</button></div>
+      <div class="page-hash-wrap"><div class="page-hash" title="${block.id}">${block.id}</div><button class="copy-hash-btn" data-copy="${block.id}" title="${t('copy')}">⧉</button></div>
 
       <div class="info-grid">
         <div class="info-item"><div class="info-label">${t('height')}</div><div class="info-value accent">${formatNum(block.height)}</div></div>
@@ -186,9 +186,9 @@ export async function loadBlockTxs(blockHash, totalCount, startIdx) {
 
     pagination.innerHTML = `
       <div class="pagination">
-        <button ${currentPage === 0 ? 'disabled' : ''} onclick="loadBlockTxs('${blockHash}', ${totalCount}, ${(currentPage - 1) * perPage})">${t('prev')}</button>
+        <button ${currentPage === 0 ? 'disabled' : ''} data-block-txs data-hash="${blockHash}" data-total="${totalCount}" data-offset="${(currentPage - 1) * perPage}">${t('prev')}</button>
         <span class="page-info">${t('page')} ${currentPage + 1} ${t('of')} ${totalPages}</span>
-        <button ${currentPage >= totalPages - 1 ? 'disabled' : ''} onclick="loadBlockTxs('${blockHash}', ${totalCount}, ${(currentPage + 1) * perPage})">${t('next')}</button>
+        <button ${currentPage >= totalPages - 1 ? 'disabled' : ''} data-block-txs data-hash="${blockHash}" data-total="${totalCount}" data-offset="${(currentPage + 1) * perPage}">${t('next')}</button>
       </div>
     `;
   } catch (e) {
@@ -205,7 +205,7 @@ export async function openBlockTreemap(blockId, height) {
   modal.innerHTML = `<div class="modal-box" style="max-width:620px;width:95vw">
     <div class="modal-header">
       <span>Block #${height} Treemap</span>
-      <button class="modal-close" onclick="document.getElementById('treemap-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="treemap-modal">✕</button>
     </div>
     <div style="font-size:.68rem;color:var(--text3);margin-bottom:8px">${state.lang==='ko'?'크기 = 가상 크기 (vsize), 색 = 수수료율':'Size = vsize, Color = fee rate'}</div>
     <canvas id="treemap-canvas" style="width:100%;height:300px;display:block;border-radius:6px"></canvas>

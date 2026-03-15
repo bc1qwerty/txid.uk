@@ -438,7 +438,7 @@ function removeFavorite(type, value) {
 }
 function favButton(type, value, label) {
   const active = isFavorite(type, value);
-  return `<button class="fav-btn ${active ? 'active' : ''}" data-type="${type}" data-value="${escHtml(value)}" onclick="event.stopPropagation();toggleFavorite('${type}','${escHtml(value)}','${escHtml(label)}')">${active ? '★' : '☆'}</button>`;
+  return `<button class="fav-btn ${active ? 'active' : ''}" data-type="${type}" data-value="${escHtml(value)}" data-fav-toggle data-fav-type="${type}" data-fav-value="${escHtml(value)}" data-fav-label="${escHtml(label)}">${active ? '★' : '☆'}</button>`;
 }
 function renderFavoritesSection() {
   const favs = getFavorites();
@@ -447,7 +447,7 @@ function renderFavoritesSection() {
     const href = f.type === 'block' ? `#/block/${f.value}` : f.type === 'tx' ? `#/tx/${f.value}` : `#/address/${f.value}`;
     return `<a href="${href}" class="fav-chip">
       <span>${f.type === 'block' ? '▣' : f.type === 'tx' ? '↔' : '◎'} ${escHtml(f.label)}</span>
-      <span class="fav-remove" onclick="event.preventDefault();event.stopPropagation();removeFavorite('${f.type}','${escHtml(f.value)}');document.getElementById('fav-section')?.remove();route();">✕</span>
+      <span class="fav-remove" data-fav-remove data-fav-type="${f.type}" data-fav-value="${escHtml(f.value)}">✕</span>
     </a>`;
   }).join('');
   const countBadge = favs.length > 10 ? `<span class="fav-count">+${favs.length - 10}개 더</span>` : '';
@@ -912,7 +912,7 @@ function renderRecentBlocks(blocks) {
     }
 
     return `
-      <div class="block-card stagger-item" style="--i:${idx}" onclick="location.hash='#/block/${b.id}'" title="${b.id}">
+      <div class="block-card stagger-item" style="--i:${idx}" data-nav="#/block/${b.id}" title="${b.id}">
         <div class="bc-top">
           <span class="bc-height">#${formatNum(b.height)}</span>
           <span class="bc-time" title="${fullDate(b.timestamp)}">${timeAgo(b.timestamp)}</span>
@@ -1214,11 +1214,11 @@ async function renderBlock(app, param) {
       <div class="page-actions">
         <div class="page-title">${t('blockExplorer')} #${formatNum(block.height)}</div>
         ${favButton('block', block.id, favLabel)}
-        <button class="icon-btn" onclick="openBlockTreemap('${block.id}', ${block.height})" title="Treemap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
-        <button class="icon-btn" onclick="showQR('${block.id}','Block Hash QR')" title="QR"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="7" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7"/><rect x="18" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="7" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg></button>
-        <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        <button class="icon-btn" data-treemap="${block.id}" data-height="${block.height}" title="Treemap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
+        <button class="icon-btn" data-action="showQR" data-arg="${block.id}" data-arg2="Block Hash QR" title="QR"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="7" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7"/><rect x="18" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="7" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg></button>
+        <button class="share-btn" data-action="shareUrl" data-arg="" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
       </div>
-      <div class="page-hash-wrap"><div class="page-hash" title="${block.id}">${block.id}</div><button class="copy-hash-btn" onclick="copyToClip('${block.id}',this)" title="${t('copy')}">⧉</button></div>
+      <div class="page-hash-wrap"><div class="page-hash" title="${block.id}">${block.id}</div><button class="copy-hash-btn" data-copy="${block.id}" title="${t('copy')}">⧉</button></div>
 
       <div class="info-grid">
         <div class="info-item"><div class="info-label">${t('height')}</div><div class="info-value accent">${formatNum(block.height)}</div></div>
@@ -1340,9 +1340,9 @@ async function loadBlockTxs(blockHash, totalCount, startIdx) {
 
     pagination.innerHTML = `
       <div class="pagination">
-        <button ${currentPage === 0 ? 'disabled' : ''} onclick="loadBlockTxs('${blockHash}', ${totalCount}, ${(currentPage - 1) * perPage})">${t('prev')}</button>
+        <button ${currentPage === 0 ? 'disabled' : ''} data-block-txs data-hash="${blockHash}" data-total="${totalCount}" data-offset="${(currentPage - 1) * perPage}">${t('prev')}</button>
         <span class="page-info">${t('page')} ${currentPage + 1} ${t('of')} ${totalPages}</span>
-        <button ${currentPage >= totalPages - 1 ? 'disabled' : ''} onclick="loadBlockTxs('${blockHash}', ${totalCount}, ${(currentPage + 1) * perPage})">${t('next')}</button>
+        <button ${currentPage >= totalPages - 1 ? 'disabled' : ''} data-block-txs data-hash="${blockHash}" data-total="${totalCount}" data-offset="${(currentPage + 1) * perPage}">${t('next')}</button>
       </div>
     `;
   } catch (e) {
@@ -1398,10 +1398,10 @@ async function renderTx(app, txid) {
           ${hasCpfp ? '<span class="tx-badge cpfp">CPFP</span>' : ''}
         </div>
         ${favButton('tx', tx.txid, favLabel)}
-        <button class="icon-btn" onclick="showQR('' + txid + '','TXID QR')" title="QR Code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="7" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7"/><rect x="18" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="7" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg></button>
-        <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        <button class="icon-btn" data-action="showQR" data-arg="' + txid + '" data-arg2="TXID QR" title="QR Code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="7" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7"/><rect x="18" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="7" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg></button>
+        <button class="share-btn" data-action="shareUrl" data-arg="" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
       </div>
-      <div class="page-hash-wrap"><div class="page-hash" title="${tx.txid}">${tx.txid}</div><button class="copy-hash-btn" onclick="copyToClip('${tx.txid}',this)" title="${t('copy')}">⧉</button></div>
+      <div class="page-hash-wrap"><div class="page-hash" title="${tx.txid}">${tx.txid}</div><button class="copy-hash-btn" data-copy="${tx.txid}" title="${t('copy')}">⧉</button></div>
 
       <div class="info-grid">
         <div class="info-item"><div class="info-label">TXID</div><div class="info-value small">${tx.txid}</div></div>
@@ -1418,8 +1418,8 @@ async function renderTx(app, txid) {
       </div>
 
       <div class="subsite-links" style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
-        <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko);border-color:var(--accent);color:var(--accent)" onclick="openViz('tx','${tx.txid}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 시각화</button>
-        <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko)" onclick="openTxLookup('${tx.txid}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> TX 분석</button>
+        <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko);border-color:var(--accent);color:var(--accent)" data-action="openViz" data-arg="tx" data-arg2="${tx.txid}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 시각화</button>
+        <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko)" data-action="openTxLookup" data-arg="${tx.txid}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> TX 분석</button>
       </div>
       ${!isConfirmed ? `<div class="tx-status-bar unconfirmed" id="tx-poll-status">⏳ ${t('unconfirmed')} | ${feeRate.toFixed(1)} sat/vB | ${t('estimatedConf')}: ~10-60min</div>` : ''}
 
@@ -1550,18 +1550,18 @@ async function renderAddress(app, address) {
       <div class="page-actions">
         <div class="page-title">${t('address')}</div>
         ${favButton('address', address, favLabel)}
-        <button class="icon-btn" onclick="showQR('${address}', '${lang==='ko'?'주소 QR':'Address QR'}')" title="QR Code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="7" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7"/><rect x="18" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="7" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg></button>
-        <button class="icon-btn" id="addr-label-btn" onclick="promptAddrLabel('${address}')" title="${getAddrLabel(address)||'메모 추가'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
-        <button class="share-btn" onclick="shareUrl(location.href)" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
-        <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" onclick="toggleMonitor('${address}')">${icon('bell')} ${t('monitoring')}</button>
-        <button class="monitor-btn" onclick="App.showQR('${address}')">📱 ${t('qrView')}</button>
-        <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko);border-color:var(--accent);color:var(--accent)" onclick="openViz('addr','${address}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 시각화</button>
-        <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko)" onclick="openPortfolioAdd('${address}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> 포트폴리오</button>
-        <button class="icon-btn" onclick="showAddressCluster('${address}')" title="${lang==='ko'?'연관 주소 분석':'Cluster'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg></button>
-        <button class="icon-btn" onclick="openAddressNotes('${address}')" title="${lang==='ko'?'메모':'Notes'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></button>
+        <button class="icon-btn" data-action="showQR" data-arg="${address}" data-arg2="${lang==='ko'?'주소 QR':'Address QR'}" title="QR Code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="7" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="7" height="7"/><rect x="18" y="7" width="3" height="3" fill="currentColor" stroke="none"/><rect x="7" y="18" width="3" height="3" fill="currentColor" stroke="none"/></svg></button>
+        <button class="icon-btn" id="addr-label-btn" data-action="promptAddrLabel" data-arg="${address}" title="${getAddrLabel(address)||'메모 추가'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+        <button class="share-btn" data-action="shareUrl" data-arg="" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        <button class="monitor-btn ${isMonitored ? 'active' : ''}" data-addr="${address}" data-action="toggleMonitor" data-arg="${address}">${icon('bell')} ${t('monitoring')}</button>
+        <button class="monitor-btn" data-action="showQR" data-arg="${address}">📱 ${t('qrView')}</button>
+        <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko);border-color:var(--accent);color:var(--accent)" data-action="openViz" data-arg="addr" data-arg2="${address}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 시각화</button>
+        <button class="icon-btn" style="padding:6px 12px;font-size:.72rem;font-family:var(--font-ko)" data-action="openPortfolioAdd" data-arg="${address}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> 포트폴리오</button>
+        <button class="icon-btn" data-action="showAddressCluster" data-arg="${address}" title="${lang==='ko'?'연관 주소 분석':'Cluster'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg></button>
+        <button class="icon-btn" data-action="openAddressNotes" data-arg="${address}" title="${lang==='ko'?'메모':'Notes'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></button>
       </div>
       ${getAddrLabel(address) ? `<div class="addr-label-display" id="addr-label-display">${escHtml(getAddrLabel(address))}</div>` : '<div class="addr-label-display" id="addr-label-display" style="display:none"></div>'}
-      <div class="page-hash-wrap"><div class="page-hash" title="${address}">${address}</div><button class="copy-hash-btn" onclick="copyToClip('${address}',this)" title="${t('copy')}">⧉</button></div>
+      <div class="page-hash-wrap"><div class="page-hash" title="${address}">${address}</div><button class="copy-hash-btn" data-copy="${address}" title="${t('copy')}">⧉</button></div>
 
       <div class="addr-summary">
         <div class="addr-stat stagger-item" style="--i:0"><div class="as-val">${getAddrTypeFromAddr(address)}</div><div class="as-lbl">${t('type')}</div></div>
@@ -1654,7 +1654,7 @@ async function loadAddrTxs(address, lastTxid) {
         }, { threshold: 0.1 });
         obs.observe(document.getElementById('addr-txs-sentinel'));
       } else {
-        moreBtn.innerHTML = `<div class="pagination"><button onclick="loadAddrTxs('${address}', '${lastId}')">${t('next')} →</button></div>`;
+        moreBtn.innerHTML = `<div class="pagination"><button data-addr-txs data-address="${address}" data-last-id="${lastId}">${t('next')} →</button></div>`;
       }
     } else {
       moreBtn.innerHTML = '';
@@ -1925,17 +1925,17 @@ function renderFeeCalcModal() {
     { label: lang === 'ko' ? '직접 입력' : lang === 'ja' ? 'カスタム' : 'Custom', vb: 0 },
   ];
 
-  return `<div class="modal-overlay" id="fee-calc-modal" onclick="if(event.target===this)this.remove()">
+  return `<div class="modal-overlay" id="fee-calc-modal" data-dismiss-overlay>
     <div class="modal">
-      <button class="modal-close" onclick="document.getElementById('fee-calc-modal').remove()">✕</button>
+      <button class="modal-close" data-dismiss="fee-calc-modal">✕</button>
       <h2>${t('feeCalc')}</h2>
       <label>TX ${t('type')}</label>
-      <select id="fc-type" onchange="updateFeeCalc()">
+      <select id="fc-type" data-onchange="updateFeeCalc">
         ${txTypes.map((tt, i) => `<option value="${i}">${tt.label} ${tt.vb ? '(~' + tt.vb + ' vB)' : ''}</option>`).join('')}
       </select>
       <div id="fc-custom-wrap" style="display:none">
         <label>vBytes</label>
-        <input type="number" id="fc-vbytes" value="200" min="1" onchange="updateFeeCalc()">
+        <input type="number" id="fc-vbytes" value="200" min="1" data-onchange="updateFeeCalc">
       </div>
       <table class="fee-table" id="fc-table">
         <thead><tr><th>${t('speed')}</th><th>${t('feeRate')}</th><th>${t('estFee')} (sat)</th><th>${t('estFee')} (BTC)</th><th>${t('estTime')}</th></tr></thead>
@@ -1990,12 +1990,12 @@ async function showQRModal(address) {
   modal.id = 'qr-modal';
   modal.onclick = function(e) { if (e.target === this) this.remove(); };
   modal.innerHTML = `<div class="modal">
-    <button class="modal-close" onclick="document.getElementById('qr-modal').remove()">✕</button>
+    <button class="modal-close" data-dismiss="qr-modal">✕</button>
     <div class="qr-modal-content">
       <h2>📱 ${t('qrView')}</h2>
       <div id="qr-code"></div>
       <div class="qr-addr-text">${escHtml(address)}</div>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('${escHtml(address)}').then(()=>{this.textContent='${t('copied')}'});setTimeout(()=>{this.textContent='${t('copy')}'},1500)">${t('copy')}</button>
+      <button class="copy-btn" data-copy-text="${escHtml(address)}" data-label-copied="${t('copied')}" data-label-default="${t('copy')}">${t('copy')}</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
@@ -2026,7 +2026,7 @@ function openConverter() {
     <div class="modal-box" style="max-width:340px">
       <div class="modal-header">
         <span>${lang==='ko'?'단위 변환기':lang==='ja'?'単位換算':'Unit Converter'}</span>
-        <button class="modal-close" onclick="document.getElementById('converter-modal')?.remove()">✕</button>
+        <button class="modal-close" data-dismiss="converter-modal">✕</button>
       </div>
       <div class="converter-rows" id="conv-rows">
         ${['BTC','Sat','KRW','USD'].map(u => `
@@ -2353,7 +2353,7 @@ async function openBlockTreemap(blockId, height) {
   modal.innerHTML = `<div class="modal-box" style="max-width:620px;width:95vw">
     <div class="modal-header">
       <span>Block #${height} Treemap</span>
-      <button class="modal-close" onclick="document.getElementById('treemap-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="treemap-modal">✕</button>
     </div>
     <div style="font-size:.68rem;color:var(--text3);margin-bottom:8px">${lang==='ko'?'크기 = 가상 크기 (vsize), 색 = 수수료율':'Size = vsize, Color = fee rate'}</div>
     <canvas id="treemap-canvas" style="width:100%;height:300px;display:block;border-radius:6px"></canvas>
@@ -2547,7 +2547,7 @@ function showShortcuts() {
   modal.innerHTML = `<div class="modal-box" style="max-width:340px">
     <div class="modal-header">
       <span>${lang==='ko'?'키보드 단축키':lang==='ja'?'キーボードショートカット':'Keyboard Shortcuts'}</span>
-      <button class="modal-close" onclick="document.getElementById('shortcuts-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="shortcuts-modal">✕</button>
     </div>
     <div class="shortcuts-list">
       ${kbShortcuts.map(([k,d]) => `<div class="shortcut-row"><kbd class="shortcut-key">${k}</kbd><span class="shortcut-desc">${d}</span></div>`).join('')}
@@ -2700,7 +2700,7 @@ function openBtcCalculator() {
   modal.innerHTML = `<div class="modal-box" style="max-width:440px">
     <div class="modal-header">
       <span>${lang==='ko'?'BTC 구매력 계산기':lang==='ja'?'BTC購買力':'BTC Purchasing Power'}</span>
-      <button class="modal-close" onclick="document.getElementById('btc-calc-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="btc-calc-modal">✕</button>
     </div>
     <div style="margin-bottom:12px;font-size:.78rem;color:var(--text2);font-family:var(--font-ko)">
       ${lang==='ko'?'당시 BTC를 얼마에 샀다면 지금 얼마일까?':'If you had bought BTC back then...'}
@@ -2734,11 +2734,11 @@ async function openFavDashboard() {
   modal.innerHTML = `<div class="modal-box" style="max-width:500px">
     <div class="modal-header">
       <span>${lang==='ko'?'즐겨찾기 대시보드':lang==='ja'?'お気に入りダッシュボード':'Favorites Dashboard'}</span>
-      <button class="modal-close" onclick="document.getElementById('fav-dashboard-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="fav-dashboard-modal">✕</button>
     </div>
     <div id="fav-dash-list">
       ${favs.length ? favs.map(f => `<div class="fav-dash-row" id="fav-dash-${f.value.slice(0,8)}">
-        <a href="#/address/${f.value}" onclick="document.getElementById('fav-dashboard-modal')?.remove()" class="fav-dash-addr">${f.label||shortHash(f.value)}</a>
+        <a href="#/address/${f.value}" data-dismiss="fav-dashboard-modal" class="fav-dash-addr">${f.label||shortHash(f.value)}</a>
         <span class="fav-dash-bal" id="fdbal-${f.value.slice(0,8)}">…</span>
       </div>`).join('') : `<div class="empty-state">${lang==='ko'?'즐겨찾기한 주소가 없습니다.':'No favorite addresses.'}</div>`}
     </div>
@@ -2770,13 +2770,13 @@ function openAddressNotes(address) {
   modal.innerHTML = `<div class="modal-box" style="max-width:400px">
     <div class="modal-header">
       <span>${lang==='ko'?'주소 메모':lang==='ja'?'アドレスメモ':'Address Notes'}</span>
-      <button class="modal-close" onclick="document.getElementById('addr-notes-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="addr-notes-modal">✕</button>
     </div>
     <div style="font-size:.68rem;color:var(--text3);margin-bottom:8px;font-family:var(--font)">${address.slice(0,20)}…</div>
     <textarea id="addr-notes-text" style="width:100%;height:120px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text1);padding:10px;font-family:var(--font-ko);font-size:.82rem;resize:vertical;outline:none;box-sizing:border-box">${escHtml(saved)}</textarea>
     <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
-      <button onclick="document.getElementById('addr-notes-modal')?.remove()" style="background:none;border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:5px;cursor:pointer;font-family:var(--font-ko)">${lang==='ko'?'취소':'Cancel'}</button>
-      <button onclick="(()=>{localStorage.setItem('addr_notes_${address}',document.getElementById('addr-notes-text').value);document.getElementById('addr-notes-modal')?.remove();showToast('📝','${lang==='ko'?'메모 저장됨':'Saved'}',null,2000);})()" style="background:var(--accent);border:none;color:#000;padding:6px 14px;border-radius:5px;cursor:pointer;font-family:var(--font-ko);font-weight:600">${lang==='ko'?'저장':'Save'}</button>
+      <button data-dismiss="addr-notes-modal" style="background:none;border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:5px;cursor:pointer;font-family:var(--font-ko)">${lang==='ko'?'취소':'Cancel'}</button>
+      <button data-save-notes="${address}" data-saved-msg="${lang==='ko'?'메모 저장됨':'Saved'}" style="background:var(--accent);border:none;color:#000;padding:6px 14px;border-radius:5px;cursor:pointer;font-family:var(--font-ko);font-weight:600">${lang==='ko'?'저장':'Save'}</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
@@ -2837,7 +2837,7 @@ async function showAddressCluster(address) {
   modal.innerHTML = `<div class="modal-box" style="max-width:520px">
     <div class="modal-header">
       <span>${lang==='ko'?'연관 주소 분석':'Address Cluster'}</span>
-      <button class="modal-close" onclick="document.getElementById('cluster-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="cluster-modal">✕</button>
     </div>
     <div id="cluster-content" style="font-size:.78rem;color:var(--text2)">
       <div class="loading">${t('loading')}</div>
@@ -2866,7 +2866,7 @@ async function showAddressCluster(address) {
       <div class="cluster-list">
         ${sorted.map(([addr, cnt]) => `
           <div class="cluster-row">
-            <a href="#/address/${addr}" onclick="document.getElementById('cluster-modal')?.remove()" class="cluster-addr">${addr.slice(0,20)}…</a>
+            <a href="#/address/${addr}" data-dismiss="cluster-modal" class="cluster-addr">${addr.slice(0,20)}…</a>
             <span class="cluster-cnt">${cnt}회</span>
           </div>`).join('')}
       </div>`;
@@ -2883,7 +2883,7 @@ async function openLightningMap() {
   modal.innerHTML = `<div class="modal-box" style="max-width:560px">
     <div class="modal-header">
       <span>${lang==='ko'?'라이트닝 노드 분포':'Lightning Node Distribution'}</span>
-      <button class="modal-close" onclick="document.getElementById('ln-map-modal')?.remove()">✕</button>
+      <button class="modal-close" data-dismiss="ln-map-modal">✕</button>
     </div>
     <div id="ln-map-content"><div class="loading">${t('loading')}</div></div>
   </div>`;
